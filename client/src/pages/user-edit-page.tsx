@@ -89,7 +89,7 @@ export default function UserEditPage() {
         position: data.position || '',
         role: data.role,
         bio: data.bio || '',
-        entityId: data.entityId ? parseInt(data.entityId) : null
+        entityId: data.entityId && data.entityId !== 'none' ? parseInt(data.entityId) : null
       });
         const updatedUser = await response.json();
         return updatedUser;
@@ -291,7 +291,7 @@ export default function UserEditPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">No Entity</SelectItem>
+                            <SelectItem value="none">No Entity</SelectItem>
                             {entities.map((entity: any) => (
                               <SelectItem key={entity.id} value={String(entity.id)}>
                                 {entity.name}
