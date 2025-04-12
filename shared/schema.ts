@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, pgEnum, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -117,6 +117,28 @@ export const communicationRecipients = pgTable("communication_recipients", {
   readAt: timestamp("read_at"),
 });
 
+// Achievement badges
+export const achievementBadges = pgTable("achievement_badges", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description").notNull(),
+  icon: text("icon").notNull(), // icon identifier (will be mapped to an icon component)
+  category: text("category").notNull(), // 'communication', 'meetings', 'tasks', 'participation', etc.
+  level: integer("level").notNull(), // 1, 2, 3, etc. for badge progression
+  criteria: jsonb("criteria").notNull(), // JSON object with criteria to earn the badge
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// User earned badges
+export const userBadges = pgTable("user_badges", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  badgeId: integer("badge_id").references(() => achievementBadges.id).notNull(),
+  earnedAt: timestamp("earned_at").defaultNow().notNull(),
+  progress: jsonb("progress"), // JSON object tracking progress towards earning the badge
+  featured: boolean("featured").default(false), // if the user wants to feature this badge on their profile
+});
+
 // Zod insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertEntitySchema = createInsertSchema(entities).omit({ id: true });
@@ -127,6 +149,8 @@ export const insertTaskSchema = createInsertSchema(tasks).omit({ id: true, creat
 export const insertTaskCommentSchema = createInsertSchema(taskComments).omit({ id: true, createdAt: true });
 export const insertCommunicationSchema = createInsertSchema(communications).omit({ id: true, sentAt: true });
 export const insertCommunicationRecipientSchema = createInsertSchema(communicationRecipients).omit({ id: true, readAt: true });
+export const insertAchievementBadgeSchema = createInsertSchema(achievementBadges).omit({ id: true, createdAt: true });
+export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({ id: true, earnedAt: true });
 
 // TypeScript types
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -156,6 +180,12 @@ export type Communication = typeof communications.$inferSelect;
 export type InsertCommunicationRecipient = z.infer<typeof insertCommunicationRecipientSchema>;
 export type CommunicationRecipient = typeof communicationRecipients.$inferSelect;
 
+export type InsertAchievementBadge = z.infer<typeof insertAchievementBadgeSchema>;
+export type AchievementBadge = typeof achievementBadges.$inferSelect;
+
+export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
+export type UserBadge = typeof userBadges.$inferSelect;
+
 // Auth types
 export type LoginCredentials = {
   username: string;
@@ -176,6 +206,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   taskComments: many(taskComments),
   sentCommunications: many(communications),
   receivedCommunications: many(communicationRecipients),
+  badges: many(userBadges),
 }));
 
 export const entitiesRelations = relations(entities, ({ many }) => ({
@@ -272,8 +303,25 @@ export const communicationRecipientsRelations = relations(communicationRecipient
   }),
 }));
 
+export const achievementBadgesRelations = relations(achievementBadges, ({ many }) => ({
+  userBadges: many(userBadges),
+}));
+
+export const userBadgesRelations = relations(userBadges, ({ one }) => ({
+  user: one(users, {
+    fields: [userBadges.userId],
+    references: [users.id],
+  }),
+  badge: one(achievementBadges, {
+    fields: [userBadges.badgeId],
+    references: [achievementBadges.id],
+  }),
+}));
+
 // Utility types
 export type UserWithEntity = User & { entity?: Entity };
 export type MeetingWithAttendees = Meeting & { attendees: MeetingAttendee[] };
 export type TaskWithAssignee = Task & { assignee: User };
 export type CommunicationWithRecipients = Communication & { recipients: CommunicationRecipient[] };
+export type UserWithBadges = User & { badges: (UserBadge & { badge: AchievementBadge })[] };
+export type UserBadgeWithDetails = UserBadge & { badge: AchievementBadge, user: User };
