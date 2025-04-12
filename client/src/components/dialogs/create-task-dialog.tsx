@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, invalidateTasks, invalidateDashboardStats, invalidateAllData } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { Button } from "@/components/ui/button";
@@ -103,15 +103,21 @@ export default function CreateTaskDialog({
       });
       return await res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      toast({
-        title: "Task created",
-        description: "The task has been successfully created.",
-      });
-      form.reset();
-      onOpenChange(false);
+    onSuccess: async () => {
+      try {
+        // Invalidate all related queries to ensure data is fresh
+        await invalidateTasks();
+        await invalidateDashboardStats();
+        
+        toast({
+          title: "Task created",
+          description: "The task has been successfully created.",
+        });
+        form.reset();
+        onOpenChange(false);
+      } catch (error) {
+        console.error("Error refreshing data after task creation:", error);
+      }
     },
     onError: (error: Error) => {
       toast({

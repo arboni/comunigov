@@ -113,29 +113,43 @@ export default function ScheduleMeetingDialog({
       });
       return await res.json();
     },
-    onSuccess: (meeting) => {
-      // Invalidate relevant queries to refresh the data
-      invalidateMeetings();
-      invalidateDashboardStats();
-      
+    onSuccess: async (meeting) => {
       // If attendees were selected, add them to the meeting
-      if (form.getValues().attendees && form.getValues().attendees.length > 0) {
-        form.getValues().attendees?.forEach(async (userId) => {
-          await apiRequest("POST", `/api/meetings/${meeting.id}/attendees`, {
-            userId,
-            meetingId: meeting.id,
-            confirmed: false,
-            attended: false,
-          });
+      const attendees = form.getValues().attendees || [];
+      
+      try {
+        // Use Promise.all to wait for all attendee additions to complete
+        if (attendees.length > 0) {
+          await Promise.all(
+            attendees.map(async (userId) => {
+              return apiRequest("POST", `/api/meetings/${meeting.id}/attendees`, {
+                userId,
+                meetingId: meeting.id,
+                confirmed: false,
+                attended: false,
+              });
+            })
+          );
+        }
+        
+        // After all attendees are added, invalidate the queries to refresh the data
+        await invalidateMeetings();
+        await invalidateDashboardStats();
+        
+        toast({
+          title: "Meeting scheduled",
+          description: "The meeting has been successfully scheduled.",
+        });
+        form.reset();
+        onOpenChange(false);
+      } catch (error) {
+        console.error("Error adding attendees:", error);
+        toast({
+          title: "Meeting created, but attendee issue",
+          description: "The meeting was created but there was an issue adding attendees.",
+          variant: "destructive",
         });
       }
-      
-      toast({
-        title: "Meeting scheduled",
-        description: "The meeting has been successfully scheduled.",
-      });
-      form.reset();
-      onOpenChange(false);
     },
     onError: (error: Error) => {
       console.error("Meeting scheduling error:", error);
