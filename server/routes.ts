@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth } from "./auth";
+import { setupAuth, hashPassword, comparePasswords } from "./auth";
 import { z } from "zod";
 import { 
   insertEntitySchema, 
@@ -39,6 +39,72 @@ function isEntityHead(req: Request, res: Response, next: NextFunction) {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Sets up /api/register, /api/login, /api/logout, /api/user
   setupAuth(app);
+
+  // User password change
+  app.post("/api/user/change-password", isAuthenticated, async (req, res, next) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Current password and new password are required" });
+      }
+      
+      const user = await storage.getUser(req.user!.id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Verify current password
+      const isValid = await comparePasswords(currentPassword, user.password);
+      
+      if (!isValid) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+      
+      // Hash the new password
+      const hashedPassword = await hashPassword(newPassword);
+      
+      // Update user with new password
+      const updatedUser = await storage.updateUser(user.id, { password: hashedPassword });
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update password" });
+      }
+      
+      res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // User profile update
+  app.put("/api/user/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Only allow users to update their own profile (or allow master implementers to update anyone)
+      if (req.user!.id !== id && req.user!.role !== 'master_implementer') {
+        return res.status(403).json({ message: "Forbidden: You can only update your own profile" });
+      }
+      
+      // Don't allow updates to sensitive fields through this endpoint
+      const { password, username, role, ...allowedUpdates } = req.body;
+      
+      const updatedUser = await storage.updateUser(id, allowedUpdates);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Don't return the password
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      
+      res.json(userWithoutPassword);
+    } catch (error) {
+      next(error);
+    }
+  });
 
   // Users Management
   app.get("/api/users", isAuthenticated, async (req, res, next) => {
