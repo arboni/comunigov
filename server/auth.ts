@@ -5,6 +5,7 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
+import { sendNewMemberWelcomeEmail, sendPasswordResetEmail } from "./email-service";
 import { User as SelectUser, InsertUser } from "@shared/schema";
 
 declare global {
@@ -96,6 +97,39 @@ export function setupAuth(app: Express) {
       
       // Determine if we should auto-login (self-registration) or not (admin adding user)
       const autoLogin = req.body.autoLogin === true || !req.isAuthenticated();
+      
+      // Send welcome email if this is an entity member being created by an admin
+      // and we have the necessary information
+      if (!autoLogin && 
+          user.entityId && 
+          user.email && 
+          user.role && 
+          (user.role === 'entity_head' || user.role === 'entity_member')) {
+        try {
+          // Get entity name for the welcome email
+          const entity = await storage.getEntity(user.entityId);
+          
+          if (entity) {
+            // Check if the password in req.body is a default one (like "1234")
+            // This indicates a temporary password was set by an admin
+            const plainPassword = req.body.password;
+            
+            // Send welcome email with account details
+            await sendNewMemberWelcomeEmail(
+              user.email,
+              user.fullName,
+              user.username,
+              plainPassword,
+              entity.name
+            );
+            
+            console.log(`Welcome email sent to new ${user.role} (${user.email})`);
+          }
+        } catch (emailError) {
+          // Log the error but don't fail the registration
+          console.error('Error sending welcome email:', emailError);
+        }
+      }
       
       if (autoLogin) {
         // This is a self-registration, so log the user in

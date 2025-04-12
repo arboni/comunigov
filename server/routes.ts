@@ -112,6 +112,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
+  
+  // Admin reset user password
+  app.post("/api/user/:id/reset-password", isMasterImplementer, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { newPassword } = req.body;
+      
+      if (!newPassword) {
+        return res.status(400).json({ message: "New password is required" });
+      }
+      
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Hash the new password
+      const hashedPassword = await hashPassword(newPassword);
+      
+      // Update user with new password
+      const updatedUser = await storage.updateUser(userId, { password: hashedPassword });
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to reset password" });
+      }
+      
+      // Send password reset email if this is an entity member
+      if (user.email && (user.role === 'entity_head' || user.role === 'entity_member')) {
+        try {
+          await sendPasswordResetEmail(
+            user.email,
+            user.fullName,
+            user.username,
+            newPassword
+          );
+          
+          console.log(`Password reset email sent to ${user.email}`);
+        } catch (emailError) {
+          // Log the error but don't fail the password reset
+          console.error('Error sending password reset email:', emailError);
+        }
+      }
+      
+      res.status(200).json({ message: "Password reset successfully" });
+    } catch (error) {
+      next(error);
+    }
+  });
 
   // User profile update
   app.put("/api/user/:id", isAuthenticated, async (req, res, next) => {
