@@ -138,6 +138,7 @@ export default function ScheduleMeetingDialog({
       onOpenChange(false);
     },
     onError: (error: Error) => {
+      console.error("Meeting scheduling error:", error);
       toast({
         title: "Scheduling failed",
         description: error.message,
@@ -147,6 +148,7 @@ export default function ScheduleMeetingDialog({
   });
 
   function onSubmit(data: FormValues) {
+    console.log("Form data being submitted:", data);
     scheduleMeetingMutation.mutate(data);
   }
 
