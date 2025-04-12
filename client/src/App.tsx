@@ -21,6 +21,13 @@ function ProtectedRoute({ component: Component, path }: { component: () => JSX.E
     gcTime: 0
   });
 
+  // Always declare all hooks regardless of conditions
+  useEffect(() => {
+    if (!user && !isLoading) {
+      setLocation("/auth");
+    }
+  }, [user, isLoading, setLocation]);
+
   if (isLoading) {
     return (
       <Route path={path}>
@@ -30,12 +37,6 @@ function ProtectedRoute({ component: Component, path }: { component: () => JSX.E
       </Route>
     );
   }
-
-  useEffect(() => {
-    if (!user && !isLoading) {
-      setLocation("/auth");
-    }
-  }, [user, isLoading, setLocation]);
 
   if (!user) {
     return (
