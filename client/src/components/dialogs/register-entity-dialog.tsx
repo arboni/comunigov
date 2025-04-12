@@ -3,7 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, invalidateEntities, invalidateDashboardStats } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -75,8 +75,10 @@ export default function RegisterEntityDialog({
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/entities"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      // Invalidate relevant queries to refresh the data
+      invalidateEntities();
+      invalidateDashboardStats();
+      
       toast({
         title: "Entity registered",
         description: "The entity has been successfully registered.",

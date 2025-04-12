@@ -46,8 +46,8 @@ export const queryClient = new QueryClient({
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
+      refetchOnWindowFocus: true,
+      staleTime: 3000, // 3 seconds instead of Infinity
       retry: false,
     },
     mutations: {
@@ -55,3 +55,41 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+// Helper functions for cache invalidation
+export function invalidateEntities() {
+  return queryClient.invalidateQueries({ queryKey: ['/api/entities'] });
+}
+
+export function invalidateUsers() {
+  return queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+}
+
+export function invalidateTasks() {
+  return queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+}
+
+export function invalidateMeetings() {
+  queryClient.invalidateQueries({ queryKey: ['/api/meetings'] });
+  return queryClient.invalidateQueries({ queryKey: ['/api/meetings/upcoming'] });
+}
+
+export function invalidateCommunications() {
+  return queryClient.invalidateQueries({ queryKey: ['/api/communications'] });
+}
+
+export function invalidateDashboardStats() {
+  return queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
+}
+
+// Invalidate all data (useful after major changes)
+export function invalidateAllData() {
+  return Promise.all([
+    invalidateEntities(),
+    invalidateUsers(),
+    invalidateTasks(),
+    invalidateMeetings(),
+    invalidateCommunications(),
+    invalidateDashboardStats()
+  ]);
+}
