@@ -831,7 +831,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createMeeting(insertMeeting: InsertMeeting): Promise<Meeting> {
-    const [meeting] = await db.insert(meetings).values(insertMeeting).returning();
+    // Add current timestamp for createdAt if not provided
+    const meetingWithCreatedAt = {
+      ...insertMeeting,
+      createdAt: new Date()
+    };
+    
+    const [meeting] = await db.insert(meetings).values(meetingWithCreatedAt).returning();
     return meeting;
   }
 
@@ -913,9 +919,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createMeetingDocument(insertDocument: InsertMeetingDocument): Promise<MeetingDocument> {
+    // Add current timestamp for uploadedAt
+    const documentWithUploadedAt = {
+      ...insertDocument,
+      uploadedAt: new Date()
+    };
+    
     const [document] = await db
       .insert(meetingDocuments)
-      .values(insertDocument)
+      .values(documentWithUploadedAt)
       .returning();
     return document;
   }
@@ -958,7 +970,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createTask(insertTask: InsertTask): Promise<Task> {
-    const [task] = await db.insert(tasks).values(insertTask).returning();
+    // Add current timestamp for createdAt and updatedAt
+    const taskWithTimestamps = {
+      ...insertTask,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const [task] = await db.insert(tasks).values(taskWithTimestamps).returning();
     return task;
   }
 
@@ -1006,9 +1025,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createTaskComment(insertComment: InsertTaskComment): Promise<TaskComment> {
+    // Add current timestamp for createdAt
+    const commentWithCreatedAt = {
+      ...insertComment,
+      createdAt: new Date()
+    };
+    
     const [comment] = await db
       .insert(taskComments)
-      .values(insertComment)
+      .values(commentWithCreatedAt)
       .returning();
     return comment;
   }
@@ -1049,9 +1074,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createCommunication(insertCommunication: InsertCommunication): Promise<Communication> {
+    // Add current timestamp for sentAt
+    const communicationWithSentAt = {
+      ...insertCommunication,
+      sentAt: new Date()
+    };
+    
     const [communication] = await db
       .insert(communications)
-      .values(insertCommunication)
+      .values(communicationWithSentAt)
       .returning();
     return communication;
   }
@@ -1070,9 +1101,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createCommunicationRecipient(insertRecipient: InsertCommunicationRecipient): Promise<CommunicationRecipient> {
+    // Add null for readAt if not provided (since it's nullable)
+    const recipientWithReadAt = {
+      ...insertRecipient,
+      readAt: null
+    };
+    
     const [recipient] = await db
       .insert(communicationRecipients)
-      .values(insertRecipient)
+      .values(recipientWithReadAt)
       .returning();
     return recipient;
   }
