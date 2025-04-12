@@ -73,6 +73,15 @@ export const meetingDocuments = pgTable("meeting_documents", {
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
 });
 
+// Subjects table
+export const subjects = pgTable("subjects", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Tasks table
 export const tasks = pgTable("tasks", {
   id: serial("id").primaryKey(),
@@ -80,7 +89,15 @@ export const tasks = pgTable("tasks", {
   description: text("description").notNull(),
   deadline: timestamp("deadline").notNull(),
   status: taskStatusEnum("status").default('pending').notNull(),
-  assignedTo: integer("assigned_to").references(() => users.id).notNull(),
+  subjectId: integer("subject_id").references(() => subjects.id).notNull(),
+  // For registered users as owners
+  isRegisteredUser: boolean("is_registered_user").default(true).notNull(),
+  assignedToUserId: integer("assigned_to_user_id").references(() => users.id),
+  // For non-registered users as owners
+  ownerName: text("owner_name"),
+  ownerEmail: text("owner_email"),
+  ownerPhone: text("owner_phone"),
+  
   createdBy: integer("created_by").references(() => users.id).notNull(),
   entityId: integer("entity_id").references(() => entities.id),
   meetingId: integer("meeting_id").references(() => meetings.id),
@@ -145,6 +162,7 @@ export const insertEntitySchema = createInsertSchema(entities).omit({ id: true }
 export const insertMeetingSchema = createInsertSchema(meetings).omit({ id: true, createdAt: true });
 export const insertMeetingAttendeeSchema = createInsertSchema(meetingAttendees).omit({ id: true });
 export const insertMeetingDocumentSchema = createInsertSchema(meetingDocuments).omit({ id: true, uploadedAt: true });
+export const insertSubjectSchema = createInsertSchema(subjects).omit({ id: true, createdAt: true });
 export const insertTaskSchema = createInsertSchema(tasks).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertTaskCommentSchema = createInsertSchema(taskComments).omit({ id: true, createdAt: true });
 export const insertCommunicationSchema = createInsertSchema(communications).omit({ id: true, sentAt: true });
@@ -167,6 +185,9 @@ export type MeetingAttendee = typeof meetingAttendees.$inferSelect;
 
 export type InsertMeetingDocument = z.infer<typeof insertMeetingDocumentSchema>;
 export type MeetingDocument = typeof meetingDocuments.$inferSelect;
+
+export type InsertSubject = z.infer<typeof insertSubjectSchema>;
+export type Subject = typeof subjects.$inferSelect;
 
 export type InsertTask = z.infer<typeof insertTaskSchema>;
 export type Task = typeof tasks.$inferSelect;
@@ -201,8 +222,9 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   createdMeetings: many(meetings),
   meetingAttendees: many(meetingAttendees),
   uploadedDocuments: many(meetingDocuments),
-  assignedTasks: many(tasks, { relationName: "assignedTo" }),
+  assignedTasks: many(tasks, { relationName: "assignedUser" }),
   createdTasks: many(tasks, { relationName: "createdBy" }),
+  createdSubjects: many(subjects),
   taskComments: many(taskComments),
   sentCommunications: many(communications),
   receivedCommunications: many(communicationRecipients),
@@ -247,16 +269,28 @@ export const meetingDocumentsRelations = relations(meetingDocuments, ({ one }) =
   }),
 }));
 
-export const tasksRelations = relations(tasks, ({ one, many }) => ({
-  assignee: one(users, {
-    fields: [tasks.assignedTo],
+export const subjectsRelations = relations(subjects, ({ one, many }) => ({
+  creator: one(users, {
+    fields: [subjects.createdBy],
     references: [users.id],
-    relationName: "assignedTo",
+  }),
+  tasks: many(tasks),
+}));
+
+export const tasksRelations = relations(tasks, ({ one, many }) => ({
+  assignedUser: one(users, {
+    fields: [tasks.assignedToUserId],
+    references: [users.id],
+    relationName: "assignedUser",
   }),
   creator: one(users, {
     fields: [tasks.createdBy],
     references: [users.id],
     relationName: "createdBy",
+  }),
+  subject: one(subjects, {
+    fields: [tasks.subjectId],
+    references: [subjects.id],
   }),
   entity: one(entities, {
     fields: [tasks.entityId],
