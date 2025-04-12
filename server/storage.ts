@@ -4,6 +4,7 @@ import {
   Meeting, InsertMeeting,
   MeetingAttendee, InsertMeetingAttendee,
   MeetingDocument, InsertMeetingDocument,
+  Subject, InsertSubject,
   Task, InsertTask,
   TaskComment, InsertTaskComment,
   Communication, InsertCommunication,
@@ -15,7 +16,7 @@ import {
   TaskWithAssignee,
   CommunicationWithRecipients,
   UserWithBadges,
-  users, entities, meetings, meetingAttendees, meetingDocuments, tasks, taskComments, 
+  users, entities, meetings, meetingAttendees, meetingDocuments, subjects, tasks, taskComments, 
   communications, communicationRecipients, achievementBadges, userBadges
 } from "@shared/schema";
 import session from "express-session";
@@ -66,13 +67,21 @@ export interface IStorage {
   createMeetingDocument(document: InsertMeetingDocument): Promise<MeetingDocument>;
   getMeetingDocumentsByMeetingId(meetingId: number): Promise<MeetingDocument[]>;
   
+  // Subjects
+  getSubject(id: number): Promise<Subject | undefined>;
+  createSubject(subject: InsertSubject): Promise<Subject>;
+  updateSubject(id: number, subjectData: Partial<Subject>): Promise<Subject | undefined>;
+  getAllSubjects(): Promise<Subject[]>;
+  getSubjectsByCreator(userId: number): Promise<Subject[]>;
+  
   // Tasks
   getTask(id: number): Promise<Task | undefined>;
   getTaskWithAssignee(id: number): Promise<TaskWithAssignee | undefined>;
   createTask(task: InsertTask): Promise<Task>;
   updateTask(id: number, taskData: Partial<Task>): Promise<Task | undefined>;
   getAllTasks(): Promise<Task[]>;
-  getTasksByAssignee(userId: number): Promise<Task[]>;
+  getTasksByUserId(userId: number): Promise<Task[]>;
+  getTasksBySubject(subjectId: number): Promise<Task[]>;
   getTasksByMeeting(meetingId: number): Promise<Task[]>;
   getTasksByEntity(entityId: number): Promise<Task[]>;
   
@@ -119,6 +128,7 @@ export class MemStorage implements IStorage {
   private meetings: Map<number, Meeting>;
   private meetingAttendees: Map<number, MeetingAttendee>;
   private meetingDocuments: Map<number, MeetingDocument>;
+  private subjects: Map<number, Subject>;
   private tasks: Map<number, Task>;
   private taskComments: Map<number, TaskComment>;
   private communications: Map<number, Communication>;
@@ -130,6 +140,7 @@ export class MemStorage implements IStorage {
   currentMeetingId: number;
   currentMeetingAttendeeId: number;
   currentMeetingDocumentId: number;
+  currentSubjectId: number;
   currentTaskId: number;
   currentTaskCommentId: number;
   currentCommunicationId: number;
@@ -145,6 +156,7 @@ export class MemStorage implements IStorage {
     this.meetings = new Map();
     this.meetingAttendees = new Map();
     this.meetingDocuments = new Map();
+    this.subjects = new Map();
     this.tasks = new Map();
     this.taskComments = new Map();
     this.communications = new Map();
@@ -158,6 +170,7 @@ export class MemStorage implements IStorage {
     this.currentMeetingId = 1;
     this.currentMeetingAttendeeId = 1;
     this.currentMeetingDocumentId = 1;
+    this.currentSubjectId = 1;
     this.currentTaskId = 1;
     this.currentTaskCommentId = 1;
     this.currentCommunicationId = 1;
