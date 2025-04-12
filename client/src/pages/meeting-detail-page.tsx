@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useMemo } from "react";
 
 export default function MeetingDetailPage() {
   const [, setLocation] = useLocation();
@@ -28,6 +29,22 @@ export default function MeetingDetailPage() {
     queryKey: [`/api/tasks/meeting/${id}`],
     enabled: !!id
   });
+  
+  // Fetch all users to display proper names
+  const { data: users = [] } = useQuery({
+    queryKey: ['/api/users'],
+  });
+  
+  // Create a lookup map for user information
+  const userMap = useMemo(() => {
+    const map = new Map();
+    if (users && Array.isArray(users)) {
+      users.forEach((user: any) => {
+        map.set(user.id, user);
+      });
+    }
+    return map;
+  }, [users]);
   
   // Loading state
   if (isLoading) {
@@ -176,15 +193,23 @@ export default function MeetingDetailPage() {
           <li key={attendee.id} className="flex items-center p-2 rounded-md bg-neutral-50">
             <Avatar className="h-8 w-8 mr-3">
               <AvatarFallback className="bg-primary-100 text-primary">
-                {attendee.user?.fullName?.charAt(0) || 'U'}
+                {attendee.user?.fullName?.charAt(0) || 
+                 userMap.get(attendee.userId)?.fullName?.charAt(0) || 
+                 userMap.get(attendee.userId)?.username?.charAt(0) || 
+                 'U'}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <p className="text-sm font-medium text-neutral-800">
-                {attendee.user?.fullName || `User ID: ${attendee.userId}`}
+                {attendee.user?.fullName || 
+                 (userMap.get(attendee.userId)?.fullName || 
+                  userMap.get(attendee.userId)?.username || 
+                  `User ID: ${attendee.userId}`)}
               </p>
               <p className="text-xs text-neutral-500">
-                {attendee.user?.position || 'No position'}
+                {attendee.user?.position || 
+                 userMap.get(attendee.userId)?.position || 
+                 'No position'}
               </p>
             </div>
             <Badge
