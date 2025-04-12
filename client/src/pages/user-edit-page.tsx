@@ -82,7 +82,15 @@ export default function UserEditPage() {
     mutationFn: async (data: UserFormValues) => {
       setIsSubmitting(true);
       try {
-        const response = await apiRequest("PATCH", `/api/users/${id}`, data);
+        const response = await apiRequest("PATCH", `/api/users/${id}`, {
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone || '',
+        position: data.position || '',
+        role: data.role,
+        bio: data.bio || '',
+        entityId: data.entityId ? parseInt(data.entityId) : null
+      });
         const updatedUser = await response.json();
         return updatedUser;
       } finally {

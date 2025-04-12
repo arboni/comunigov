@@ -204,6 +204,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
+  
+  // Get a specific user by ID
+  app.get("/api/users/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Update a specific user
+  app.patch("/api/users/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Only allow users to update their own profile or master implementers to update anyone
+      if (req.user!.id !== userId && req.user!.role !== 'master_implementer') {
+        return res.status(403).json({ message: "Forbidden: You can only update your own profile" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Update the user
+      const updatedUser = await storage.updateUser(userId, req.body);
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Get a user's entity
+  app.get("/api/users/:id/entity", isAuthenticated, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      if (!user.entityId) {
+        return res.status(404).json({ message: "User does not belong to an entity" });
+      }
+      
+      const entity = await storage.getEntity(user.entityId);
+      if (!entity) {
+        return res.status(404).json({ message: "Entity not found" });
+      }
+      
+      res.json(entity);
+    } catch (error) {
+      next(error);
+    }
+  });
 
   // Entity Management
   app.get("/api/entities", isAuthenticated, async (req, res, next) => {
