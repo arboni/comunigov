@@ -252,7 +252,7 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
                               </SelectItem>
                             ))
                           ) : (
-                            <SelectItem value="" disabled>
+                            <SelectItem value="no-entities-available" disabled>
                               No entities available
                             </SelectItem>
                           )}
