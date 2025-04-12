@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation, Link } from "wouter";
-import { ArrowLeft, Building, User, Mail, Phone, Globe, MapPin } from "lucide-react";
+import { ArrowLeft, Building, User, Mail, Phone, Globe, MapPin, PlusCircle, PenSquare, UserPlus } from "lucide-react";
 import DashboardLayout from "@/components/layouts/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,13 +8,19 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useState } from "react";
 import EditEntityDialog from "@/components/dialogs/edit-entity-dialog";
+import CreateMemberDialog from "@/components/dialogs/create-member-dialog";
+import EditMemberDialog from "@/components/dialogs/edit-member-dialog";
 
 export default function EntityDetailPage() {
   const [, setLocation] = useLocation();
   const { id } = useParams<{ id: string }>();
   const [editEntityOpen, setEditEntityOpen] = useState(false);
+  const [createMemberOpen, setCreateMemberOpen] = useState(false);
+  const [editMemberOpen, setEditMemberOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
   
   // Get the current user
   const { data: user } = useQuery({
