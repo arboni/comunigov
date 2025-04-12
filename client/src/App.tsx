@@ -67,9 +67,9 @@ function Router() {
       <ProtectedRoute path="/meeting/:id" component={MeetingDetailPage} />
       <ProtectedRoute path="/entity/:id" component={EntityDetailPage} />
       <ProtectedRoute path="/tasks" component={TasksPage} />
-      <ProtectedRoute path="/users" component={UsersPage} />
-      <ProtectedRoute path="/users/:id" component={UserDetailPage} />
       <ProtectedRoute path="/users/:id/edit" component={UserEditPage} />
+      <ProtectedRoute path="/users/:id" component={UserDetailPage} />
+      <ProtectedRoute path="/users" component={UsersPage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <Route path="/auth" component={SimpleAuthPage} />
       <Route component={NotFound} />
