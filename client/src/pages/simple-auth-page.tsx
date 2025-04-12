@@ -169,6 +169,11 @@ export default function SimpleAuthPage() {
               <CardDescription>
                 Please login to your account or register as a new user
               </CardDescription>
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md text-blue-800 text-sm">
+                <p className="font-medium">Default Admin Credentials:</p>
+                <p>Username: <span className="font-mono">admin</span></p>
+                <p>Password: <span className="font-mono">admin123</span></p>
+              </div>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="login" className="w-full">

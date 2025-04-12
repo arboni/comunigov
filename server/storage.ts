@@ -11,12 +11,18 @@ import {
   UserWithEntity,
   MeetingWithAttendees,
   TaskWithAssignee,
-  CommunicationWithRecipients
+  CommunicationWithRecipients,
+  users, entities, meetings, meetingAttendees, meetingDocuments, tasks, taskComments, communications, communicationRecipients
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import { db } from "./db";
+import { eq, and, isNull, or, gt, desc, sql } from "drizzle-orm";
+import connectPg from "connect-pg-simple";
+import { pool } from "./db";
 
 const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
   // Users
@@ -84,7 +90,7 @@ export interface IStorage {
   getCommunicationRecipientsByCommunicationId(communicationId: number): Promise<CommunicationRecipient[]>;
   
   // Session Store
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Fix type issue with SessionStore
 }
 
 export class MemStorage implements IStorage {
@@ -111,7 +117,7 @@ export class MemStorage implements IStorage {
   currentCommunicationRecipientId: number;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Use any type for sessionStore
 
   constructor() {
     // Initialize data stores
@@ -450,4 +456,413 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  sessionStore: any; // Use any type for sessionStore
+
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({ 
+      pool, 
+      createTableIfMissing: true 
+    });
+  }
+
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async getUserWithEntity(id: number): Promise<UserWithEntity | undefined> {
+    const [user] = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        password: users.password,
+        email: users.email,
+        fullName: users.fullName,
+        role: users.role,
+        phone: users.phone,
+        whatsapp: users.whatsapp,
+        telegram: users.telegram,
+        position: users.position,
+        entityId: users.entityId,
+        entity: entities
+      })
+      .from(users)
+      .leftJoin(entities, eq(users.entityId, entities.id))
+      .where(eq(users.id, id));
+
+    if (!user) return undefined;
+    return user as unknown as UserWithEntity;
+  }
+
+  async getUsersByEntityId(entityId: number): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.entityId, entityId));
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    console.log("DatabaseStorage.createUser called with:", insertUser);
+    
+    // Ensure all required fields are present
+    const userToInsert = {
+      username: insertUser.username,
+      password: insertUser.password,
+      email: insertUser.email,
+      fullName: insertUser.fullName,
+      role: insertUser.role,
+      phone: insertUser.phone ?? null,
+      whatsapp: insertUser.whatsapp ?? null, 
+      telegram: insertUser.telegram ?? null,
+      position: insertUser.position ?? null,
+      entityId: insertUser.entityId ?? null
+    };
+    
+    try {
+      console.log("Inserting user:", userToInsert);
+      const [user] = await db.insert(users).values(userToInsert).returning();
+      console.log("User inserted successfully:", user);
+      return user;
+    } catch (error) {
+      console.error("Error inserting user:", error);
+      throw error;
+    }
+  }
+
+  async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser || undefined;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  // Entity methods
+  async getEntity(id: number): Promise<Entity | undefined> {
+    const [entity] = await db.select().from(entities).where(eq(entities.id, id));
+    return entity || undefined;
+  }
+
+  async getEntityByName(name: string): Promise<Entity | undefined> {
+    const [entity] = await db.select().from(entities).where(eq(entities.name, name));
+    return entity || undefined;
+  }
+
+  async createEntity(insertEntity: InsertEntity): Promise<Entity> {
+    const [entity] = await db.insert(entities).values(insertEntity).returning();
+    return entity;
+  }
+
+  async updateEntity(id: number, entityData: Partial<Entity>): Promise<Entity | undefined> {
+    const [updatedEntity] = await db
+      .update(entities)
+      .set(entityData)
+      .where(eq(entities.id, id))
+      .returning();
+    return updatedEntity || undefined;
+  }
+
+  async getAllEntities(): Promise<Entity[]> {
+    return await db.select().from(entities);
+  }
+
+  // Meeting methods
+  async getMeeting(id: number): Promise<Meeting | undefined> {
+    const [meeting] = await db.select().from(meetings).where(eq(meetings.id, id));
+    return meeting || undefined;
+  }
+
+  async getMeetingWithAttendees(id: number): Promise<MeetingWithAttendees | undefined> {
+    const [meeting] = await db.select().from(meetings).where(eq(meetings.id, id));
+    if (!meeting) return undefined;
+
+    const attendees = await db.select()
+      .from(meetingAttendees)
+      .where(eq(meetingAttendees.meetingId, id));
+    
+    return {
+      ...meeting,
+      attendees
+    };
+  }
+
+  async createMeeting(insertMeeting: InsertMeeting): Promise<Meeting> {
+    const [meeting] = await db.insert(meetings).values(insertMeeting).returning();
+    return meeting;
+  }
+
+  async updateMeeting(id: number, meetingData: Partial<Meeting>): Promise<Meeting | undefined> {
+    const [updatedMeeting] = await db
+      .update(meetings)
+      .set(meetingData)
+      .where(eq(meetings.id, id))
+      .returning();
+    return updatedMeeting || undefined;
+  }
+
+  async getAllMeetings(): Promise<Meeting[]> {
+    return await db.select().from(meetings);
+  }
+
+  async getUpcomingMeetings(): Promise<Meeting[]> {
+    const now = new Date();
+    return await db
+      .select()
+      .from(meetings)
+      .where(gt(meetings.date, now))
+      .orderBy(meetings.date);
+  }
+
+  // Meeting Attendee methods
+  async getMeetingAttendee(id: number): Promise<MeetingAttendee | undefined> {
+    const [attendee] = await db
+      .select()
+      .from(meetingAttendees)
+      .where(eq(meetingAttendees.id, id));
+    return attendee || undefined;
+  }
+
+  async getMeetingAttendeeByMeetingAndUser(meetingId: number, userId: number): Promise<MeetingAttendee | undefined> {
+    const [attendee] = await db
+      .select()
+      .from(meetingAttendees)
+      .where(
+        and(
+          eq(meetingAttendees.meetingId, meetingId),
+          eq(meetingAttendees.userId, userId)
+        )
+      );
+    return attendee || undefined;
+  }
+
+  async createMeetingAttendee(insertAttendee: InsertMeetingAttendee): Promise<MeetingAttendee> {
+    const [attendee] = await db
+      .insert(meetingAttendees)
+      .values(insertAttendee)
+      .returning();
+    return attendee;
+  }
+
+  async updateMeetingAttendee(id: number, attendeeData: Partial<MeetingAttendee>): Promise<MeetingAttendee | undefined> {
+    const [updatedAttendee] = await db
+      .update(meetingAttendees)
+      .set(attendeeData)
+      .where(eq(meetingAttendees.id, id))
+      .returning();
+    return updatedAttendee || undefined;
+  }
+
+  async getMeetingAttendeesByMeetingId(meetingId: number): Promise<MeetingAttendee[]> {
+    return await db
+      .select()
+      .from(meetingAttendees)
+      .where(eq(meetingAttendees.meetingId, meetingId));
+  }
+
+  // Meeting Document methods
+  async getMeetingDocument(id: number): Promise<MeetingDocument | undefined> {
+    const [document] = await db
+      .select()
+      .from(meetingDocuments)
+      .where(eq(meetingDocuments.id, id));
+    return document || undefined;
+  }
+
+  async createMeetingDocument(insertDocument: InsertMeetingDocument): Promise<MeetingDocument> {
+    const [document] = await db
+      .insert(meetingDocuments)
+      .values(insertDocument)
+      .returning();
+    return document;
+  }
+
+  async getMeetingDocumentsByMeetingId(meetingId: number): Promise<MeetingDocument[]> {
+    return await db
+      .select()
+      .from(meetingDocuments)
+      .where(eq(meetingDocuments.meetingId, meetingId));
+  }
+
+  // Task methods
+  async getTask(id: number): Promise<Task | undefined> {
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
+    return task || undefined;
+  }
+
+  async getTaskWithAssignee(id: number): Promise<TaskWithAssignee | undefined> {
+    const [task] = await db
+      .select({
+        id: tasks.id,
+        title: tasks.title,
+        description: tasks.description,
+        deadline: tasks.deadline,
+        status: tasks.status,
+        assignedTo: tasks.assignedTo,
+        createdBy: tasks.createdBy,
+        entityId: tasks.entityId,
+        meetingId: tasks.meetingId,
+        createdAt: tasks.createdAt,
+        updatedAt: tasks.updatedAt,
+        assignee: users
+      })
+      .from(tasks)
+      .leftJoin(users, eq(tasks.assignedTo, users.id))
+      .where(eq(tasks.id, id));
+
+    if (!task) return undefined;
+    return task as unknown as TaskWithAssignee;
+  }
+
+  async createTask(insertTask: InsertTask): Promise<Task> {
+    const [task] = await db.insert(tasks).values(insertTask).returning();
+    return task;
+  }
+
+  async updateTask(id: number, taskData: Partial<Task>): Promise<Task | undefined> {
+    const [updatedTask] = await db
+      .update(tasks)
+      .set(taskData)
+      .where(eq(tasks.id, id))
+      .returning();
+    return updatedTask || undefined;
+  }
+
+  async getAllTasks(): Promise<Task[]> {
+    return await db.select().from(tasks);
+  }
+
+  async getTasksByAssignee(userId: number): Promise<Task[]> {
+    return await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.assignedTo, userId));
+  }
+
+  async getTasksByMeeting(meetingId: number): Promise<Task[]> {
+    return await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.meetingId, meetingId));
+  }
+
+  async getTasksByEntity(entityId: number): Promise<Task[]> {
+    return await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.entityId, entityId));
+  }
+
+  // Task Comment methods
+  async getTaskComment(id: number): Promise<TaskComment | undefined> {
+    const [comment] = await db
+      .select()
+      .from(taskComments)
+      .where(eq(taskComments.id, id));
+    return comment || undefined;
+  }
+
+  async createTaskComment(insertComment: InsertTaskComment): Promise<TaskComment> {
+    const [comment] = await db
+      .insert(taskComments)
+      .values(insertComment)
+      .returning();
+    return comment;
+  }
+
+  async getTaskCommentsByTaskId(taskId: number): Promise<TaskComment[]> {
+    return await db
+      .select()
+      .from(taskComments)
+      .where(eq(taskComments.taskId, taskId));
+  }
+
+  // Communication methods
+  async getCommunication(id: number): Promise<Communication | undefined> {
+    const [communication] = await db
+      .select()
+      .from(communications)
+      .where(eq(communications.id, id));
+    return communication || undefined;
+  }
+
+  async getCommunicationWithRecipients(id: number): Promise<CommunicationWithRecipients | undefined> {
+    const [communication] = await db
+      .select()
+      .from(communications)
+      .where(eq(communications.id, id));
+
+    if (!communication) return undefined;
+
+    const recipients = await db
+      .select()
+      .from(communicationRecipients)
+      .where(eq(communicationRecipients.communicationId, id));
+
+    return {
+      ...communication,
+      recipients
+    };
+  }
+
+  async createCommunication(insertCommunication: InsertCommunication): Promise<Communication> {
+    const [communication] = await db
+      .insert(communications)
+      .values(insertCommunication)
+      .returning();
+    return communication;
+  }
+
+  async getAllCommunications(): Promise<Communication[]> {
+    return await db.select().from(communications);
+  }
+
+  // Communication Recipient methods
+  async getCommunicationRecipient(id: number): Promise<CommunicationRecipient | undefined> {
+    const [recipient] = await db
+      .select()
+      .from(communicationRecipients)
+      .where(eq(communicationRecipients.id, id));
+    return recipient || undefined;
+  }
+
+  async createCommunicationRecipient(insertRecipient: InsertCommunicationRecipient): Promise<CommunicationRecipient> {
+    const [recipient] = await db
+      .insert(communicationRecipients)
+      .values(insertRecipient)
+      .returning();
+    return recipient;
+  }
+
+  async updateCommunicationRecipient(id: number, recipientData: Partial<CommunicationRecipient>): Promise<CommunicationRecipient | undefined> {
+    const [updatedRecipient] = await db
+      .update(communicationRecipients)
+      .set(recipientData)
+      .where(eq(communicationRecipients.id, id))
+      .returning();
+    return updatedRecipient || undefined;
+  }
+
+  async getCommunicationRecipientsByCommunicationId(communicationId: number): Promise<CommunicationRecipient[]> {
+    return await db
+      .select()
+      .from(communicationRecipients)
+      .where(eq(communicationRecipients.communicationId, communicationId));
+  }
+}
+
+// Switch from MemStorage to DatabaseStorage
+export const storage = new DatabaseStorage();

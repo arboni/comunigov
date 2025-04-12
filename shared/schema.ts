@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, boolean, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -160,6 +161,116 @@ export type LoginCredentials = {
   username: string;
   password: string;
 };
+
+// Define relations
+export const usersRelations = relations(users, ({ one, many }) => ({
+  entity: one(entities, {
+    fields: [users.entityId],
+    references: [entities.id],
+  }),
+  createdMeetings: many(meetings),
+  meetingAttendees: many(meetingAttendees),
+  uploadedDocuments: many(meetingDocuments),
+  assignedTasks: many(tasks, { relationName: "assignedTo" }),
+  createdTasks: many(tasks, { relationName: "createdBy" }),
+  taskComments: many(taskComments),
+  sentCommunications: many(communications),
+  receivedCommunications: many(communicationRecipients),
+}));
+
+export const entitiesRelations = relations(entities, ({ many }) => ({
+  users: many(users),
+  tasks: many(tasks),
+  communicationRecipients: many(communicationRecipients),
+}));
+
+export const meetingsRelations = relations(meetings, ({ one, many }) => ({
+  creator: one(users, {
+    fields: [meetings.createdBy],
+    references: [users.id],
+  }),
+  attendees: many(meetingAttendees),
+  documents: many(meetingDocuments),
+  tasks: many(tasks),
+}));
+
+export const meetingAttendeesRelations = relations(meetingAttendees, ({ one }) => ({
+  meeting: one(meetings, {
+    fields: [meetingAttendees.meetingId],
+    references: [meetings.id],
+  }),
+  user: one(users, {
+    fields: [meetingAttendees.userId],
+    references: [users.id],
+  }),
+}));
+
+export const meetingDocumentsRelations = relations(meetingDocuments, ({ one }) => ({
+  meeting: one(meetings, {
+    fields: [meetingDocuments.meetingId],
+    references: [meetings.id],
+  }),
+  uploader: one(users, {
+    fields: [meetingDocuments.uploadedBy],
+    references: [users.id],
+  }),
+}));
+
+export const tasksRelations = relations(tasks, ({ one, many }) => ({
+  assignee: one(users, {
+    fields: [tasks.assignedTo],
+    references: [users.id],
+    relationName: "assignedTo",
+  }),
+  creator: one(users, {
+    fields: [tasks.createdBy],
+    references: [users.id],
+    relationName: "createdBy",
+  }),
+  entity: one(entities, {
+    fields: [tasks.entityId],
+    references: [entities.id],
+  }),
+  meeting: one(meetings, {
+    fields: [tasks.meetingId],
+    references: [meetings.id],
+  }),
+  comments: many(taskComments),
+}));
+
+export const taskCommentsRelations = relations(taskComments, ({ one }) => ({
+  task: one(tasks, {
+    fields: [taskComments.taskId],
+    references: [tasks.id],
+  }),
+  user: one(users, {
+    fields: [taskComments.userId],
+    references: [users.id],
+  }),
+}));
+
+export const communicationsRelations = relations(communications, ({ one, many }) => ({
+  sender: one(users, {
+    fields: [communications.sentBy],
+    references: [users.id],
+  }),
+  recipients: many(communicationRecipients),
+}));
+
+export const communicationRecipientsRelations = relations(communicationRecipients, ({ one }) => ({
+  communication: one(communications, {
+    fields: [communicationRecipients.communicationId],
+    references: [communications.id],
+  }),
+  user: one(users, {
+    fields: [communicationRecipients.userId],
+    references: [users.id],
+  }),
+  entity: one(entities, {
+    fields: [communicationRecipients.entityId],
+    references: [entities.id],
+  }),
+}));
 
 // Utility types
 export type UserWithEntity = User & { entity?: Entity };

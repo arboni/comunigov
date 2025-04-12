@@ -75,32 +75,43 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
+      console.log("Register request received:", req.body);
+      
       // Check if user already exists
       const existingUser = await storage.getUserByUsername(req.body.username);
+      console.log("Existing user check:", existingUser);
       if (existingUser) {
         return res.status(400).send("Username already exists");
       }
 
       const existingEmail = await storage.getUserByEmail(req.body.email);
+      console.log("Existing email check:", existingEmail);
       if (existingEmail) {
         return res.status(400).send("Email already exists");
       }
 
       // Create new user with hashed password
       const hashedPassword = await hashPassword(req.body.password);
+      console.log("Hashed password created, creating user...");
       const user = await storage.createUser({
         ...req.body,
         password: hashedPassword,
       });
+      console.log("User created:", user);
 
       // Log the user in
       req.login(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          console.error("Login error:", err);
+          return next(err);
+        }
         // Remove password from response
         const { password, ...userWithoutPassword } = user;
+        console.log("User logged in and responding with:", userWithoutPassword);
         res.status(201).json(userWithoutPassword);
       });
     } catch (error) {
+      console.error("Registration error:", error);
       next(error);
     }
   });
