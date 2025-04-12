@@ -1,12 +1,17 @@
-import { Building, User, Mail, Users, PenSquare } from "lucide-react";
+import { Building, User, Mail, Users, PenSquare, Eye } from "lucide-react";
 import { Entity } from "@shared/schema";
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
+import { useState } from "react";
+import EditEntityDialog from "@/components/dialogs/edit-entity-dialog";
 
 interface EntityCardProps {
   entity: Entity;
 }
 
 export default function EntityCard({ entity }: EntityCardProps) {
+  const [editEntityOpen, setEditEntityOpen] = useState(false);
+
   // Function to format the entity type for display
   const formatEntityType = (type: string) => {
     return type
@@ -50,21 +55,33 @@ export default function EntityCard({ entity }: EntityCardProps) {
         </div>
       </div>
       <div className="bg-neutral-50 px-5 py-3 flex justify-end">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="text-primary hover:text-primary-600 mr-4"
-        >
-          View Details
-        </Button>
+        <Link href={`/entity/${entity.id}`}>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-primary hover:text-primary-600 mr-4 flex items-center"
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            View Details
+          </Button>
+        </Link>
         <Button 
           variant="ghost" 
           size="icon" 
           className="h-8 w-8 text-neutral-500 hover:text-neutral-600"
+          onClick={() => setEditEntityOpen(true)}
         >
           <PenSquare className="h-4 w-4" />
         </Button>
       </div>
+      
+      {/* Edit Entity Dialog */}
+      <EditEntityDialog 
+        open={editEntityOpen} 
+        onOpenChange={setEditEntityOpen} 
+        entityId={entity.id}
+        entity={entity}
+      />
     </div>
   );
 }

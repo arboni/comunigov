@@ -10,6 +10,7 @@ import EntitiesPage from "@/pages/entities-page";
 import CommunicationsPage from "@/pages/communications-page";
 import MeetingsPage from "@/pages/meetings-page";
 import MeetingDetailPage from "@/pages/meeting-detail-page";
+import EntityDetailPage from "@/pages/entity-detail-page";
 import TasksPage from "@/pages/tasks-page";
 import UsersPage from "@/pages/users-page";
 import SettingsPage from "@/pages/settings-page";
@@ -62,6 +63,7 @@ function Router() {
       <ProtectedRoute path="/communications" component={CommunicationsPage} />
       <ProtectedRoute path="/meetings" component={MeetingsPage} />
       <ProtectedRoute path="/meeting/:id" component={MeetingDetailPage} />
+      <ProtectedRoute path="/entity/:id" component={EntityDetailPage} />
       <ProtectedRoute path="/tasks" component={TasksPage} />
       <ProtectedRoute path="/users" component={UsersPage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />
