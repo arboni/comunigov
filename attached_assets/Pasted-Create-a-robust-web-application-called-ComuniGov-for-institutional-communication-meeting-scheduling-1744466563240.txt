@@ -1,0 +1,90 @@
+Create a robust web application called ComuniGov for institutional communication, meeting scheduling and task management, aimed at city halls and public environments. The following are the main requirements and functionalities that the system must have:
+
+ 1. Hierarchical Registration Structure
+A master user implementer makes the initial registration of:
+
+Secretariats, administrative units, external entities (such as Associations, Councils, Government Agencies).
+
+For each entity: name, type, name of the person in charge, position and email.
+
+The person in charge receives an email with a secure link to:
+
+Complete institutional data (address, social networks, etc.).
+
+Register the members of the entity (name, email, position).
+
+Each member completes their own data (telephone, WhatsApp, Telegram, etc.).
+
+Registrations must allow importing via .csv file and the use of tags for subjects and areas of responsibility.
+
+📨 2. Communication Module
+Sending messages via:
+
+Email
+
+WhatsApp (third-party API such as Z-API)
+
+Telegram (via bot)
+
+Internal system notification
+
+Sending can be individual or group, with filters by:
+
+Subject tag
+
+Name
+
+Position
+
+Entity
+
+Panel for confirming receipt and reading of messages.
+
+️ 3. Meeting Module
+Create a meeting with:
+
+Name, agenda, date, time, attachments and linked subject
+
+Smart filter for selecting guests
+
+Automatic sending of invitations through integrated channels
+
+Attendance confirmation panel
+
+After the meeting:
+
+Upload event images
+
+Upload minutes and documents (PDF, Word)
+
+Visual gallery by event with captions
+
+Specific tab for video or audio recordings
+
+ 4. Task Manager
+Tasks linked to:
+
+Meetings
+
+Entities or subjects
+
+Each task must contain:
+
+Title, description, deadline, person responsible, status, comments
+
+⚙️ Suggested technical requirements
+Frontend: React.js with Tailwind CSS
+
+Backend: Node.js + Express
+
+Database: PostgreSQL or MongoDB
+
+Authentication: JWT
+
+File storage: AWS S3 or Firebase Storage
+
+Sending emails: Nodemailer (SMTP)
+
+Integration with WhatsApp and Telegram via API
+
+Generate the initial structure of the project with data models, authentication, entity registration, sending messages and meeting system, with a focus on modularity and scalability.
