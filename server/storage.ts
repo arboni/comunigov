@@ -583,6 +583,118 @@ export class DatabaseStorage implements IStorage {
       createTableIfMissing: true 
     });
   }
+  
+  // Achievement Badges methods
+  async getAchievementBadge(id: number): Promise<AchievementBadge | undefined> {
+    const [badge] = await db
+      .select()
+      .from(achievementBadges)
+      .where(eq(achievementBadges.id, id));
+    return badge || undefined;
+  }
+
+  async createAchievementBadge(badge: InsertAchievementBadge): Promise<AchievementBadge> {
+    const [newBadge] = await db
+      .insert(achievementBadges)
+      .values(badge)
+      .returning();
+    return newBadge;
+  }
+
+  async updateAchievementBadge(id: number, badgeData: Partial<AchievementBadge>): Promise<AchievementBadge | undefined> {
+    const [updatedBadge] = await db
+      .update(achievementBadges)
+      .set(badgeData)
+      .where(eq(achievementBadges.id, id))
+      .returning();
+    return updatedBadge || undefined;
+  }
+
+  async getAllAchievementBadges(): Promise<AchievementBadge[]> {
+    return await db.select().from(achievementBadges);
+  }
+
+  async getAchievementBadgesByCategory(category: string): Promise<AchievementBadge[]> {
+    return await db
+      .select()
+      .from(achievementBadges)
+      .where(eq(achievementBadges.category, category));
+  }
+
+  // User Badges methods
+  async getUserBadge(id: number): Promise<UserBadge | undefined> {
+    const [userBadge] = await db
+      .select()
+      .from(userBadges)
+      .where(eq(userBadges.id, id));
+    return userBadge || undefined;
+  }
+
+  async createUserBadge(userBadge: InsertUserBadge): Promise<UserBadge> {
+    const [newUserBadge] = await db
+      .insert(userBadges)
+      .values(userBadge)
+      .returning();
+    return newUserBadge;
+  }
+
+  async updateUserBadge(id: number, userBadgeData: Partial<UserBadge>): Promise<UserBadge | undefined> {
+    const [updatedUserBadge] = await db
+      .update(userBadges)
+      .set(userBadgeData)
+      .where(eq(userBadges.id, id))
+      .returning();
+    return updatedUserBadge || undefined;
+  }
+
+  async getUserBadgesByUserId(userId: number): Promise<(UserBadge & { badge: AchievementBadge })[]> {
+    const result = await db
+      .select({
+        id: userBadges.id,
+        userId: userBadges.userId,
+        badgeId: userBadges.badgeId,
+        earnedAt: userBadges.earnedAt,
+        featured: userBadges.featured,
+        badge: achievementBadges
+      })
+      .from(userBadges)
+      .leftJoin(achievementBadges, eq(userBadges.badgeId, achievementBadges.id))
+      .where(eq(userBadges.userId, userId));
+
+    return result as unknown as (UserBadge & { badge: AchievementBadge })[];
+  }
+
+  async getUserWithBadges(userId: number): Promise<UserWithBadges | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user) return undefined;
+
+    const badges = await this.getUserBadgesByUserId(userId);
+    
+    return {
+      ...user,
+      badges
+    };
+  }
+
+  async getFeaturedBadgesByUserId(userId: number): Promise<(UserBadge & { badge: AchievementBadge })[]> {
+    const result = await db
+      .select({
+        id: userBadges.id,
+        userId: userBadges.userId,
+        badgeId: userBadges.badgeId,
+        earnedAt: userBadges.earnedAt,
+        featured: userBadges.featured,
+        badge: achievementBadges
+      })
+      .from(userBadges)
+      .leftJoin(achievementBadges, eq(userBadges.badgeId, achievementBadges.id))
+      .where(and(
+        eq(userBadges.userId, userId),
+        eq(userBadges.featured, true)
+      ));
+
+    return result as unknown as (UserBadge & { badge: AchievementBadge })[];
+  }
 
   // User methods
   async getUser(id: number): Promise<User | undefined> {

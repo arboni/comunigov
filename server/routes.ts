@@ -9,7 +9,9 @@ import {
   insertMeetingAttendeeSchema,
   insertTaskSchema,
   insertCommunicationSchema,
-  insertCommunicationRecipientSchema
+  insertCommunicationRecipientSchema,
+  insertAchievementBadgeSchema,
+  insertUserBadgeSchema
 } from "@shared/schema";
 
 // Middleware to check authentication
@@ -426,6 +428,151 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pendingTasks
       });
     } catch (error) {
+      next(error);
+    }
+  });
+
+  // Achievement Badges
+  app.get("/api/badges", isAuthenticated, async (req, res, next) => {
+    try {
+      const category = req.query.category as string;
+      let badges;
+      
+      if (category) {
+        badges = await storage.getAchievementBadgesByCategory(category);
+      } else {
+        badges = await storage.getAllAchievementBadges();
+      }
+      
+      res.json(badges);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/badges/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const badge = await storage.getAchievementBadge(id);
+      
+      if (!badge) {
+        return res.status(404).json({ message: "Badge not found" });
+      }
+      
+      res.json(badge);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/badges", isMasterImplementer, async (req, res, next) => {
+    try {
+      const validatedData = insertAchievementBadgeSchema.parse(req.body);
+      const badge = await storage.createAchievementBadge(validatedData);
+      
+      res.status(201).json(badge);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      next(error);
+    }
+  });
+
+  app.put("/api/badges/:id", isMasterImplementer, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertAchievementBadgeSchema.partial().parse(req.body);
+      const updatedBadge = await storage.updateAchievementBadge(id, validatedData);
+      
+      if (!updatedBadge) {
+        return res.status(404).json({ message: "Badge not found" });
+      }
+      
+      res.json(updatedBadge);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      next(error);
+    }
+  });
+
+  // User Badges
+  app.get("/api/users/:userId/badges", isAuthenticated, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // Only allow users to view their own badges (or master implementers to view anyone's)
+      if (req.user!.id !== userId && req.user!.role !== 'master_implementer') {
+        return res.status(403).json({ message: "Forbidden: You can only view your own badges" });
+      }
+      
+      const badges = await storage.getUserBadgesByUserId(userId);
+      res.json(badges);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/users/:userId/featured-badges", isAuthenticated, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const badges = await storage.getFeaturedBadgesByUserId(userId);
+      res.json(badges);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/users/:userId/badges", isMasterImplementer, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const validatedData = insertUserBadgeSchema.parse({
+        ...req.body,
+        userId
+      });
+      
+      const userBadge = await storage.createUserBadge(validatedData);
+      res.status(201).json(userBadge);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      next(error);
+    }
+  });
+
+  app.put("/api/user-badges/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Get the badge first to check user permissions
+      const userBadge = await storage.getUserBadge(id);
+      
+      if (!userBadge) {
+        return res.status(404).json({ message: "User badge not found" });
+      }
+      
+      // Only allow users to update their own badges (featured status) or master implementers to update any badge
+      if (req.user!.id !== userBadge.userId && req.user!.role !== 'master_implementer') {
+        return res.status(403).json({ message: "Forbidden: You can only update your own badges" });
+      }
+      
+      // Regular users can only update the 'featured' status
+      let validatedData;
+      if (req.user!.role !== 'master_implementer') {
+        validatedData = { featured: req.body.featured };
+      } else {
+        validatedData = insertUserBadgeSchema.partial().parse(req.body);
+      }
+      
+      const updatedUserBadge = await storage.updateUserBadge(id, validatedData);
+      res.json(updatedUserBadge);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
       next(error);
     }
   });
