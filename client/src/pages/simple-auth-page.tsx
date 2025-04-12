@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Building2 } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/fixed-use-auth";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -45,6 +44,14 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function SimpleAuthPage() {
   const [, setLocation] = useLocation();
+  const { user, loginMutation, registerMutation } = useAuth();
+
+  // Redirect to dashboard if user is already logged in
+  useEffect(() => {
+    if (user) {
+      setLocation("/");
+    }
+  }, [user, setLocation]);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -65,56 +72,20 @@ export default function SimpleAuthPage() {
     },
   });
 
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginFormValues) => {
-      const res = await apiRequest("POST", "/api/login", credentials);
-      return await res.json();
-    },
-    onSuccess: (userData) => {
-      queryClient.setQueryData(["/api/user"], userData);
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${userData.fullName}!`,
-      });
-      setLocation("/");
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Login failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const registerMutation = useMutation({
-    mutationFn: async (credentials: RegisterFormValues) => {
-      const res = await apiRequest("POST", "/api/register", credentials);
-      return await res.json();
-    },
-    onSuccess: (userData) => {
-      queryClient.setQueryData(["/api/user"], userData);
-      toast({
-        title: "Registration successful",
-        description: `Welcome, ${userData.fullName}!`,
-      });
-      setLocation("/");
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Registration failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
   function onLoginSubmit(data: LoginFormValues) {
-    loginMutation.mutate(data);
+    loginMutation.mutate(data, {
+      onSuccess: () => {
+        setLocation("/");
+      }
+    });
   }
 
   function onRegisterSubmit(data: RegisterFormValues) {
-    registerMutation.mutate(data);
+    registerMutation.mutate(data, {
+      onSuccess: () => {
+        setLocation("/");
+      }
+    });
   }
 
   return (
