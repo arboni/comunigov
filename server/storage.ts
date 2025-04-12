@@ -8,11 +8,15 @@ import {
   TaskComment, InsertTaskComment,
   Communication, InsertCommunication,
   CommunicationRecipient, InsertCommunicationRecipient,
+  AchievementBadge, InsertAchievementBadge,
+  UserBadge, InsertUserBadge,
   UserWithEntity,
   MeetingWithAttendees,
   TaskWithAssignee,
   CommunicationWithRecipients,
-  users, entities, meetings, meetingAttendees, meetingDocuments, tasks, taskComments, communications, communicationRecipients
+  UserWithBadges,
+  users, entities, meetings, meetingAttendees, meetingDocuments, tasks, taskComments, 
+  communications, communicationRecipients, achievementBadges, userBadges
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -89,6 +93,21 @@ export interface IStorage {
   updateCommunicationRecipient(id: number, recipientData: Partial<CommunicationRecipient>): Promise<CommunicationRecipient | undefined>;
   getCommunicationRecipientsByCommunicationId(communicationId: number): Promise<CommunicationRecipient[]>;
   
+  // Achievement Badges
+  getAchievementBadge(id: number): Promise<AchievementBadge | undefined>;
+  createAchievementBadge(badge: InsertAchievementBadge): Promise<AchievementBadge>;
+  updateAchievementBadge(id: number, badgeData: Partial<AchievementBadge>): Promise<AchievementBadge | undefined>;
+  getAllAchievementBadges(): Promise<AchievementBadge[]>;
+  getAchievementBadgesByCategory(category: string): Promise<AchievementBadge[]>;
+  
+  // User Badges
+  getUserBadge(id: number): Promise<UserBadge | undefined>;
+  createUserBadge(userBadge: InsertUserBadge): Promise<UserBadge>;
+  updateUserBadge(id: number, userBadgeData: Partial<UserBadge>): Promise<UserBadge | undefined>;
+  getUserBadgesByUserId(userId: number): Promise<(UserBadge & { badge: AchievementBadge })[]>;
+  getUserWithBadges(userId: number): Promise<UserWithBadges | undefined>;
+  getFeaturedBadgesByUserId(userId: number): Promise<(UserBadge & { badge: AchievementBadge })[]>;
+  
   // Session Store
   sessionStore: any; // Fix type issue with SessionStore
 }
@@ -130,6 +149,8 @@ export class MemStorage implements IStorage {
     this.taskComments = new Map();
     this.communications = new Map();
     this.communicationRecipients = new Map();
+    this.achievementBadges = new Map();
+    this.userBadges = new Map();
     
     // Initialize auto-increment IDs
     this.currentUserId = 1;
@@ -141,6 +162,8 @@ export class MemStorage implements IStorage {
     this.currentTaskCommentId = 1;
     this.currentCommunicationId = 1;
     this.currentCommunicationRecipientId = 1;
+    this.currentAchievementBadgeId = 1;
+    this.currentUserBadgeId = 1;
     
     // Initialize session store
     this.sessionStore = new MemoryStore({
@@ -453,6 +476,101 @@ export class MemStorage implements IStorage {
     return Array.from(this.communicationRecipients.values()).filter(
       (recipient) => recipient.communicationId === communicationId,
     );
+  }
+
+  // Achievement badge properties
+  private achievementBadges: Map<number, AchievementBadge>;
+  private userBadges: Map<number, UserBadge>;
+  private currentAchievementBadgeId: number;
+  private currentUserBadgeId: number;
+
+  // Achievement badge methods
+  async getAchievementBadge(id: number): Promise<AchievementBadge | undefined> {
+    return this.achievementBadges.get(id);
+  }
+
+  async createAchievementBadge(badge: InsertAchievementBadge): Promise<AchievementBadge> {
+    const id = this.currentAchievementBadgeId++;
+    const newBadge: AchievementBadge = { 
+      ...badge, 
+      id,
+      createdAt: new Date()
+    };
+    this.achievementBadges.set(id, newBadge);
+    return newBadge;
+  }
+
+  async updateAchievementBadge(id: number, badgeData: Partial<AchievementBadge>): Promise<AchievementBadge | undefined> {
+    const badge = this.achievementBadges.get(id);
+    if (!badge) return undefined;
+    
+    const updatedBadge = { ...badge, ...badgeData };
+    this.achievementBadges.set(id, updatedBadge);
+    return updatedBadge;
+  }
+
+  async getAllAchievementBadges(): Promise<AchievementBadge[]> {
+    return Array.from(this.achievementBadges.values());
+  }
+
+  async getAchievementBadgesByCategory(category: string): Promise<AchievementBadge[]> {
+    return Array.from(this.achievementBadges.values()).filter(
+      (badge) => badge.category === category
+    );
+  }
+
+  // User badges methods
+  async getUserBadge(id: number): Promise<UserBadge | undefined> {
+    return this.userBadges.get(id);
+  }
+
+  async createUserBadge(userBadge: InsertUserBadge): Promise<UserBadge> {
+    const id = this.currentUserBadgeId++;
+    const newUserBadge: UserBadge = {
+      ...userBadge,
+      id,
+      earnedAt: new Date()
+    };
+    this.userBadges.set(id, newUserBadge);
+    return newUserBadge;
+  }
+
+  async updateUserBadge(id: number, userBadgeData: Partial<UserBadge>): Promise<UserBadge | undefined> {
+    const userBadge = this.userBadges.get(id);
+    if (!userBadge) return undefined;
+
+    const updatedUserBadge = { ...userBadge, ...userBadgeData };
+    this.userBadges.set(id, updatedUserBadge);
+    return updatedUserBadge;
+  }
+
+  async getUserBadgesByUserId(userId: number): Promise<(UserBadge & { badge: AchievementBadge })[]> {
+    const userBadges = Array.from(this.userBadges.values()).filter(
+      (userBadge) => userBadge.userId === userId
+    );
+
+    return userBadges.map(userBadge => {
+      const badge = this.achievementBadges.get(userBadge.badgeId);
+      if (!badge) throw new Error(`Badge with id ${userBadge.badgeId} not found`);
+      return { ...userBadge, badge };
+    });
+  }
+
+  async getUserWithBadges(userId: number): Promise<UserWithBadges | undefined> {
+    const user = this.users.get(userId);
+    if (!user) return undefined;
+
+    const badges = await this.getUserBadgesByUserId(userId);
+    
+    return {
+      ...user,
+      badges
+    };
+  }
+
+  async getFeaturedBadgesByUserId(userId: number): Promise<(UserBadge & { badge: AchievementBadge })[]> {
+    const userBadges = await this.getUserBadgesByUserId(userId);
+    return userBadges.filter(userBadge => userBadge.featured);
   }
 }
 
