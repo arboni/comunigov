@@ -8,13 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { UserCircle, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
+import { AddUserDialog } from "@/components/dialogs/add-user-dialog";
 
 export default function UsersPage() {
   const { user: currentUser } = useSimpleAuth();
   const [searchTerm, setSearchTerm] = useState("");
   
-  const { data: users, isLoading } = useQuery({
+  const { data: users, isLoading: isLoadingUsers } = useQuery({
     queryKey: ["/api/users"],
+  });
+  
+  const { data: entities, isLoading: isLoadingEntities } = useQuery({
+    queryKey: ["/api/entities"],
   });
   
   const filteredUsers = users ? users.filter((user: any) => 
@@ -56,10 +61,7 @@ export default function UsersPage() {
           <h1 className="text-3xl font-bold">Users</h1>
           
           {currentUser?.role === 'master_implementer' && (
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add New User
-            </Button>
+            <AddUserDialog entities={entities || []} />
           )}
         </div>
         
@@ -82,7 +84,7 @@ export default function UsersPage() {
           </CardHeader>
           
           <CardContent>
-            {isLoading ? (
+            {isLoadingUsers ? (
               <div className="flex justify-center items-center h-40">
                 <p className="text-muted-foreground">Loading users...</p>
               </div>
