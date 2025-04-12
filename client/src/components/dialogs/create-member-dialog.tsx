@@ -78,8 +78,8 @@ export default function CreateMemberDialog({
       const res = await apiRequest("POST", "/api/users", memberData);
       const newUser = await res.json();
       
-      // Here we would typically send an email to the new member
-      // Since we're not integrating real email, we'll just show a toast
+      // The welcome email is now automatically sent by the server
+      // through SendGrid when a new member is added
       setEmailSent(true);
       
       return newUser;
@@ -223,9 +223,9 @@ export default function CreateMemberDialog({
             />
             
             {emailSent && (
-              <div className="rounded-md bg-blue-50 p-4 text-sm text-blue-800">
-                <p>An email would be sent to the member with instructions to set their password.</p>
-                <p className="mt-1 font-medium">Note: In this demo, emails are not actually sent.</p>
+              <div className="rounded-md bg-green-50 p-4 text-sm text-green-800">
+                <p>A welcome email has been sent to the member with their temporary password and instructions.</p>
+                <p className="mt-1 font-medium">The member will need to change their password after first login.</p>
               </div>
             )}
             

@@ -81,16 +81,37 @@ export default function EditMemberDialog({
         phone: data.phone || null,
       };
       
-      // If reset password is checked, set a default password
+      // If reset password is checked, send a request to reset password
       if (data.resetPassword) {
-        updateData.password = "1234"; // Default password that will be sent to user to change
+        // Note: We don't add the password here, we'll make a separate API call
+        // to reset the password, which will trigger the email notification
         setPasswordReset(true);
       }
       
       const res = await apiRequest("PUT", `/api/users/${member.id}`, updateData);
       return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: async (updatedUser) => {
+      // If password reset was requested, make a separate API call
+      if (form.getValues("resetPassword")) {
+        try {
+          // Use the reset password API endpoint with a default password
+          await apiRequest("POST", `/api/user/${member.id}/reset-password`, {
+            newPassword: "1234" // Default password
+          });
+          
+          // Keep track of password reset for UI notification
+          setPasswordReset(true);
+        } catch (error) {
+          console.error("Failed to reset password:", error);
+          toast({
+            title: "Password reset failed",
+            description: "Member was updated but password reset failed.",
+            variant: "destructive",
+          });
+        }
+      }
+      
       // Invalidate relevant queries
       invalidateUsers();
       
@@ -98,7 +119,7 @@ export default function EditMemberDialog({
       toast({
         title: "Member updated",
         description: passwordReset 
-          ? "Member has been updated and their password has been reset." 
+          ? "Member has been updated and their password has been reset. A notification email was sent." 
           : "Member has been successfully updated.",
       });
       
@@ -235,9 +256,9 @@ export default function EditMemberDialog({
             />
             
             {passwordReset && (
-              <div className="rounded-md bg-blue-50 p-4 text-sm text-blue-800">
-                <p>An email would be sent to the member with instructions to reset their password.</p>
-                <p className="mt-1 font-medium">Note: In this demo, emails are not actually sent.</p>
+              <div className="rounded-md bg-green-50 p-4 text-sm text-green-800">
+                <p>A password reset email has been sent to the member with their temporary password.</p>
+                <p className="mt-1 font-medium">The member will need to change their password after login.</p>
               </div>
             )}
             
