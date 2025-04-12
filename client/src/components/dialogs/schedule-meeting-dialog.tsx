@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock, Users } from "lucide-react";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, invalidateMeetings, invalidateDashboardStats } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { Button } from "@/components/ui/button";
@@ -114,9 +114,9 @@ export default function ScheduleMeetingDialog({
       return await res.json();
     },
     onSuccess: (meeting) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/meetings/upcoming"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      // Invalidate relevant queries to refresh the data
+      invalidateMeetings();
+      invalidateDashboardStats();
       
       // If attendees were selected, add them to the meeting
       if (form.getValues().attendees && form.getValues().attendees.length > 0) {

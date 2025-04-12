@@ -88,13 +88,16 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
       return await res.json();
     },
     onSuccess: () => {
+      // Invalidate relevant queries to refresh the data
+      invalidateUsers();
+      invalidateDashboardStats();
+      
       toast({
         title: "User created",
         description: "The user has been created successfully",
       });
       setOpen(false);
       form.reset();
-      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
     },
     onError: (error: Error) => {
       toast({
