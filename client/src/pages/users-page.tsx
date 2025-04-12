@@ -1,33 +1,46 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { UserCircle, Plus, Search } from "lucide-react";
+import { UserCircle, Search, Eye, Pencil } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { AddUserDialog } from "@/components/dialogs/add-user-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function UsersPage() {
   const { user: currentUser } = useSimpleAuth();
   const [searchTerm, setSearchTerm] = useState("");
   
-  const { data: users, isLoading: isLoadingUsers } = useQuery({
+  // Fetch users data
+  const { data: users = [], isLoading: isLoadingUsers } = useQuery({
     queryKey: ["/api/users"],
   });
   
-  const { data: entities, isLoading: isLoadingEntities } = useQuery({
+  // Fetch entities for the add user dialog
+  const { data: entities = [], isLoading: isLoadingEntities } = useQuery({
     queryKey: ["/api/entities"],
   });
   
-  const filteredUsers = users ? users.filter((user: any) => 
-    user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.username.toLowerCase().includes(searchTerm.toLowerCase())
-  ) : [];
+  // Filter users based on search term
+  const filteredUsers = Array.isArray(users) 
+    ? users.filter((user: any) => 
+        user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.username?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : [];
   
+  // Get badge color based on role
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'master_implementer':
@@ -41,6 +54,7 @@ export default function UsersPage() {
     }
   };
   
+  // Format role name for display
   const formatRoleName = (role: string) => {
     switch (role) {
       case 'master_implementer':
@@ -61,7 +75,7 @@ export default function UsersPage() {
           <h1 className="text-3xl font-bold">Users</h1>
           
           {currentUser?.role === 'master_implementer' && (
-            <AddUserDialog entities={entities || []} />
+            <AddUserDialog entities={entities} />
           )}
         </div>
         
@@ -106,6 +120,7 @@ export default function UsersPage() {
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>Phone</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -120,6 +135,39 @@ export default function UsersPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>{user.phone || "—"}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                                    <Link href={`/users/${user.id}`}>
+                                      <Eye className="h-4 w-4" />
+                                    </Link>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>View User Details</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                                    <Link href={`/users/${user.id}/edit`}>
+                                      <Pencil className="h-4 w-4" />
+                                    </Link>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Edit User</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
