@@ -13,6 +13,8 @@ import MeetingDetailPage from "@/pages/meeting-detail-page";
 import EntityDetailPage from "@/pages/entity-detail-page";
 import TasksPage from "@/pages/tasks-page";
 import UsersPage from "@/pages/users-page";
+import UserDetailPage from "@/pages/user-detail-page";
+import UserEditPage from "@/pages/user-edit-page";
 import SettingsPage from "@/pages/settings-page";
 
 // This is a simpler implementation that doesn't rely on the auth context
@@ -66,6 +68,8 @@ function Router() {
       <ProtectedRoute path="/entity/:id" component={EntityDetailPage} />
       <ProtectedRoute path="/tasks" component={TasksPage} />
       <ProtectedRoute path="/users" component={UsersPage} />
+      <ProtectedRoute path="/users/:id" component={UserDetailPage} />
+      <ProtectedRoute path="/users/:id/edit" component={UserEditPage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <Route path="/auth" component={SimpleAuthPage} />
       <Route component={NotFound} />
