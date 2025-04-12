@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 export default function SettingsPage() {
   const { user } = useSimpleAuth();
@@ -18,6 +18,12 @@ export default function SettingsPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  
+  // States for notification preferences
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [systemNotifications, setSystemNotifications] = useState(true);
+  const [whatsappNotifications, setWhatsappNotifications] = useState(false);
+  const [telegramNotifications, setTelegramNotifications] = useState(false);
   
   const changePasswordMutation = useMutation({
     mutationFn: async (data: {
@@ -81,6 +87,41 @@ export default function SettingsPage() {
     changePasswordMutation.mutate({
       currentPassword,
       newPassword,
+    });
+  };
+  
+  // Add a mutation for saving notification preferences
+  const updateNotificationsMutation = useMutation({
+    mutationFn: async (data: {
+      emailNotifications: boolean;
+      systemNotifications: boolean;
+      whatsappNotifications: boolean;
+      telegramNotifications: boolean;
+    }) => {
+      const res = await apiRequest("PUT", `/api/user/${user?.id}/notifications`, data);
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Preferences saved",
+        description: "Your notification preferences have been updated.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to save preferences",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  const handleSaveNotifications = () => {
+    updateNotificationsMutation.mutate({
+      emailNotifications,
+      systemNotifications,
+      whatsappNotifications,
+      telegramNotifications
     });
   };
   
@@ -198,7 +239,11 @@ export default function SettingsPage() {
                       Receive notifications via email.
                     </p>
                   </div>
-                  <Switch id="email-notifications" defaultChecked />
+                  <Switch 
+                    id="email-notifications" 
+                    checked={emailNotifications}
+                    onCheckedChange={setEmailNotifications}
+                  />
                 </div>
                 
                 <Separator />
@@ -210,7 +255,11 @@ export default function SettingsPage() {
                       Receive notifications within the application.
                     </p>
                   </div>
-                  <Switch id="system-notifications" defaultChecked />
+                  <Switch 
+                    id="system-notifications" 
+                    checked={systemNotifications}
+                    onCheckedChange={setSystemNotifications}
+                  />
                 </div>
                 
                 <Separator />
@@ -222,7 +271,11 @@ export default function SettingsPage() {
                       Receive notifications via WhatsApp.
                     </p>
                   </div>
-                  <Switch id="whatsapp-notifications" />
+                  <Switch 
+                    id="whatsapp-notifications" 
+                    checked={whatsappNotifications}
+                    onCheckedChange={setWhatsappNotifications}
+                  />
                 </div>
                 
                 <Separator />
@@ -234,12 +287,33 @@ export default function SettingsPage() {
                       Receive notifications via Telegram.
                     </p>
                   </div>
-                  <Switch id="telegram-notifications" />
+                  <Switch 
+                    id="telegram-notifications" 
+                    checked={telegramNotifications}
+                    onCheckedChange={setTelegramNotifications}
+                  />
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end gap-2 border-t px-6 py-4">
-                <Button variant="outline">Cancel</Button>
-                <Button>Save Changes</Button>
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => {
+                    // Reset to default values (you could load these from user preferences in a real app)
+                    setEmailNotifications(true);
+                    setSystemNotifications(true);
+                    setWhatsappNotifications(false);
+                    setTelegramNotifications(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSaveNotifications}
+                  disabled={updateNotificationsMutation.isPending}
+                >
+                  {updateNotificationsMutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
               </CardFooter>
             </Card>
           </TabsContent>
