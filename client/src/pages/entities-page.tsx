@@ -5,11 +5,14 @@ import DashboardLayout from "@/components/layouts/dashboard-layout";
 import EntityCard from "@/components/dashboard/entity-card";
 import RegisterEntityDialog from "@/components/dialogs/register-entity-dialog";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/fixed-use-auth";
 
 export default function EntitiesPage() {
-  const { user } = useAuth();
   const [registerEntityOpen, setRegisterEntityOpen] = useState(false);
+  
+  // Get the current user
+  const { data: user } = useQuery({
+    queryKey: ["/api/user"]
+  });
   
   // Fetch entities
   const { data: entities, isLoading } = useQuery({

@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TaskListItem from "@/components/dashboard/task-list-item";
 import CreateTaskDialog from "@/components/dialogs/create-task-dialog";
-import { useAuth } from "@/hooks/fixed-use-auth";
 
 export default function TasksPage() {
-  const { user } = useAuth();
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
+
+  // Get current user
+  const { data: user } = useQuery({
+    queryKey: ["/api/user"]
+  });
   
   // Fetch all tasks
   const { data: allTasks, isLoading: isLoadingAll } = useQuery({
