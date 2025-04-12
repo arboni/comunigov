@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock, Users } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/fixed-use-auth";
+import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -79,7 +79,7 @@ export default function ScheduleMeetingDialog({
   onOpenChange,
 }: ScheduleMeetingDialogProps) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   
   // Fetch entities for the attendee selection

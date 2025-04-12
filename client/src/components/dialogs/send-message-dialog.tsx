@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { Mail, MessageSquare, Send, Bell, Users, User, Building } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/fixed-use-auth";
+import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -77,7 +77,7 @@ export default function SendMessageDialog({
   onOpenChange,
 }: SendMessageDialogProps) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   
   // Fetch users for recipient selection
   const { data: users } = useQuery({
