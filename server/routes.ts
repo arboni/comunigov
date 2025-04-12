@@ -256,14 +256,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/meetings", isAuthenticated, async (req, res, next) => {
     try {
+      // Convert date string to Date object if it's a string
+      let meetingData = { ...req.body };
+      
+      if (typeof meetingData.date === 'string') {
+        meetingData.date = new Date(meetingData.date);
+      }
+      
       const validatedData = insertMeetingSchema.parse({
-        ...req.body,
+        ...meetingData,
         createdBy: req.user.id
       });
+      
       const meeting = await storage.createMeeting(validatedData);
       res.status(201).json(meeting);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Meeting validation error:", error.errors);
         return res.status(400).json({ message: "Validation error", errors: error.errors });
       }
       next(error);
@@ -360,14 +369,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/tasks", isAuthenticated, async (req, res, next) => {
     try {
+      // Convert deadline string to Date object if it's a string
+      let taskData = { ...req.body };
+      
+      if (typeof taskData.deadline === 'string') {
+        taskData.deadline = new Date(taskData.deadline);
+      }
+      
       const validatedData = insertTaskSchema.parse({
-        ...req.body,
+        ...taskData,
         createdBy: req.user.id
       });
+      
       const task = await storage.createTask(validatedData);
       res.status(201).json(task);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Task validation error:", error.errors);
         return res.status(400).json({ message: "Validation error", errors: error.errors });
       }
       next(error);
