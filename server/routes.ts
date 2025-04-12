@@ -244,11 +244,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/meetings/:id", isAuthenticated, async (req, res, next) => {
     try {
       const id = parseInt(req.params.id);
-      const meeting = await storage.getMeetingWithAttendees(id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid meeting ID" });
+      }
+      
+      const meeting = await storage.getMeeting(id);
       if (!meeting) {
         return res.status(404).json({ message: "Meeting not found" });
       }
+      
       res.json(meeting);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/meetings/:id/attendees", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid meeting ID" });
+      }
+      
+      const attendees = await storage.getMeetingAttendeesByMeetingId(id);
+      res.json(attendees);
     } catch (error) {
       next(error);
     }

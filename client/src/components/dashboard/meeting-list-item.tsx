@@ -57,8 +57,17 @@ export default function MeetingListItem({ meeting, isDetailedView = false }: Mee
         </div>
         
         <div>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreVertical className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-primary hover:text-primary-dark"
+            onClick={() => {
+              // Navigate to meeting detail page using location hook
+              window.location.href = `/meeting/${meeting.id}`;
+            }}
+            aria-label="View meeting details"
+          >
+            <Eye className="h-4 w-4" />
           </Button>
         </div>
       </div>
