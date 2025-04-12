@@ -1,14 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation, Link } from "wouter";
 import { format, isValid } from "date-fns";
-import { Clock, Users, MapPin, Calendar, ArrowLeft, UserCheck } from "lucide-react";
+import { Clock, Users, MapPin, Calendar, ArrowLeft } from "lucide-react";
 import DashboardLayout from "@/components/layouts/dashboard-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MeetingsApi, TasksApi } from "@/lib/api";
 
 export default function MeetingDetailPage() {
   const [, setLocation] = useLocation();
@@ -24,6 +23,13 @@ export default function MeetingDetailPage() {
     queryKey: [`/api/meetings/${id}/attendees`],
   });
   
+  // Fetch tasks related to this meeting
+  const { data: relatedTasks = [], isLoading: loadingTasks } = useQuery({
+    queryKey: [`/api/tasks/meeting/${id}`],
+    enabled: !!id
+  });
+  
+  // Loading state
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -58,6 +64,7 @@ export default function MeetingDetailPage() {
     );
   }
   
+  // Meeting not found
   if (!meeting) {
     return (
       <DashboardLayout>
@@ -89,9 +96,108 @@ export default function MeetingDetailPage() {
     );
   }
   
+  // Format the date
   const meetingDate = new Date(meeting.date);
   const isValidDate = isValid(meetingDate);
   const formattedDate = isValidDate ? format(meetingDate, "PPP") : "TBD";
+
+  // Rendering Tasks
+  const renderTasks = () => {
+    if (loadingTasks) {
+      return (
+        <div className="animate-pulse space-y-2">
+          <div className="h-8 bg-neutral-100 rounded"></div>
+          <div className="h-8 bg-neutral-100 rounded"></div>
+        </div>
+      );
+    }
+    
+    if (!relatedTasks || relatedTasks.length === 0) {
+      return (
+        <p className="text-neutral-500 text-sm text-center py-4">
+          No tasks associated with this meeting
+        </p>
+      );
+    }
+    
+    return (
+      <ul className="space-y-2">
+        {relatedTasks.map((task: any) => (
+          <li key={task.id} className="flex items-center justify-between p-2 rounded-md bg-neutral-50">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-neutral-800">
+                {task.title}
+              </p>
+              <p className="text-xs text-neutral-500 truncate">
+                {task.description}
+              </p>
+            </div>
+            <Badge 
+              variant={task.status === 'completed' ? 'default' : 'outline'}
+              className={
+                task.status === 'completed' 
+                  ? "bg-emerald-100 text-emerald-800" 
+                  : task.status === 'in_progress'
+                    ? "bg-blue-100 text-blue-800"
+                    : ""
+              }
+            >
+              {task.status === 'completed' 
+                ? 'Completed' 
+                : task.status === 'in_progress'
+                  ? 'In Progress'
+                  : 'Pending'
+              }
+            </Badge>
+          </li>
+        ))}
+      </ul>
+    );
+  };
+
+  // Rendering Attendees
+  const renderAttendees = () => {
+    if (loadingAttendees) {
+      return (
+        <div className="animate-pulse space-y-2">
+          <div className="h-10 bg-neutral-100 rounded"></div>
+          <div className="h-10 bg-neutral-100 rounded"></div>
+        </div>
+      );
+    }
+    
+    if (attendees.length === 0) {
+      return <p className="text-neutral-500 text-sm">No attendees added yet</p>;
+    }
+    
+    return (
+      <ul className="space-y-2">
+        {attendees.map((attendee: any) => (
+          <li key={attendee.id} className="flex items-center p-2 rounded-md bg-neutral-50">
+            <Avatar className="h-8 w-8 mr-3">
+              <AvatarFallback className="bg-primary-100 text-primary">
+                {attendee.user?.fullName?.charAt(0) || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-neutral-800">
+                {attendee.user?.fullName || `User ID: ${attendee.userId}`}
+              </p>
+              <p className="text-xs text-neutral-500">
+                {attendee.user?.position || 'No position'}
+              </p>
+            </div>
+            <Badge
+              variant={attendee.confirmed ? "default" : "outline"}
+              className={attendee.confirmed ? "bg-emerald-100 text-emerald-800" : ""}
+            >
+              {attendee.confirmed ? "Confirmed" : "Pending"}
+            </Badge>
+          </li>
+        ))}
+      </ul>
+    );
+  };
 
   return (
     <DashboardLayout>
@@ -163,40 +269,7 @@ export default function MeetingDetailPage() {
                         </Badge>
                       </div>
                       
-                      {loadingAttendees ? (
-                        <div className="animate-pulse space-y-2">
-                          <div className="h-10 bg-neutral-100 rounded"></div>
-                          <div className="h-10 bg-neutral-100 rounded"></div>
-                        </div>
-                      ) : attendees.length === 0 ? (
-                        <p className="text-neutral-500 text-sm">No attendees added yet</p>
-                      ) : (
-                        <ul className="space-y-2">
-                          {attendees.map((attendee) => (
-                            <li key={attendee.id} className="flex items-center p-2 rounded-md bg-neutral-50">
-                              <Avatar className="h-8 w-8 mr-3">
-                                <AvatarFallback className="bg-primary-100 text-primary">
-                                  {attendee.user?.fullName?.charAt(0) || 'U'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-neutral-800">
-                                  {attendee.user?.fullName || `User ID: ${attendee.userId}`}
-                                </p>
-                                <p className="text-xs text-neutral-500">
-                                  {attendee.user?.position || 'No position'}
-                                </p>
-                              </div>
-                              <Badge
-                                variant={attendee.confirmed ? "default" : "outline"}
-                                className={attendee.confirmed ? "bg-emerald-100 text-emerald-800" : ""}
-                              >
-                                {attendee.confirmed ? "Confirmed" : "Pending"}
-                              </Badge>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+                      {renderAttendees()}
                     </div>
                   </div>
                 </CardContent>
@@ -220,64 +293,7 @@ export default function MeetingDetailPage() {
                   <CardTitle>Related Tasks</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {/* Fetch tasks related to this meeting */}
-                  {(() => {
-                    const { data: relatedTasks, isLoading: loadingTasks } = useQuery({
-                      queryKey: [`/api/tasks/meeting/${id}`],
-                      enabled: !!meeting
-                    });
-                    
-                    if (loadingTasks) {
-                      return (
-                        <div className="animate-pulse space-y-2">
-                          <div className="h-8 bg-neutral-100 rounded"></div>
-                          <div className="h-8 bg-neutral-100 rounded"></div>
-                        </div>
-                      );
-                    }
-                    
-                    if (!relatedTasks || relatedTasks.length === 0) {
-                      return (
-                        <p className="text-neutral-500 text-sm text-center py-4">
-                          No tasks associated with this meeting
-                        </p>
-                      );
-                    }
-                    
-                    return (
-                      <ul className="space-y-2">
-                        {relatedTasks.map((task: any) => (
-                          <li key={task.id} className="flex items-center justify-between p-2 rounded-md bg-neutral-50">
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-neutral-800">
-                                {task.title}
-                              </p>
-                              <p className="text-xs text-neutral-500 truncate">
-                                {task.description}
-                              </p>
-                            </div>
-                            <Badge 
-                              variant={task.status === 'completed' ? 'default' : 'outline'}
-                              className={
-                                task.status === 'completed' 
-                                  ? "bg-emerald-100 text-emerald-800" 
-                                  : task.status === 'in_progress'
-                                    ? "bg-blue-100 text-blue-800"
-                                    : ""
-                              }
-                            >
-                              {task.status === 'completed' 
-                                ? 'Completed' 
-                                : task.status === 'in_progress'
-                                  ? 'In Progress'
-                                  : 'Pending'
-                              }
-                            </Badge>
-                          </li>
-                        ))}
-                      </ul>
-                    );
-                  })()}
+                  {renderTasks()}
                 </CardContent>
               </Card>
             </div>
