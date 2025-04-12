@@ -1,6 +1,7 @@
 import { format, isValid } from "date-fns";
-import { MoreVertical, Clock, Users } from "lucide-react";
+import { Eye, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 import { Meeting } from "@shared/schema";
 
 interface MeetingListItemProps {
