@@ -40,6 +40,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Sets up /api/register, /api/login, /api/logout, /api/user
   setupAuth(app);
 
+  // Users Management
+  app.get("/api/users", isAuthenticated, async (req, res, next) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Remove passwords from the response
+      const sanitizedUsers = users.map(user => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+      res.json(sanitizedUsers);
+    } catch (error) {
+      next(error);
+    }
+  });
+
   // Entity Management
   app.get("/api/entities", isAuthenticated, async (req, res, next) => {
     try {
