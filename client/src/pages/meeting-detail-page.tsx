@@ -1,13 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams, useLocation } from "wouter";
+import { useParams, useLocation, Link } from "wouter";
 import { format, isValid } from "date-fns";
-import { Clock, Users, MapPin, Calendar, ArrowLeft } from "lucide-react";
+import { Clock, Users, MapPin, Calendar, ArrowLeft, UserCheck } from "lucide-react";
 import DashboardLayout from "@/components/layouts/dashboard-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { MeetingsApi, TasksApi } from "@/lib/api";
 
 export default function MeetingDetailPage() {
   const [, setLocation] = useLocation();
@@ -78,7 +79,9 @@ export default function MeetingDetailPage() {
               <p className="text-neutral-500 mb-6">
                 The meeting you're looking for doesn't exist or you don't have permission to view it.
               </p>
-              <Button onClick={() => setLocation("/meetings")}>Return to Meetings</Button>
+              <Link href="/meetings">
+                <Button>Return to Meetings</Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -96,14 +99,15 @@ export default function MeetingDetailPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
           {/* Header with back button */}
           <div className="flex items-center mb-6">
-            <Button 
-              variant="ghost" 
-              onClick={() => setLocation("/meetings")}
-              className="mr-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Meetings
-            </Button>
+            <Link href="/meetings">
+              <Button 
+                variant="ghost" 
+                className="mr-4"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Meetings
+              </Button>
+            </Link>
             
             <div>
               <h1 className="text-2xl font-semibold text-neutral-800">{meeting.name}</h1>
@@ -216,9 +220,64 @@ export default function MeetingDetailPage() {
                   <CardTitle>Related Tasks</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-neutral-500 text-sm text-center py-4">
-                    No tasks associated with this meeting
-                  </p>
+                  {/* Fetch tasks related to this meeting */}
+                  {(() => {
+                    const { data: relatedTasks, isLoading: loadingTasks } = useQuery({
+                      queryKey: [`/api/tasks/meeting/${id}`],
+                      enabled: !!meeting
+                    });
+                    
+                    if (loadingTasks) {
+                      return (
+                        <div className="animate-pulse space-y-2">
+                          <div className="h-8 bg-neutral-100 rounded"></div>
+                          <div className="h-8 bg-neutral-100 rounded"></div>
+                        </div>
+                      );
+                    }
+                    
+                    if (!relatedTasks || relatedTasks.length === 0) {
+                      return (
+                        <p className="text-neutral-500 text-sm text-center py-4">
+                          No tasks associated with this meeting
+                        </p>
+                      );
+                    }
+                    
+                    return (
+                      <ul className="space-y-2">
+                        {relatedTasks.map((task: any) => (
+                          <li key={task.id} className="flex items-center justify-between p-2 rounded-md bg-neutral-50">
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-neutral-800">
+                                {task.title}
+                              </p>
+                              <p className="text-xs text-neutral-500 truncate">
+                                {task.description}
+                              </p>
+                            </div>
+                            <Badge 
+                              variant={task.status === 'completed' ? 'default' : 'outline'}
+                              className={
+                                task.status === 'completed' 
+                                  ? "bg-emerald-100 text-emerald-800" 
+                                  : task.status === 'in_progress'
+                                    ? "bg-blue-100 text-blue-800"
+                                    : ""
+                              }
+                            >
+                              {task.status === 'completed' 
+                                ? 'Completed' 
+                                : task.status === 'in_progress'
+                                  ? 'In Progress'
+                                  : 'Pending'
+                              }
+                            </Badge>
+                          </li>
+                        ))}
+                      </ul>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             </div>

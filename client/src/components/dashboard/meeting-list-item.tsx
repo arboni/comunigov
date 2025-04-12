@@ -1,7 +1,7 @@
 import { format, isValid } from "date-fns";
 import { Eye, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useLocation } from "wouter";
+import { Link } from "wouter";
 import { Meeting } from "@shared/schema";
 
 interface MeetingListItemProps {
@@ -57,18 +57,16 @@ export default function MeetingListItem({ meeting, isDetailedView = false }: Mee
         </div>
         
         <div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8 text-primary hover:text-primary-dark"
-            onClick={() => {
-              // Navigate to meeting detail page using location hook
-              window.location.href = `/meeting/${meeting.id}`;
-            }}
-            aria-label="View meeting details"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
+          <Link href={`/meeting/${meeting.id}`}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 text-primary hover:text-primary-dark"
+              aria-label="View meeting details"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </div>
     </li>
