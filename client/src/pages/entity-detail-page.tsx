@@ -242,8 +242,19 @@ export default function EntityDetailPage() {
                 
                 <TabsContent value="members" className="pt-4">
                   <Card>
-                    <CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle>Entity Members</CardTitle>
+                      {(user?.role === 'master_implementer' || user?.role === 'entity_head') && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex items-center gap-1"
+                          onClick={() => setCreateMemberOpen(true)}
+                        >
+                          <UserPlus className="h-4 w-4 mr-1" />
+                          Add Member
+                        </Button>
+                      )}
                     </CardHeader>
                     <CardContent>
                       {loadingMembers ? (
@@ -253,33 +264,88 @@ export default function EntityDetailPage() {
                           <div className="h-10 bg-neutral-100 rounded"></div>
                         </div>
                       ) : members.length === 0 ? (
-                        <div className="text-center py-4">
-                          <p className="text-neutral-500">No members found for this entity.</p>
+                        <div className="text-center py-8">
+                          <p className="text-neutral-500 mb-4">No members found for this entity.</p>
+                          {(user?.role === 'master_implementer' || user?.role === 'entity_head') && (
+                            <Button 
+                              onClick={() => setCreateMemberOpen(true)}
+                              className="flex items-center gap-1"
+                            >
+                              <UserPlus className="h-4 w-4 mr-1" />
+                              Add First Member
+                            </Button>
+                          )}
                         </div>
                       ) : (
-                        <ul className="space-y-3">
-                          {members.map((member: any) => (
-                            <li key={member.id} className="flex items-center justify-between p-3 rounded-md bg-neutral-50">
-                              <div className="flex items-center">
-                                <Avatar className="h-8 w-8 mr-3">
-                                  <AvatarFallback className="bg-primary-100 text-primary">
-                                    {member.fullName?.charAt(0) || 'U'}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <p className="font-medium text-neutral-800">{member.fullName}</p>
-                                  <p className="text-xs text-neutral-500">{member.position || 'No position'}</p>
-                                </div>
-                              </div>
-                              <Badge
-                                variant={member.role === 'entity_head' ? 'default' : 'outline'}
-                                className={member.role === 'entity_head' ? 'bg-primary-100 text-primary' : ''}
-                              >
-                                {member.role === 'entity_head' ? 'Entity Head' : 'Member'}
-                              </Badge>
-                            </li>
-                          ))}
-                        </ul>
+                        <div className="overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Member</TableHead>
+                                <TableHead>Role</TableHead>
+                                <TableHead>Contact</TableHead>
+                                {(user?.role === 'master_implementer' || user?.role === 'entity_head') && (
+                                  <TableHead className="text-right">Actions</TableHead>
+                                )}
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {members.map((member: any) => (
+                                <TableRow key={member.id}>
+                                  <TableCell>
+                                    <div className="flex items-center">
+                                      <Avatar className="h-8 w-8 mr-3">
+                                        <AvatarFallback className="bg-primary-100 text-primary">
+                                          {member.fullName?.charAt(0) || 'U'}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <p className="font-medium text-neutral-800">{member.fullName}</p>
+                                        <p className="text-xs text-neutral-500">{member.position || 'No position'}</p>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      variant={member.role === 'entity_head' ? 'default' : 'outline'}
+                                      className={member.role === 'entity_head' ? 'bg-primary-100 text-primary' : ''}
+                                    >
+                                      {member.role === 'entity_head' ? 'Entity Head' : 'Member'}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="space-y-1">
+                                      <div className="flex items-center text-xs text-neutral-700">
+                                        <Mail className="h-3 w-3 mr-1 text-neutral-400" />
+                                        <span>{member.email}</span>
+                                      </div>
+                                      {member.phone && (
+                                        <div className="flex items-center text-xs text-neutral-700">
+                                          <Phone className="h-3 w-3 mr-1 text-neutral-400" />
+                                          <span>{member.phone}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                  {(user?.role === 'master_implementer' || user?.role === 'entity_head') && (
+                                    <TableCell className="text-right">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon"
+                                        onClick={() => {
+                                          setSelectedMember(member);
+                                          setEditMemberOpen(true);
+                                        }}
+                                      >
+                                        <PenSquare className="h-4 w-4" />
+                                      </Button>
+                                    </TableCell>
+                                  )}
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
                       )}
                     </CardContent>
                   </Card>
@@ -323,6 +389,23 @@ export default function EntityDetailPage() {
         entityId={Number(id)}
         entity={entity}
       />
+      
+      {/* Create Member Dialog */}
+      <CreateMemberDialog
+        open={createMemberOpen}
+        onOpenChange={setCreateMemberOpen}
+        entityId={Number(id)}
+      />
+      
+      {/* Edit Member Dialog */}
+      {selectedMember && (
+        <EditMemberDialog
+          open={editMemberOpen}
+          onOpenChange={setEditMemberOpen}
+          entityId={Number(id)}
+          member={selectedMember}
+        />
+      )}
     </DashboardLayout>
   );
 }
