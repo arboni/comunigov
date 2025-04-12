@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/fixed-use-auth";
+import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -69,7 +69,7 @@ export default function CreateTaskDialog({
   onOpenChange,
 }: CreateTaskDialogProps) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   
   // Fetch users for the assignee selection
   const { data: users } = useQuery({
