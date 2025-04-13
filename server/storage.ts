@@ -409,8 +409,8 @@ export class MemStorage implements IStorage {
     if (!task) return undefined;
 
     // Check if task is assigned to a registered user
-    if (task.userId) {
-      const assignee = await this.getUser(task.userId);
+    if (task.isRegisteredUser && task.assignedToUserId) {
+      const assignee = await this.getUser(task.assignedToUserId);
       if (!assignee) return undefined;
 
       return {
@@ -470,7 +470,7 @@ export class MemStorage implements IStorage {
 
   async getTasksByUserId(userId: number): Promise<Task[]> {
     return Array.from(this.tasks.values()).filter(
-      (task) => task.userId === userId
+      (task) => task.isRegisteredUser && task.assignedToUserId === userId
     );
   }
 
