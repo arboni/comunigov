@@ -32,12 +32,14 @@ import {
 } from "@/components/ui/form";
 
 // Extended schema with validations
-const formSchema = insertSubjectSchema.extend({
-  name: z.string().min(3, {
-    message: "Subject name must be at least 3 characters",
-  }),
-  description: z.string().optional(),
-});
+const formSchema = insertSubjectSchema
+  .omit({ createdBy: true }) // Remove createdBy from validation requirements
+  .extend({
+    name: z.string().min(3, {
+      message: "Subject name must be at least 3 characters",
+    }),
+    description: z.string().optional(),
+  });
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -244,22 +246,72 @@ export default function SubjectDialog({
                   Cancel
                 </Button>
                 <Button
-                  type="button" // Changed from "submit" to "button" for direct control
+                  type="button"
                   disabled={isSubmitting}
                   onClick={async () => {
-                    // Extra logging on button click
+                    if (!user) {
+                      toast({
+                        title: "Error",
+                        description: "You must be logged in to create a subject",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    
                     console.log("Submit button clicked directly");
-                    console.log("Form values:", form.getValues());
                     
-                    // Manual form validation
-                    const isValid = await form.trigger();
-                    console.log("Form is valid:", isValid);
-                    console.log("Form errors:", form.formState.errors);
+                    // Get form values
+                    const formData = form.getValues();
+                    console.log("Form values:", formData);
                     
-                    if (isValid) {
-                      // Direct form submission
-                      const formData = form.getValues();
-                      onSubmit(formData);
+                    // Direct API call without going through form validation
+                    try {
+                      setIsSubmitting(true);
+                      
+                      // Create payload manually with required fields
+                      const payload = {
+                        name: formData.name,
+                        description: formData.description || "",
+                        createdBy: user.id,
+                      };
+                      
+                      console.log("Sending direct request with payload:", payload);
+                      
+                      // Direct fetch request for maximum control
+                      const response = await fetch("/api/subjects", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                        credentials: "include",
+                      });
+                      
+                      if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Server error: ${response.status} - ${errorText}`);
+                      }
+                      
+                      const result = await response.json();
+                      console.log("Subject created with direct fetch:", result);
+                      
+                      // Success handling
+                      toast({
+                        title: "Success!",
+                        description: "Subject created successfully",
+                      });
+                      
+                      // Update cache and UI
+                      invalidateSubjects();
+                      form.reset();
+                      onOpenChange(false);
+                    } catch (error) {
+                      console.error("Direct API request failed:", error);
+                      toast({
+                        title: "Error",
+                        description: error instanceof Error ? error.message : "Failed to create subject",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setIsSubmitting(false);
                     }
                   }}
                 >
