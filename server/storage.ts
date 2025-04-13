@@ -363,6 +363,42 @@ export class MemStorage implements IStorage {
     );
   }
 
+  // Subject methods
+  async getSubject(id: number): Promise<Subject | undefined> {
+    return this.subjects.get(id);
+  }
+
+  async createSubject(insertSubject: InsertSubject): Promise<Subject> {
+    const id = this.currentSubjectId++;
+    const now = new Date();
+    const subject: Subject = { 
+      ...insertSubject, 
+      id,
+      createdAt: now
+    };
+    this.subjects.set(id, subject);
+    return subject;
+  }
+
+  async updateSubject(id: number, subjectData: Partial<Subject>): Promise<Subject | undefined> {
+    const subject = this.subjects.get(id);
+    if (!subject) return undefined;
+
+    const updatedSubject = { ...subject, ...subjectData };
+    this.subjects.set(id, updatedSubject);
+    return updatedSubject;
+  }
+
+  async getAllSubjects(): Promise<Subject[]> {
+    return Array.from(this.subjects.values());
+  }
+
+  async getSubjectsByCreator(userId: number): Promise<Subject[]> {
+    return Array.from(this.subjects.values()).filter(
+      (subject) => subject.createdBy === userId
+    );
+  }
+
   // Task methods
   async getTask(id: number): Promise<Task | undefined> {
     return this.tasks.get(id);
@@ -372,18 +408,45 @@ export class MemStorage implements IStorage {
     const task = this.tasks.get(id);
     if (!task) return undefined;
 
-    const assignee = await this.getUser(task.assignedTo);
-    if (!assignee) return undefined;
+    // Check if task is assigned to a registered user
+    if (task.userId) {
+      const assignee = await this.getUser(task.userId);
+      if (!assignee) return undefined;
 
+      return {
+        ...task,
+        assignee,
+      };
+    }
+
+    // For non-registered owners, create a simple User object
     return {
       ...task,
-      assignee,
+      assignee: {
+        id: 0, // Use 0 as a special ID to indicate external user
+        username: task.ownerName || 'External',
+        password: '', // Not relevant for display
+        email: task.ownerEmail || '',
+        fullName: task.ownerName || 'External User',
+        role: 'entity_member',
+        phone: task.ownerPhone || null,
+        whatsapp: null,
+        telegram: null,
+        position: null,
+        entityId: null
+      }
     };
   }
 
   async createTask(insertTask: InsertTask): Promise<Task> {
     const id = this.currentTaskId++;
-    const task: Task = { ...insertTask, id };
+    const now = new Date();
+    const task: Task = { 
+      ...insertTask, 
+      id,
+      createdAt: now,
+      updatedAt: now
+    };
     this.tasks.set(id, task);
     return task;
   }
@@ -392,7 +455,11 @@ export class MemStorage implements IStorage {
     const task = this.tasks.get(id);
     if (!task) return undefined;
 
-    const updatedTask = { ...task, ...taskData };
+    const updatedTask = { 
+      ...task, 
+      ...taskData,
+      updatedAt: new Date()
+    };
     this.tasks.set(id, updatedTask);
     return updatedTask;
   }
@@ -401,9 +468,15 @@ export class MemStorage implements IStorage {
     return Array.from(this.tasks.values());
   }
 
-  async getTasksByAssignee(userId: number): Promise<Task[]> {
+  async getTasksByUserId(userId: number): Promise<Task[]> {
     return Array.from(this.tasks.values()).filter(
-      (task) => task.assignedTo === userId,
+      (task) => task.userId === userId
+    );
+  }
+
+  async getTasksBySubject(subjectId: number): Promise<Task[]> {
+    return Array.from(this.tasks.values()).filter(
+      (task) => task.subjectId === subjectId
     );
   }
 
@@ -823,6 +896,34 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(entities);
   }
 
+  // Subject methods
+  async getSubject(id: number): Promise<Subject | undefined> {
+    const [subject] = await db.select().from(subjects).where(eq(subjects.id, id));
+    return subject || undefined;
+  }
+
+  async createSubject(insertSubject: InsertSubject): Promise<Subject> {
+    const [subject] = await db.insert(subjects).values(insertSubject).returning();
+    return subject;
+  }
+
+  async updateSubject(id: number, subjectData: Partial<Subject>): Promise<Subject | undefined> {
+    const [updatedSubject] = await db
+      .update(subjects)
+      .set(subjectData)
+      .where(eq(subjects.id, id))
+      .returning();
+    return updatedSubject || undefined;
+  }
+
+  async getAllSubjects(): Promise<Subject[]> {
+    return await db.select().from(subjects);
+  }
+
+  async getSubjectsByCreator(userId: number): Promise<Subject[]> {
+    return await db.select().from(subjects).where(eq(subjects.createdBy, userId));
+  }
+
   // Meeting methods
   async getMeeting(id: number): Promise<Meeting | undefined> {
     const [meeting] = await db.select().from(meetings).where(eq(meetings.id, id));
@@ -959,35 +1060,50 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTaskWithAssignee(id: number): Promise<TaskWithAssignee | undefined> {
-    const [task] = await db
-      .select({
-        id: tasks.id,
-        title: tasks.title,
-        description: tasks.description,
-        deadline: tasks.deadline,
-        status: tasks.status,
-        assignedTo: tasks.assignedTo,
-        createdBy: tasks.createdBy,
-        entityId: tasks.entityId,
-        meetingId: tasks.meetingId,
-        createdAt: tasks.createdAt,
-        updatedAt: tasks.updatedAt,
-        assignee: users
-      })
-      .from(tasks)
-      .leftJoin(users, eq(tasks.assignedTo, users.id))
-      .where(eq(tasks.id, id));
-
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
     if (!task) return undefined;
-    return task as unknown as TaskWithAssignee;
+
+    // Check if task is assigned to a registered user
+    if (task.userId) {
+      const [assignee] = await db.select().from(users).where(eq(users.id, task.userId));
+      if (!assignee) return undefined;
+
+      return {
+        ...task,
+        assignee
+      };
+    }
+
+    // For non-registered owners, create a simple User object
+    return {
+      ...task,
+      assignee: {
+        id: 0, // Use 0 as a special ID to indicate external user
+        username: task.ownerName || 'External',
+        password: '', // Not relevant for display
+        email: task.ownerEmail || '',
+        fullName: task.ownerName || 'External User',
+        role: 'entity_member',
+        phone: task.ownerPhone || null,
+        whatsapp: null,
+        telegram: null,
+        position: null,
+        entityId: null
+      }
+    };
   }
 
   async createTask(insertTask: InsertTask): Promise<Task> {
     // Add current timestamp for createdAt and updatedAt
+    const now = new Date();
     const taskWithTimestamps = {
       ...insertTask,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: now,
+      updatedAt: now,
+      // Ensure required fields have default values
+      status: insertTask.status ?? 'pending',
+      entityId: insertTask.entityId ?? null,
+      meetingId: insertTask.meetingId ?? null
     };
     
     const [task] = await db.insert(tasks).values(taskWithTimestamps).returning();
@@ -995,9 +1111,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateTask(id: number, taskData: Partial<Task>): Promise<Task | undefined> {
+    // Always update the updatedAt timestamp when tasks are modified
+    const updatedTaskData = {
+      ...taskData,
+      updatedAt: new Date()
+    };
+    
     const [updatedTask] = await db
       .update(tasks)
-      .set(taskData)
+      .set(updatedTaskData)
       .where(eq(tasks.id, id))
       .returning();
     return updatedTask || undefined;
@@ -1007,11 +1129,18 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(tasks);
   }
 
-  async getTasksByAssignee(userId: number): Promise<Task[]> {
+  async getTasksByUserId(userId: number): Promise<Task[]> {
     return await db
       .select()
       .from(tasks)
-      .where(eq(tasks.assignedTo, userId));
+      .where(eq(tasks.userId, userId));
+  }
+  
+  async getTasksBySubject(subjectId: number): Promise<Task[]> {
+    return await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.subjectId, subjectId));
   }
 
   async getTasksByMeeting(meetingId: number): Promise<Task[]> {
