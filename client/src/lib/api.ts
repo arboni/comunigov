@@ -73,6 +73,27 @@ export const UsersApi = {
   }
 };
 
+// Subject-related API functions
+export const SubjectsApi = {
+  // Fetch a single subject by ID
+  getSubject: async (id: number) => {
+    const res = await apiRequest("GET", `/api/subjects/${id}`);
+    return await res.json();
+  },
+  
+  // Fetch tasks related to a subject
+  getTasksBySubject: async (subjectId: number) => {
+    const res = await apiRequest("GET", `/api/subjects/${subjectId}/tasks`);
+    return await res.json();
+  },
+  
+  // Fetch users associated with a subject's tasks
+  getUsersForSubjectTasks: async (subjectId: number) => {
+    const res = await apiRequest("GET", `/api/subjects/${subjectId}/users`);
+    return await res.json();
+  }
+};
+
 // Communication-related API functions
 export const CommunicationsApi = {
   // Fetch a single communication by ID

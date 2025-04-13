@@ -654,6 +654,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
+  
+  app.get("/api/subjects/:id/users", isAuthenticated, async (req, res, next) => {
+    try {
+      const subjectId = parseInt(req.params.id);
+      const users = await storage.getUsersForSubjectTasks(subjectId);
+      res.json(users);
+    } catch (error) {
+      next(error);
+    }
+  });
 
   // Communications
   app.get("/api/communications", isAuthenticated, async (req, res, next) => {

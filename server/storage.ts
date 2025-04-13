@@ -86,6 +86,7 @@ export interface IStorage {
   getAllTasks(): Promise<Task[]>;
   getTasksByUserId(userId: number): Promise<Task[]>;
   getTasksBySubject(subjectId: number): Promise<Task[]>;
+  getUsersForSubjectTasks(subjectId: number): Promise<User[]>;
   getTasksByMeeting(meetingId: number): Promise<Task[]>;
   getTasksByEntity(entityId: number): Promise<Task[]>;
   
