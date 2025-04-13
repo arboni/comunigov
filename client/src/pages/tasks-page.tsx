@@ -59,7 +59,7 @@ import {
 } from "@/components/ui/tooltip";
 import DashboardLayout from "@/components/layouts/dashboard-layout";
 import CreateTaskDialog from "@/components/dialogs/create-task-dialog";
-import CreateSubjectDialog from "../components/dialogs/create-subject-dialog";
+import CreateSubjectDialog from "../components/dialogs/create-subject-dialog-new";
 
 // Helper function to get task status badge color
 function getTaskStatusBadge(status: string) {
@@ -212,11 +212,7 @@ export default function TasksPage() {
           </div>
           <div className="flex gap-2">
             <Button
-              onClick={() => {
-                console.log("Opening subject dialog");
-                setCreateSubjectOpen(true);
-                console.log("createSubjectOpen set to:", true);
-              }}
+              onClick={() => setCreateSubjectOpen(true)}
               variant="outline"
               className="gap-1"
             >
