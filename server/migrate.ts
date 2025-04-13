@@ -76,6 +76,15 @@ async function applyMigrations() {
       console.log('Added is_registered_user column to tasks table');
     }
     
+    // Check if assignedToUserId column exists
+    const assignedToUserIdExists = await columnExists('tasks', 'assigned_to_user_id');
+    if (!assignedToUserIdExists) {
+      await db.execute(sql`
+        ALTER TABLE tasks ADD COLUMN assigned_to_user_id INTEGER REFERENCES users(id);
+      `);
+      console.log('Added assigned_to_user_id column to tasks table');
+    }
+    
     // Check if assigned_to column exists and drop it if it does
     const assignedToExists = await columnExists('tasks', 'assigned_to');
     if (assignedToExists) {

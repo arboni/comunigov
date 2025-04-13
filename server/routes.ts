@@ -556,6 +556,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Task Comments
+  app.get("/api/tasks/:id/comments", isAuthenticated, async (req, res, next) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const comments = await storage.getTaskCommentsByTaskId(taskId);
+      res.json(comments);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/tasks/:id/comments", isAuthenticated, async (req, res, next) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const validatedData = insertTaskCommentSchema.parse({
+        ...req.body,
+        taskId,
+        userId: req.user!.id
+      });
+      
+      const comment = await storage.createTaskComment(validatedData);
+      res.status(201).json(comment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      next(error);
+    }
+  });
+
+  // Subjects API
+  app.get("/api/subjects", isAuthenticated, async (req, res, next) => {
+    try {
+      const subjects = await storage.getAllSubjects();
+      res.json(subjects);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/subjects/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const subject = await storage.getSubject(id);
+      if (!subject) {
+        return res.status(404).json({ message: "Subject not found" });
+      }
+      res.json(subject);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/subjects", isAuthenticated, async (req, res, next) => {
+    try {
+      const validatedData = insertSubjectSchema.parse({
+        ...req.body,
+        createdBy: req.user!.id
+      });
+      
+      const subject = await storage.createSubject(validatedData);
+      res.status(201).json(subject);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      next(error);
+    }
+  });
+
+  app.put("/api/subjects/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertSubjectSchema.partial().parse(req.body);
+      const updatedSubject = await storage.updateSubject(id, validatedData);
+      
+      if (!updatedSubject) {
+        return res.status(404).json({ message: "Subject not found" });
+      }
+      
+      res.json(updatedSubject);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      next(error);
+    }
+  });
+
+  app.get("/api/subjects/:id/tasks", isAuthenticated, async (req, res, next) => {
+    try {
+      const subjectId = parseInt(req.params.id);
+      const tasks = await storage.getTasksBySubject(subjectId);
+      res.json(tasks);
+    } catch (error) {
+      next(error);
+    }
+  });
+
   // Communications
   app.get("/api/communications", isAuthenticated, async (req, res, next) => {
     try {

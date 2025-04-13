@@ -1,12 +1,16 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { apiRequest, invalidateTasks, invalidateDashboardStats, invalidateAllData } from "@/lib/queryClient";
+import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { useSimpleAuth } from "@/hooks/use-simple-auth";
+import { apiRequest } from "@/lib/queryClient";
+import { insertTaskSchema, type InsertTask } from "@shared/schema";
+
+// Components
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,22 +20,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Select,
   SelectContent,
@@ -39,144 +38,191 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+
+// Extended schema with validations
+const formSchema = insertTaskSchema.extend({
+  deadline: z.date({
+    required_error: "A deadline is required",
+  }),
+  isRegisteredUser: z.boolean().default(true),
+});
+
+type TaskFormValues = z.infer<typeof formSchema>;
 
 interface CreateTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const formSchema = z.object({
-  title: z.string().min(3, "Task title must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  deadline: z.date({
-    required_error: "Task deadline is required",
-  }),
-  status: z.enum(["pending", "in_progress", "completed", "cancelled"], {
-    required_error: "Status is required",
-  }),
-  assignedTo: z.number({
-    required_error: "Assignee is required",
-  }),
-  entityId: z.number().optional(),
-  meetingId: z.number().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
 export default function CreateTaskDialog({
   open,
   onOpenChange,
 }: CreateTaskDialogProps) {
   const { toast } = useToast();
-  const { user } = useSimpleAuth();
-  
-  // Fetch users for the assignee selection
-  const { data: users } = useQuery({
+  const queryClient = useQueryClient();
+  const [isRegisteredUser, setIsRegisteredUser] = useState(true);
+
+  // Load subjects for dropdown
+  const { data: subjects = [] } = useQuery({
+    queryKey: ["/api/subjects"],
+    enabled: open,
+  });
+
+  // Load users for dropdown when isRegisteredUser is true
+  const { data: users = [] } = useQuery({
     queryKey: ["/api/users"],
+    enabled: open && isRegisteredUser,
   });
-  
-  // Fetch entities for the entity selection
-  const { data: entities } = useQuery({
-    queryKey: ["/api/entities"],
-  });
-  
-  // Fetch meetings for the meeting selection
-  const { data: meetings } = useQuery({
-    queryKey: ["/api/meetings"],
-  });
-  
-  const form = useForm<FormValues>({
+
+  // Form setup
+  const form = useForm<TaskFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
+      deadline: new Date(),
       status: "pending",
+      isRegisteredUser: true,
+      ownerName: "",
+      ownerEmail: "",
+      ownerPhone: "",
     },
   });
 
+  // Update form when isRegisteredUser changes
+  useEffect(() => {
+    form.setValue("isRegisteredUser", isRegisteredUser);
+  }, [isRegisteredUser, form]);
+
+  // Create task mutation
   const createTaskMutation = useMutation({
-    mutationFn: async (data: FormValues) => {
-      const res = await apiRequest("POST", "/api/tasks", {
-        ...data,
-        createdBy: user?.id,
-      });
-      return await res.json();
-    },
-    onSuccess: async () => {
-      try {
-        // Invalidate all related queries to ensure data is fresh
-        await invalidateTasks();
-        await invalidateDashboardStats();
-        
-        toast({
-          title: "Task created",
-          description: "The task has been successfully created.",
-        });
-        form.reset();
-        onOpenChange(false);
-      } catch (error) {
-        console.error("Error refreshing data after task creation:", error);
+    mutationFn: async (data: TaskFormValues) => {
+      const response = await apiRequest("POST", "/api/tasks", data);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create task");
       }
+      return await response.json();
     },
-    onError: (error: Error) => {
+    onSuccess: () => {
       toast({
-        title: "Task creation failed",
+        title: "Success",
+        description: "Task created successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/subjects"] });
+      form.reset();
+      onOpenChange(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  function onSubmit(data: FormValues) {
+  function onSubmit(data: TaskFormValues) {
     createTaskMutation.mutate(data);
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Create Task</DialogTitle>
+          <DialogTitle>Create New Task</DialogTitle>
           <DialogDescription>
-            Add a new task and assign it to a user within your organization.
+            Add a new task with all the details needed.
           </DialogDescription>
         </DialogHeader>
-        
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Task Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Prepare budget report" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Describe what needs to be done in detail" 
-                      className="min-h-24"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 gap-4 py-4">
+              {/* Subject Selection */}
+              <FormField
+                control={form.control}
+                name="subjectId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subject Area</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(parseInt(value))}
+                      defaultValue={field.value?.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select the subject area" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {subjects.map((subject: any) => (
+                          <SelectItem
+                            key={subject.id}
+                            value={subject.id.toString()}
+                          >
+                            {subject.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Choose the subject area this task belongs to
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Task Title */}
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Task title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Task Description */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Add a detailed description of the task"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Task Deadline */}
               <FormField
                 control={form.control}
                 name="deadline"
@@ -187,7 +233,7 @@ export default function CreateTaskDialog({
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
-                            variant="outline"
+                            variant={"outline"}
                             className={cn(
                               "pl-3 text-left font-normal",
                               !field.value && "text-muted-foreground"
@@ -215,14 +261,18 @@ export default function CreateTaskDialog({
                   </FormItem>
                 )}
               />
-              
+
+              {/* Task Status */}
               <FormField
                 control={form.control}
                 name="status"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select status" />
@@ -239,109 +289,164 @@ export default function CreateTaskDialog({
                   </FormItem>
                 )}
               />
-            </div>
-            
-            <FormField
-              control={form.control}
-              name="assignedTo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Assign To</FormLabel>
-                  <Select 
-                    onValueChange={(value) => field.onChange(parseInt(value))} 
-                    defaultValue={field.value?.toString()}
-                  >
+
+              {/* Is Registered User checkbox */}
+              <FormField
+                control={form.control}
+                name="isRegisteredUser"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select assignee" />
-                      </SelectTrigger>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          setIsRegisteredUser(!!checked);
+                        }}
+                      />
                     </FormControl>
-                    <SelectContent>
-                      {users?.map((user) => (
-                        <SelectItem key={user.id} value={user.id.toString()}>
-                          {user.fullName} ({user.position || "No position"})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Registered User</FormLabel>
+                      <FormDescription>
+                        Is the task owner a registered user in the system?
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* Conditional fields based on isRegisteredUser */}
+              {isRegisteredUser ? (
+                // User dropdown for registered users
+                <FormField
+                  control={form.control}
+                  name="assignedToUserId"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Assigned To</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                                "justify-between",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value
+                                ? users.find(
+                                    (user: any) => user.id === field.value
+                                  )?.fullName
+                                : "Select user"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0">
+                          <Command>
+                            <CommandInput placeholder="Search user..." />
+                            <CommandEmpty>No user found.</CommandEmpty>
+                            <CommandGroup>
+                              {users.map((user: any) => (
+                                <CommandItem
+                                  value={user.fullName}
+                                  key={user.id}
+                                  onSelect={() => {
+                                    form.setValue("assignedToUserId", user.id);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === user.id
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {user.fullName}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <FormDescription>
+                        Select the user responsible for this task
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : (
+                // Fields for non-registered users
+                <>
+                  <FormField
+                    control={form.control}
+                    name="ownerName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Owner Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="ownerEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Owner Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="Email"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="ownerPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Owner Phone</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Phone number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
               )}
-            />
-            
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="entityId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Related Entity (optional)</FormLabel>
-                    <Select 
-                      onValueChange={(value) => field.onChange(parseInt(value))} 
-                      defaultValue={field.value?.toString()}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select entity" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="">None</SelectItem>
-                        {entities?.map((entity) => (
-                          <SelectItem key={entity.id} value={entity.id.toString()}>
-                            {entity.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="meetingId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Related Meeting (optional)</FormLabel>
-                    <Select 
-                      onValueChange={(value) => field.onChange(parseInt(value))} 
-                      defaultValue={field.value?.toString()}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select meeting" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="">None</SelectItem>
-                        {meetings?.map((meeting) => (
-                          <SelectItem key={meeting.id} value={meeting.id.toString()}>
-                            {meeting.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
-            
-            <DialogFooter className="pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => onOpenChange(false)}
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={createTaskMutation.isPending}
               >
-                {createTaskMutation.isPending ? "Creating..." : "Create Task"}
+                {createTaskMutation.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Create Task
               </Button>
             </DialogFooter>
           </form>
