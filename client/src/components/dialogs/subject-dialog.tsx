@@ -110,12 +110,60 @@ export default function SubjectDialog({
   const onSubmit = async (data: FormValues) => {
     console.log("Subject form submitted with data:", data);
     console.log("Current user:", user);
+    
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a subject",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
-      await createSubjectMutation.mutateAsync(data);
+      // Add the user ID directly here too for extra safety
+      const payload = {
+        ...data,
+        createdBy: user.id
+      };
+      console.log("Submitting payload:", payload);
+      
+      await createSubjectMutation.mutateAsync(payload);
       console.log("Subject creation was successful");
+      
+      // Direct API fallback if mutation doesn't work for some reason
+      /* 
+      const response = await fetch("/api/subjects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        credentials: "include",
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log("Subject created with direct fetch:", result);
+      
+      // Manual success handling
+      toast({
+        title: "Success",
+        description: "Subject created successfully",
+      });
+      invalidateSubjects();
+      form.reset();
+      onOpenChange(false);
+      */
     } catch (error) {
       console.error("Error submitting form:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create subject",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -131,69 +179,89 @@ export default function SubjectDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 py-4">
-              {/* Subject Name */}
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Subject Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter subject name" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      The name for this category of tasks
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        {!user ? (
+          <div className="p-4 text-center">
+            <p className="text-red-500 mb-4">You must be logged in to create a subject.</p>
+            <Button onClick={() => onOpenChange(false)}>Close</Button>
+          </div>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 gap-4 py-4">
+                {/* Subject Name */}
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Subject Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter subject name" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        The name for this category of tasks
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* Subject Description */}
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Briefly describe this subject area"
-                        className="min-h-[100px]"
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                {/* Subject Description */}
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Briefly describe this subject area"
+                          className="min-h-[100px]"
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Authentication info - for debugging */}
+                <div className="p-2 bg-blue-50 border border-blue-100 rounded-md text-sm">
+                  <p className="font-medium text-blue-700">Authentication Status:</p>
+                  <p className="text-blue-600">Logged in as: {user.username} (ID: {user.id})</p>
+                  <p className="text-blue-600">Role: {user.role}</p>
+                </div>
+              </div>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-              >
-                {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Create Subject
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    // Extra logging on button click
+                    console.log("Submit button clicked");
+                    console.log("Form values:", form.getValues());
+                    console.log("Form errors:", form.formState.errors);
+                  }}
+                >
+                  {isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Create Subject
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        )}
       </DialogContent>
     </Dialog>
   );
