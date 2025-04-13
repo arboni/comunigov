@@ -52,25 +52,22 @@ export function Sidebar({ items, user }: SidebarProps) {
               <Link 
                 key={item.name} 
                 href={item.href}
+                className={cn(
+                  "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
+                  location === item.href
+                    ? "border-l-4 border-primary bg-primary-50 text-primary"
+                    : "text-neutral-600 hover:bg-neutral-50"
+                )}
               >
-                <a 
+                <item.icon 
                   className={cn(
-                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
+                    "mr-3 h-5 w-5",
                     location === item.href
-                      ? "border-l-4 border-primary bg-primary-50 text-primary"
-                      : "text-neutral-600 hover:bg-neutral-50"
-                  )}
-                >
-                  <item.icon 
-                    className={cn(
-                      "mr-3 h-5 w-5",
-                      location === item.href
-                        ? "text-primary"
-                        : "text-neutral-400"
-                    )} 
-                  />
-                  {item.name}
-                </a>
+                      ? "text-primary"
+                      : "text-neutral-400"
+                  )} 
+                />
+                {item.name}
               </Link>
             ))}
           </nav>
