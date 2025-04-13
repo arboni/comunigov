@@ -59,7 +59,7 @@ import {
 } from "@/components/ui/tooltip";
 import DashboardLayout from "@/components/layouts/dashboard-layout";
 import CreateTaskDialog from "@/components/dialogs/create-task-dialog";
-import CreateSubjectDialog from "../components/dialogs/create-subject-dialog-new";
+import SubjectDialog from "../components/dialogs/subject-dialog";
 
 // Helper function to get task status badge color
 function getTaskStatusBadge(status: string) {
@@ -434,8 +434,7 @@ export default function TasksPage() {
         open={createTaskOpen}
         onOpenChange={setCreateTaskOpen}
       />
-      {/* We'll need to create this component */}
-      <CreateSubjectDialog
+      <SubjectDialog
         open={createSubjectOpen}
         onOpenChange={setCreateSubjectOpen}
       />
