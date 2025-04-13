@@ -214,7 +214,13 @@ export default function TasksPage() {
             <Button
               onClick={() => {
                 console.log("Opening create subject dialog");
-                setCreateSubjectOpen(true);
+                // Force close first in case it's somehow still open
+                setCreateSubjectOpen(false);
+                // Then set timeout to open it again
+                setTimeout(() => {
+                  console.log("Setting dialog to open state");
+                  setCreateSubjectOpen(true);
+                }, 100);
               }}
               variant="outline"
               className="gap-1"

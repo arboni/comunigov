@@ -244,13 +244,23 @@ export default function SubjectDialog({
                   Cancel
                 </Button>
                 <Button
-                  type="submit"
+                  type="button" // Changed from "submit" to "button" for direct control
                   disabled={isSubmitting}
-                  onClick={() => {
+                  onClick={async () => {
                     // Extra logging on button click
-                    console.log("Submit button clicked");
+                    console.log("Submit button clicked directly");
                     console.log("Form values:", form.getValues());
+                    
+                    // Manual form validation
+                    const isValid = await form.trigger();
+                    console.log("Form is valid:", isValid);
                     console.log("Form errors:", form.formState.errors);
+                    
+                    if (isValid) {
+                      // Direct form submission
+                      const formData = form.getValues();
+                      onSubmit(formData);
+                    }
                   }}
                 >
                   {isSubmitting && (
