@@ -19,6 +19,27 @@ async function applyMigrations() {
       );
     `);
     
+    // Alter meetings table to add registered subject columns
+    console.log('Altering meetings table to add registered subject fields...');
+    
+    // Check if is_registered_subject column exists
+    const isRegisteredSubjectExists = await columnExists('meetings', 'is_registered_subject');
+    if (!isRegisteredSubjectExists) {
+      await db.execute(sql`
+        ALTER TABLE meetings ADD COLUMN is_registered_subject BOOLEAN DEFAULT FALSE;
+      `);
+      console.log('Added is_registered_subject column to meetings table');
+    }
+    
+    // Check if subject_id column exists
+    const meetingSubjectIdExists = await columnExists('meetings', 'subject_id');
+    if (!meetingSubjectIdExists) {
+      await db.execute(sql`
+        ALTER TABLE meetings ADD COLUMN subject_id INTEGER REFERENCES subjects(id);
+      `);
+      console.log('Added subject_id column to meetings table');
+    }
+    
     // Alter tasks table to add new columns
     console.log('Altering tasks table to add subject_id and user fields...');
     
