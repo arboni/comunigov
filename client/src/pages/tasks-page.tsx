@@ -212,7 +212,10 @@ export default function TasksPage() {
           </div>
           <div className="flex gap-2">
             <Button
-              onClick={() => setCreateSubjectOpen(true)}
+              onClick={() => {
+                console.log("Opening create subject dialog");
+                setCreateSubjectOpen(true);
+              }}
               variant="outline"
               className="gap-1"
             >

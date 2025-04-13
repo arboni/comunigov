@@ -110,9 +110,12 @@ export default function SubjectDialog({
 
   // Handle form submission
   const onSubmit = async (data: FormValues) => {
+    console.log("Subject form submitted with data:", data);
+    console.log("Current user:", user);
     setIsSubmitting(true);
     try {
       await createSubjectMutation.mutateAsync(data);
+      console.log("Subject creation was successful");
     } catch (error) {
       console.error("Error submitting form:", error);
     } finally {
