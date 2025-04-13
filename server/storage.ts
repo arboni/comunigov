@@ -13,6 +13,8 @@ import {
   UserBadge, InsertUserBadge,
   UserWithEntity,
   MeetingWithAttendees,
+  MeetingWithSubject,
+  MeetingWithAttendeesAndSubject,
   TaskWithAssignee,
   CommunicationWithRecipients,
   UserWithBadges,
@@ -50,6 +52,8 @@ export interface IStorage {
   // Meetings
   getMeeting(id: number): Promise<Meeting | undefined>;
   getMeetingWithAttendees(id: number): Promise<MeetingWithAttendees | undefined>;
+  getMeetingWithSubject(id: number): Promise<MeetingWithSubject | undefined>;
+  getMeetingWithAttendeesAndSubject(id: number): Promise<MeetingWithAttendeesAndSubject | undefined>;
   createMeeting(meeting: InsertMeeting): Promise<Meeting>;
   updateMeeting(id: number, meetingData: Partial<Meeting>): Promise<Meeting | undefined>;
   getAllMeetings(): Promise<Meeting[]>;

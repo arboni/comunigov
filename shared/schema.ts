@@ -49,6 +49,8 @@ export const meetings = pgTable("meetings", {
   endTime: text("end_time").notNull(),
   location: text("location"),
   subject: text("subject"),
+  isRegisteredSubject: boolean("is_registered_subject").default(false),
+  subjectId: integer("subject_id").references(() => subjects.id),
   createdBy: integer("created_by").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -242,6 +244,10 @@ export const meetingsRelations = relations(meetings, ({ one, many }) => ({
     fields: [meetings.createdBy],
     references: [users.id],
   }),
+  registeredSubject: one(subjects, {
+    fields: [meetings.subjectId],
+    references: [subjects.id],
+  }),
   attendees: many(meetingAttendees),
   documents: many(meetingDocuments),
   tasks: many(tasks),
@@ -275,6 +281,7 @@ export const subjectsRelations = relations(subjects, ({ one, many }) => ({
     references: [users.id],
   }),
   tasks: many(tasks),
+  meetings: many(meetings),
 }));
 
 export const tasksRelations = relations(tasks, ({ one, many }) => ({
@@ -355,6 +362,8 @@ export const userBadgesRelations = relations(userBadges, ({ one }) => ({
 // Utility types
 export type UserWithEntity = User & { entity?: Entity };
 export type MeetingWithAttendees = Meeting & { attendees: MeetingAttendee[] };
+export type MeetingWithSubject = Meeting & { registeredSubject?: Subject };
+export type MeetingWithAttendeesAndSubject = MeetingWithAttendees & { registeredSubject?: Subject };
 export type TaskWithAssignee = Task & { assignee: User };
 export type CommunicationWithRecipients = Communication & { recipients: CommunicationRecipient[] };
 export type UserWithBadges = User & { badges: (UserBadge & { badge: AchievementBadge })[] };
