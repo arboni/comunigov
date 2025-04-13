@@ -96,7 +96,12 @@ export default function CreateSubjectDialog({
   });
 
   function onSubmit(data: SubjectFormValues) {
-    createSubjectMutation.mutate(data);
+    console.log("Form submitted with data:", data);
+    try {
+      createSubjectMutation.mutate(data);
+    } catch (error) {
+      console.error("Error during mutation:", error);
+    }
   }
 
   // Log right before rendering

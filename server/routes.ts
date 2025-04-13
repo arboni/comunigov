@@ -612,14 +612,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/subjects", isAuthenticated, async (req, res, next) => {
     try {
+      console.log("[POST /api/subjects] Request body:", req.body);
+      console.log("[POST /api/subjects] User:", req.user);
+      
       const validatedData = insertSubjectSchema.parse({
         ...req.body,
         createdBy: req.user!.id
       });
       
+      console.log("[POST /api/subjects] Validated data:", validatedData);
+      
       const subject = await storage.createSubject(validatedData);
+      console.log("[POST /api/subjects] Created subject:", subject);
+      
       res.status(201).json(subject);
     } catch (error) {
+      console.error("[POST /api/subjects] Error:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Validation error", errors: error.errors });
       }
