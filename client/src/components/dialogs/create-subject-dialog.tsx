@@ -49,8 +49,10 @@ export default function CreateSubjectDialog({
   open,
   onOpenChange,
 }: CreateSubjectDialogProps) {
+  console.log("CreateSubjectDialog rendered, open state:", open);
   const { toast } = useToast();
   const { user } = useSimpleAuth();
+  console.log("Current user:", user);
   const queryClient = useQueryClient();
 
   // Form setup
@@ -97,77 +99,103 @@ export default function CreateSubjectDialog({
     createSubjectMutation.mutate(data);
   }
 
+  // Log right before rendering
+  console.log("About to render dialog with open state:", open);
+  
+  if (!user) {
+    console.log("User is not authenticated, cannot render dialog");
+    return null;
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Create New Subject</DialogTitle>
-          <DialogDescription>
-            Add a new subject area for organizing tasks
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      {/* For debugging */}
+      {open && (
+        <div style={{ display: 'none' }}>
+          Dialog should be visible now (this is a hidden debug element)
+        </div>
+      )}
+      
+      <Dialog open={open} onOpenChange={(newOpen) => {
+        console.log("Dialog onOpenChange triggered with:", newOpen);
+        onOpenChange(newOpen);
+      }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create New Subject</DialogTitle>
+            <DialogDescription>
+              Add a new subject area for organizing tasks
+            </DialogDescription>
+          </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 py-4">
-              {/* Subject Name */}
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Subject Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter subject name" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      The name for this category of tasks
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <Form {...form}>
+            <form onSubmit={(e) => {
+              console.log("Form submitted");
+              form.handleSubmit(onSubmit)(e);
+            }} className="space-y-6">
+              <div className="grid grid-cols-1 gap-4 py-4">
+                {/* Subject Name */}
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Subject Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter subject name" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        The name for this category of tasks
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* Subject Description */}
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Briefly describe this subject area"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                {/* Subject Description */}
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Briefly describe this subject area"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={createSubjectMutation.isPending}
-              >
-                {createSubjectMutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Create Subject
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    console.log("Cancel button clicked");
+                    onOpenChange(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={createSubjectMutation.isPending}
+                >
+                  {createSubjectMutation.isPending && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Create Subject
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

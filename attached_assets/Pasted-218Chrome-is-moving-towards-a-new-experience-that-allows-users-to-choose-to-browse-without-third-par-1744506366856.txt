@@ -1,0 +1,372 @@
+218Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.Understand this warningAI
+eruda.js:2 [vite] server connection lost. Polling for restart...
+eruda.js:2 [vite] server connection lost. Polling for restart...
+5Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this errorAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'battery'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'web-share'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+framework-0b8df45b214ea112.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uD @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'battery'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'battery'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'web-share'.Understand this warningAI
+workspace_iframe.html:32 Unrecognized feature: 'web-share'.Understand this warningAI
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warningAI
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warningAI
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warningAI
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warningAI
+_app-b9c6684bd0450973.js:13 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-b9c6684bd0450973.js:13
+d @ main-875604624428ce06.js:1
+(anonymous) @ _app-b9c6684bd0450973.js:29
+useMemo @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+(anonymous) @ _app-b9c6684bd0450973.js:29
+ld @ framework-0b8df45b214ea112.js:1
+ou @ framework-0b8df45b214ea112.js:1
+i @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this errorAI
+Console.js:61 Warning: validateDOMNesting(...): <a> cannot appear as a descendant of <a>.
+    at a
+    at a
+    at https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=226278a4:205:18
+    at nav
+    at div
+    at div
+    at aside
+    at Sidebar (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/src/components/ui/sidebar.tsx:21:27)
+    at div
+    at DashboardLayout (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/src/components/layouts/dashboard-layout.tsx:39:35)
+    at DashboardPage (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/src/pages/dashboard-page.tsx:34:55)
+    at Route (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=226278a4:191:16)
+    at ProtectedRoute (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/src/App.tsx?v=pv3jIU66rOk5SmWYfImGQ:36:38)
+    at Switch (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=226278a4:247:17)
+    at Router
+    at App
+    at QueryClientProvider (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=226278a4:2805:3)
+Mt.forEach.n.<computed> @ Console.js:61
+printWarning @ chunk-RPCDYKBN.js?v=226278a4:521
+error @ chunk-RPCDYKBN.js?v=226278a4:505
+validateDOMNesting @ chunk-RPCDYKBN.js?v=226278a4:8256
+createInstance @ chunk-RPCDYKBN.js?v=226278a4:8328
+completeWork @ chunk-RPCDYKBN.js?v=226278a4:16290
+completeUnitOfWork @ chunk-RPCDYKBN.js?v=226278a4:19224
+performUnitOfWork @ chunk-RPCDYKBN.js?v=226278a4:19206
+workLoopSync @ chunk-RPCDYKBN.js?v=226278a4:19137
+renderRootSync @ chunk-RPCDYKBN.js?v=226278a4:19116
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=226278a4:18874
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=226278a4:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=226278a4:18627
+setTimeout
+scheduleFn @ @tanstack_react-query.js?v=226278a4:555
+flush @ @tanstack_react-query.js?v=226278a4:569
+batch @ @tanstack_react-query.js?v=226278a4:587
+dispatch_fn @ @tanstack_react-query.js?v=226278a4:996
+setData @ @tanstack_react-query.js?v=226278a4:696
+onSuccess @ @tanstack_react-query.js?v=226278a4:897
+resolve @ @tanstack_react-query.js?v=226278a4:456
+Promise.then
+run @ @tanstack_react-query.js?v=226278a4:498
+start @ @tanstack_react-query.js?v=226278a4:536
+fetch @ @tanstack_react-query.js?v=226278a4:926
+executeFetch_fn @ @tanstack_react-query.js?v=226278a4:2211
+onSubscribe @ @tanstack_react-query.js?v=226278a4:1898
+subscribe @ @tanstack_react-query.js?v=226278a4:24
+(anonymous) @ @tanstack_react-query.js?v=226278a4:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=226278a4:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=226278a4:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=226278a4:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=226278a4:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=226278a4:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=226278a4:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=226278a4:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=226278a4:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=226278a4:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=226278a4:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=226278a4:19432
+commitRoot @ chunk-RPCDYKBN.js?v=226278a4:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=226278a4:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=226278a4:18718
+workLoop @ chunk-RPCDYKBN.js?v=226278a4:197
+flushWork @ chunk-RPCDYKBN.js?v=226278a4:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=226278a4:384Understand this errorAI
+_app-b9c6684bd0450973.js:13 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-b9c6684bd0450973.js:13
+d @ main-875604624428ce06.js:1
+(anonymous) @ _app-b9c6684bd0450973.js:29
+useMemo @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+(anonymous) @ _app-b9c6684bd0450973.js:29
+ld @ framework-0b8df45b214ea112.js:1
+ou @ framework-0b8df45b214ea112.js:1
+i @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this errorAI
+Console.js:61 Warning: validateDOMNesting(...): <a> cannot appear as a descendant of <a>.
+    at a
+    at a
+    at https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=226278a4:205:18
+    at nav
+    at div
+    at div
+    at aside
+    at Sidebar (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/src/components/ui/sidebar.tsx:21:27)
+    at div
+    at DashboardLayout (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/src/components/layouts/dashboard-layout.tsx:39:35)
+    at DashboardPage (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/src/pages/dashboard-page.tsx:34:55)
+    at Route (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=226278a4:191:16)
+    at ProtectedRoute (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/src/App.tsx?v=FIUuNeoM9JSaeUNx03nNC:36:38)
+    at Switch (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=226278a4:247:17)
+    at Router
+    at App
+    at QueryClientProvider (https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=226278a4:2805:3)
+Mt.forEach.n.<computed> @ Console.js:61
+printWarning @ chunk-RPCDYKBN.js?v=226278a4:521
+error @ chunk-RPCDYKBN.js?v=226278a4:505
+validateDOMNesting @ chunk-RPCDYKBN.js?v=226278a4:8256
+createInstance @ chunk-RPCDYKBN.js?v=226278a4:8328
+completeWork @ chunk-RPCDYKBN.js?v=226278a4:16290
+completeUnitOfWork @ chunk-RPCDYKBN.js?v=226278a4:19224
+performUnitOfWork @ chunk-RPCDYKBN.js?v=226278a4:19206
+workLoopSync @ chunk-RPCDYKBN.js?v=226278a4:19137
+renderRootSync @ chunk-RPCDYKBN.js?v=226278a4:19116
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=226278a4:18874
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=226278a4:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=226278a4:18627
+setTimeout
+scheduleFn @ @tanstack_react-query.js?v=226278a4:555
+flush @ @tanstack_react-query.js?v=226278a4:569
+batch @ @tanstack_react-query.js?v=226278a4:587
+dispatch_fn @ @tanstack_react-query.js?v=226278a4:996
+setData @ @tanstack_react-query.js?v=226278a4:696
+onSuccess @ @tanstack_react-query.js?v=226278a4:897
+resolve @ @tanstack_react-query.js?v=226278a4:456
+Promise.then
+run @ @tanstack_react-query.js?v=226278a4:498
+start @ @tanstack_react-query.js?v=226278a4:536
+fetch @ @tanstack_react-query.js?v=226278a4:926
+executeFetch_fn @ @tanstack_react-query.js?v=226278a4:2211
+onSubscribe @ @tanstack_react-query.js?v=226278a4:1898
+subscribe @ @tanstack_react-query.js?v=226278a4:24
+(anonymous) @ @tanstack_react-query.js?v=226278a4:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=226278a4:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=226278a4:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=226278a4:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=226278a4:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=226278a4:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=226278a4:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=226278a4:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=226278a4:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=226278a4:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=226278a4:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=226278a4:19432
+commitRoot @ chunk-RPCDYKBN.js?v=226278a4:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=226278a4:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=226278a4:18718
+workLoop @ chunk-RPCDYKBN.js?v=226278a4:197
+flushWork @ chunk-RPCDYKBN.js?v=226278a4:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=226278a4:384Understand this errorAI
+_app-b9c6684bd0450973.js:13 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//tasks' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-b9c6684bd0450973.js:13
+d @ main-875604624428ce06.js:1
+(anonymous) @ _app-b9c6684bd0450973.js:29
+lU @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+(anonymous) @ _app-b9c6684bd0450973.js:29
+ld @ framework-0b8df45b214ea112.js:1
+ou @ framework-0b8df45b214ea112.js:1
+i @ framework-0b8df45b214ea112.js:1
+uI @ framework-0b8df45b214ea112.js:1
+(anonymous) @ framework-0b8df45b214ea112.js:1
+uM @ framework-0b8df45b214ea112.js:1
+uS @ framework-0b8df45b214ea112.js:1
+C @ framework-0b8df45b214ea112.js:1
+z @ framework-0b8df45b214ea112.js:1Understand this errorAI
+Console.js:61 Opening subject dialog
+Console.js:61 createSubjectOpen set to: true

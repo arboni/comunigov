@@ -59,7 +59,7 @@ import {
 } from "@/components/ui/tooltip";
 import DashboardLayout from "@/components/layouts/dashboard-layout";
 import CreateTaskDialog from "@/components/dialogs/create-task-dialog";
-import CreateSubjectDialog from "@/components/dialogs/create-subject-dialog";
+import CreateSubjectDialog from "../components/dialogs/create-subject-dialog";
 
 // Helper function to get task status badge color
 function getTaskStatusBadge(status: string) {
