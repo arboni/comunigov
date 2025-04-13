@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Clock, Users } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Users, BookOpen } from "lucide-react";
 import { apiRequest, queryClient, invalidateMeetings, invalidateDashboardStats } from "@/lib/queryClient";
+import { SubjectsApi } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 interface ScheduleMeetingDialogProps {
@@ -69,6 +71,8 @@ const formSchema = z.object({
   }),
   location: z.string().optional(),
   subject: z.string().optional(),
+  isRegisteredSubject: z.boolean().default(false),
+  subjectId: z.number().optional(),
   attendees: z.array(z.number()).optional(),
 });
 
@@ -81,15 +85,26 @@ export default function ScheduleMeetingDialog({
   const { toast } = useToast();
   const { user } = useSimpleAuth();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  
-  // Fetch entities for the attendee selection
-  const { data: entities } = useQuery({
-    queryKey: ["/api/entities"],
-  });
+  const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
   
   // Fetch users for the attendee selection
-  const { data: users } = useQuery({
+  const { data: users = [] } = useQuery({
     queryKey: ["/api/users"],
+  });
+  
+  // Fetch subjects for the subject selection
+  const { data: subjects = [] } = useQuery({
+    queryKey: ["/api/subjects"],
+  });
+  
+  // Fetch task users when a subject is selected
+  const { data: subjectUsers = [] } = useQuery({
+    queryKey: ["/api/subjects", selectedSubjectId, "users"],
+    queryFn: async () => {
+      if (!selectedSubjectId) return [];
+      return await SubjectsApi.getUsersForSubjectTasks(selectedSubjectId);
+    },
+    enabled: !!selectedSubjectId,
   });
   
   const form = useForm<FormValues>({
@@ -101,9 +116,25 @@ export default function ScheduleMeetingDialog({
       endTime: "10:00",
       location: "",
       subject: "",
+      isRegisteredSubject: false,
+      subjectId: undefined,
       attendees: [],
     },
   });
+  
+  // Effect to update attendees when subject users are loaded
+  useEffect(() => {
+    if (subjectUsers && subjectUsers.length > 0) {
+      const currentAttendees = form.getValues().attendees || [];
+      const userIds = subjectUsers.map((user: any) => user.id);
+      
+      // Combine current attendees with new users from the subject
+      const combinedAttendees = [...currentAttendees, ...userIds];
+      const uniqueAttendees = Array.from(new Set(combinedAttendees));
+      
+      form.setValue('attendees', uniqueAttendees);
+    }
+  }, [subjectUsers, form]);
 
   const scheduleMeetingMutation = useMutation({
     mutationFn: async (data: FormValues) => {
@@ -329,17 +360,102 @@ export default function ScheduleMeetingDialog({
             
             <FormField
               control={form.control}
-              name="subject"
+              name="isRegisteredSubject"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Subject/Topic (optional)</FormLabel>
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">
+                      Use Registered Subject
+                    </FormLabel>
+                    <FormDescription>
+                      Link this meeting to a registered subject to automatically include relevant participants
+                    </FormDescription>
+                  </div>
                   <FormControl>
-                    <Input placeholder="e.g. Q3 Budget Review" {...field} />
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        if (!checked) {
+                          // Clear subject-related fields if switching back to free-form subject
+                          form.setValue('subjectId', undefined);
+                          setSelectedSubjectId(null);
+                        }
+                      }}
+                    />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
+            
+            {form.watch('isRegisteredSubject') ? (
+              <FormField
+                control={form.control}
+                name="subjectId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      <span className="flex items-center">
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Select Subject
+                      </span>
+                    </FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        const subjectId = parseInt(value, 10);
+                        field.onChange(subjectId);
+                        setSelectedSubjectId(subjectId);
+                      }}
+                      value={field.value?.toString() || ""}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a registered subject" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {subjects.length > 0 ? (
+                          subjects.map((subject: any) => (
+                            <SelectItem
+                              key={`subject-${subject.id}`}
+                              value={subject.id.toString()}
+                            >
+                              {subject.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="none" disabled>
+                            No subjects available
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    {selectedSubjectId && (
+                      <div className="mt-2 text-sm text-muted-foreground">
+                        <p className="text-blue-600">
+                          Relevant users will be automatically selected as attendees
+                        </p>
+                      </div>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ) : (
+              <FormField
+                control={form.control}
+                name="subject"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subject/Topic (optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Q3 Budget Review" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             
             <FormField
               control={form.control}
@@ -353,16 +469,14 @@ export default function ScheduleMeetingDialog({
                     </FormDescription>
                   </div>
                   
-                  {/* Note: In a real implementation, you would fetch users grouped by entity and display 
-                      them in a more user-friendly way with search and filtering. This is simplified. */}
                   <div className="space-y-4">
-                    {users && users.length > 0 ? (
+                    {users.length > 0 ? (
                       <div className="space-y-2">
                         <h4 className="text-sm font-medium text-neutral-700 flex items-center">
                           <Users className="h-4 w-4 mr-2" />
                           Users
                         </h4>
-                        {users.map((attendee) => (
+                        {users.map((attendee: any) => (
                           <FormField
                             key={`user-${attendee.id}`}
                             control={form.control}
