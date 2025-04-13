@@ -973,8 +973,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createSubject(insertSubject: InsertSubject): Promise<Subject> {
-    const [subject] = await db.insert(subjects).values(insertSubject).returning();
-    return subject;
+    try {
+      console.log("Creating subject with data:", JSON.stringify(insertSubject));
+      const [subject] = await db.insert(subjects).values({
+        ...insertSubject,
+        createdAt: new Date() // Explicitly set createdAt
+      }).returning();
+      console.log("Created subject:", JSON.stringify(subject));
+      return subject;
+    } catch (error) {
+      console.error("Error creating subject:", error);
+      throw error;
+    }
   }
 
   async updateSubject(id: number, subjectData: Partial<Subject>): Promise<Subject | undefined> {
