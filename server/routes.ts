@@ -9,6 +9,7 @@ import {
   insertMeetingSchema, 
   insertMeetingAttendeeSchema,
   insertTaskSchema,
+  insertSubjectSchema,
   insertCommunicationSchema,
   insertCommunicationRecipientSchema,
   insertAchievementBadgeSchema,

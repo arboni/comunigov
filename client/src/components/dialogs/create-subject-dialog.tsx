@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertSubjectSchema } from "@shared/schema";
@@ -49,6 +50,7 @@ export default function CreateSubjectDialog({
   onOpenChange,
 }: CreateSubjectDialogProps) {
   const { toast } = useToast();
+  const { user } = useSimpleAuth();
   const queryClient = useQueryClient();
 
   // Form setup
@@ -63,7 +65,10 @@ export default function CreateSubjectDialog({
   // Create subject mutation
   const createSubjectMutation = useMutation({
     mutationFn: async (data: SubjectFormValues) => {
-      const response = await apiRequest("POST", "/api/subjects", data);
+      const response = await apiRequest("POST", "/api/subjects", {
+        ...data,
+        createdBy: user?.id
+      });
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Failed to create subject");
