@@ -24,7 +24,7 @@ import {
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { db } from "./db";
-import { eq, and, isNull, or, gt, desc, sql } from "drizzle-orm";
+import { eq, and, isNull, or, gt, desc, sql, ne } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 
@@ -523,6 +523,31 @@ export class MemStorage implements IStorage {
       (task) => task.subjectId === subjectId
     );
   }
+  
+  // Get all users associated with tasks from a specific subject
+  async getUsersForSubjectTasks(subjectId: number): Promise<User[]> {
+    const tasks = await this.getTasksBySubject(subjectId);
+    const userIds: number[] = [];
+    const users: User[] = [];
+    
+    // Get all registered users from tasks
+    for (const task of tasks) {
+      if (task.isRegisteredUser && task.assignedToUserId 
+          && !userIds.includes(task.assignedToUserId)) {
+        userIds.push(task.assignedToUserId);
+      }
+    }
+    
+    // Get user objects for each unique user ID
+    for (const userId of userIds) {
+      const user = await this.getUser(userId);
+      if (user) {
+        users.push(user);
+      }
+    }
+    
+    return users;
+  }
 
   async getTasksByMeeting(meetingId: number): Promise<Task[]> {
     return Array.from(this.tasks.values()).filter(
@@ -987,6 +1012,54 @@ export class DatabaseStorage implements IStorage {
       attendees
     };
   }
+  
+  async getMeetingWithSubject(id: number): Promise<MeetingWithSubject | undefined> {
+    const [meeting] = await db.select().from(meetings).where(eq(meetings.id, id));
+    if (!meeting) return undefined;
+    
+    if (meeting.isRegisteredSubject && meeting.subjectId) {
+      const [subject] = await db.select()
+        .from(subjects)
+        .where(eq(subjects.id, meeting.subjectId));
+      
+      return {
+        ...meeting,
+        registeredSubject: subject
+      };
+    }
+    
+    return {
+      ...meeting,
+      registeredSubject: undefined
+    };
+  }
+  
+  async getMeetingWithAttendeesAndSubject(id: number): Promise<MeetingWithAttendeesAndSubject | undefined> {
+    const [meeting] = await db.select().from(meetings).where(eq(meetings.id, id));
+    if (!meeting) return undefined;
+    
+    const attendees = await db.select()
+      .from(meetingAttendees)
+      .where(eq(meetingAttendees.meetingId, id));
+    
+    if (meeting.isRegisteredSubject && meeting.subjectId) {
+      const [subject] = await db.select()
+        .from(subjects)
+        .where(eq(subjects.id, meeting.subjectId));
+      
+      return {
+        ...meeting,
+        attendees,
+        registeredSubject: subject
+      };
+    }
+    
+    return {
+      ...meeting,
+      attendees,
+      registeredSubject: undefined
+    };
+  }
 
   async createMeeting(insertMeeting: InsertMeeting): Promise<Meeting> {
     // Add current timestamp for createdAt if not provided
@@ -1190,6 +1263,51 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(tasks)
       .where(eq(tasks.subjectId, subjectId));
+  }
+  
+  // Get all users associated with tasks from a specific subject
+  async getUsersForSubjectTasks(subjectId: number): Promise<User[]> {
+    // Find all tasks for this subject that are assigned to registered users
+    const subjectTasks = await db
+      .select()
+      .from(tasks)
+      .where(
+        and(
+          eq(tasks.subjectId, subjectId),
+          eq(tasks.isRegisteredUser, true),
+          sql`${tasks.assignedToUserId} IS NOT NULL`
+        )
+      );
+    
+    if (subjectTasks.length === 0) {
+      return [];
+    }
+    
+    // Extract unique user IDs and filter out nulls
+    const userIdsWithPossibleNulls = subjectTasks.map(task => task.assignedToUserId);
+    const userIds: number[] = [];
+    
+    // Manually collect unique user IDs
+    for (const id of userIdsWithPossibleNulls) {
+      if (id !== null && !userIds.includes(id)) {
+        userIds.push(id);
+      }
+    }
+    
+    if (userIds.length === 0) {
+      return [];
+    }
+    
+    // Get the user objects for these IDs using IN clause
+    return await db
+      .select()
+      .from(users)
+      .where(
+        // Use OR conditions for each user ID as alternative to inArray
+        or(
+          ...userIds.map(id => eq(users.id, id))
+        )
+      );
   }
 
   async getTasksByMeeting(meetingId: number): Promise<Task[]> {
