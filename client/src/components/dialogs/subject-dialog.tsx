@@ -79,17 +79,14 @@ export default function SubjectDialog({
       
       console.log("Creating subject with data:", payload);
       
-      try {
-        const response = await apiRequest("POST", "/api/subjects", payload);
-        const result = await response.json();
-        console.log("Subject created successfully:", result);
-        return result;
-      } catch (error) {
-        console.error("API request failed:", error);
-        throw error;
-      }
+      // Use apiRequest which handles errors internally
+      const response = await apiRequest("POST", "/api/subjects", payload);
+      const result = await response.json();
+      console.log("Subject created successfully:", result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      console.log("Mutation success with result:", result);
       toast({
         title: "Success",
         description: "Subject created successfully",
@@ -100,9 +97,10 @@ export default function SubjectDialog({
       onOpenChange(false);
     },
     onError: (error: Error) => {
+      console.error("Create subject mutation error:", error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to create subject. Please try again.",
         variant: "destructive",
       });
     },
