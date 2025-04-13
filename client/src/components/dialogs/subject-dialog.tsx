@@ -4,8 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { useToast } from "@/hooks/use-toast";
 import { insertSubjectSchema } from "@shared/schema";
+import { apiRequest, invalidateSubjects } from "@/lib/queryClient";
 
 // Components
 import { Button } from "@/components/ui/button";
@@ -49,6 +51,7 @@ export default function SubjectDialog({
   onOpenChange,
 }: SubjectDialogProps) {
   const { toast } = useToast();
+  const { user } = useSimpleAuth();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -64,27 +67,35 @@ export default function SubjectDialog({
   // Create subject mutation
   const createSubjectMutation = useMutation({
     mutationFn: async (data: FormValues) => {
-      const response = await fetch("/api/subjects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create subject");
+      if (!user) {
+        throw new Error("You must be logged in to create a subject");
       }
       
-      return await response.json();
+      // Add the current user's ID to the data
+      const payload = {
+        ...data,
+        createdBy: user.id
+      };
+      
+      console.log("Creating subject with data:", payload);
+      
+      try {
+        const response = await apiRequest("POST", "/api/subjects", payload);
+        const result = await response.json();
+        console.log("Subject created successfully:", result);
+        return result;
+      } catch (error) {
+        console.error("API request failed:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       toast({
         title: "Success",
         description: "Subject created successfully",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/subjects"] });
+      // Use the helper function to invalidate subjects cache
+      invalidateSubjects();
       form.reset();
       onOpenChange(false);
     },

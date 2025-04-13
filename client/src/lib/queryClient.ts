@@ -82,6 +82,10 @@ export function invalidateDashboardStats() {
   return queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
 }
 
+export function invalidateSubjects() {
+  return queryClient.invalidateQueries({ queryKey: ['/api/subjects'] });
+}
+
 // Invalidate all data (useful after major changes)
 export function invalidateAllData() {
   return Promise.all([
@@ -90,6 +94,7 @@ export function invalidateAllData() {
     invalidateTasks(),
     invalidateMeetings(),
     invalidateCommunications(),
+    invalidateSubjects(),
     invalidateDashboardStats()
   ]);
 }
