@@ -1064,8 +1064,8 @@ export class DatabaseStorage implements IStorage {
     if (!task) return undefined;
 
     // Check if task is assigned to a registered user
-    if (task.userId) {
-      const [assignee] = await db.select().from(users).where(eq(users.id, task.userId));
+    if (task.isRegisteredUser && task.assignedToUserId) {
+      const [assignee] = await db.select().from(users).where(eq(users.id, task.assignedToUserId));
       if (!assignee) return undefined;
 
       return {
@@ -1133,7 +1133,12 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(tasks)
-      .where(eq(tasks.userId, userId));
+      .where(
+        and(
+          eq(tasks.isRegisteredUser, true),
+          eq(tasks.assignedToUserId, userId)
+        )
+      );
   }
   
   async getTasksBySubject(subjectId: number): Promise<Task[]> {

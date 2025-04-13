@@ -67,6 +67,15 @@ async function applyMigrations() {
       console.log('Added owner_phone column to tasks table');
     }
     
+    // Check if isRegisteredUser column exists
+    const isRegisteredUserExists = await columnExists('tasks', 'is_registered_user');
+    if (!isRegisteredUserExists) {
+      await db.execute(sql`
+        ALTER TABLE tasks ADD COLUMN is_registered_user BOOLEAN DEFAULT FALSE;
+      `);
+      console.log('Added is_registered_user column to tasks table');
+    }
+    
     // Check if assigned_to column exists and drop it if it does
     const assignedToExists = await columnExists('tasks', 'assigned_to');
     if (assignedToExists) {

@@ -474,7 +474,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/tasks/user/:userId", isAuthenticated, async (req, res, next) => {
     try {
       const userId = parseInt(req.params.userId);
-      const tasks = await storage.getTasksByAssignee(userId);
+      const tasks = await storage.getTasksByUserId(userId);
       res.json(tasks);
     } catch (error) {
       next(error);
