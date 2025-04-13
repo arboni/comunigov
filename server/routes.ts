@@ -653,6 +653,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
+  
+  app.delete("/api/subjects/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // First check if there are any tasks using this subject
+      const tasksWithSubject = await storage.getTasksBySubject(id);
+      if (tasksWithSubject && tasksWithSubject.length > 0) {
+        return res.status(400).json({ 
+          message: "Cannot delete subject that has associated tasks. Please reassign or delete the tasks first." 
+        });
+      }
+      
+      const result = await storage.deleteSubject(id);
+      
+      if (!result) {
+        return res.status(404).json({ message: "Subject not found" });
+      }
+      
+      res.status(200).json({ message: "Subject deleted successfully" });
+    } catch (error) {
+      next(error);
+    }
+  });
 
   app.get("/api/subjects/:id/tasks", isAuthenticated, async (req, res, next) => {
     try {

@@ -10,7 +10,8 @@ import {
   Settings,
   Menu,
   Bell,
-  X
+  X,
+  FileText
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -61,6 +62,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: "Communications", href: "/communications", icon: SendHorizonal },
     { name: "Meetings", href: "/meetings", icon: Calendar },
     { name: "Tasks", href: "/tasks", icon: ListChecks },
+    { name: "Subjects", href: "/subjects", icon: FileText },
     { name: "Users", href: "/users", icon: Users },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
