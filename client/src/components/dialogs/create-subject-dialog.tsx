@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -49,11 +50,10 @@ export default function CreateSubjectDialog({
   open,
   onOpenChange,
 }: CreateSubjectDialogProps) {
-  console.log("CreateSubjectDialog rendered, open state:", open);
   const { toast } = useToast();
   const { user } = useSimpleAuth();
-  console.log("Current user:", user);
   const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form setup
   const form = useForm<SubjectFormValues>({
@@ -67,140 +67,144 @@ export default function CreateSubjectDialog({
   // Create subject mutation
   const createSubjectMutation = useMutation({
     mutationFn: async (data: SubjectFormValues) => {
-      const response = await apiRequest("POST", "/api/subjects", {
-        ...data,
-        createdBy: user?.id
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create subject");
+      console.log("Mutation starting with data:", data);
+      
+      // Make sure user exists
+      if (!user?.id) {
+        throw new Error("User not authenticated");
       }
-      return await response.json();
+      
+      const payload = {
+        ...data,
+        createdBy: user.id
+      };
+      
+      console.log("Sending API request with payload:", payload);
+      
+      const response = await apiRequest("POST", "/api/subjects", payload);
+      
+      console.log("API response status:", response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("API error response:", errorData);
+        throw new Error(errorData.message || "Failed to create subject");
+      }
+      
+      const result = await response.json();
+      console.log("API success response:", result);
+      return result;
     },
     onSuccess: () => {
+      console.log("Mutation successful, invalidating queries");
       toast({
         title: "Success",
         description: "Subject created successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/subjects"] });
       form.reset();
+      setIsSubmitting(false);
       onOpenChange(false);
     },
     onError: (error) => {
+      console.error("Mutation error:", error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "An error occurred",
         variant: "destructive",
       });
-    },
+      setIsSubmitting(false);
+    }
   });
 
-  function onSubmit(data: SubjectFormValues) {
-    console.log("Form submitted with data:", data);
+  const handleSubmit = async (data: SubjectFormValues) => {
+    console.log("Submit handler called with data:", data);
+    setIsSubmitting(true);
+    
     try {
-      createSubjectMutation.mutate(data);
+      await createSubjectMutation.mutateAsync(data);
     } catch (error) {
-      console.error("Error during mutation:", error);
+      console.error("Error in handleSubmit:", error);
+      setIsSubmitting(false);
     }
-  }
-
-  // Log right before rendering
-  console.log("About to render dialog with open state:", open);
+  };
   
   if (!user) {
-    console.log("User is not authenticated, cannot render dialog");
     return null;
   }
 
   return (
-    <>
-      {/* For debugging */}
-      {open && (
-        <div style={{ display: 'none' }}>
-          Dialog should be visible now (this is a hidden debug element)
-        </div>
-      )}
-      
-      <Dialog open={open} onOpenChange={(newOpen) => {
-        console.log("Dialog onOpenChange triggered with:", newOpen);
-        onOpenChange(newOpen);
-      }}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Create New Subject</DialogTitle>
-            <DialogDescription>
-              Add a new subject area for organizing tasks
-            </DialogDescription>
-          </DialogHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Create New Subject</DialogTitle>
+          <DialogDescription>
+            Add a new subject area for organizing tasks
+          </DialogDescription>
+        </DialogHeader>
 
-          <Form {...form}>
-            <form onSubmit={(e) => {
-              console.log("Form submitted");
-              form.handleSubmit(onSubmit)(e);
-            }} className="space-y-6">
-              <div className="grid grid-cols-1 gap-4 py-4">
-                {/* Subject Name */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Subject Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter subject name" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        The name for this category of tasks
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 gap-4 py-4">
+              {/* Subject Name */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subject Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter subject name" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      The name for this category of tasks
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                {/* Subject Description */}
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Briefly describe this subject area"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              {/* Subject Description */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Briefly describe this subject area"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    console.log("Cancel button clicked");
-                    onOpenChange(false);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={createSubjectMutation.isPending}
-                >
-                  {createSubjectMutation.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Create Subject
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-    </>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Create Subject
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }
