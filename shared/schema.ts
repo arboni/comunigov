@@ -136,6 +136,17 @@ export const communicationRecipients = pgTable("communication_recipients", {
   readAt: timestamp("read_at"),
 });
 
+// Communication file attachments
+export const communicationFiles = pgTable("communication_files", {
+  id: serial("id").primaryKey(),
+  communicationId: integer("communication_id").references(() => communications.id).notNull(),
+  fileName: text("file_name").notNull(),
+  fileSize: integer("file_size").notNull(),
+  fileType: text("file_type").notNull(),
+  filePath: text("file_path").notNull(),
+  uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
+});
+
 // Achievement badges
 export const achievementBadges = pgTable("achievement_badges", {
   id: serial("id").primaryKey(),
