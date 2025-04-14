@@ -75,14 +75,44 @@ export default function CreateMemberDialog({
         password: "1234" // Default password that will be sent to user to change
       };
       
-      const res = await apiRequest("POST", "/api/users", memberData);
-      const newUser = await res.json();
+      console.log('Sending member data:', memberData);
       
-      // The welcome email is now automatically sent by the server
-      // through SendGrid when a new member is added
-      setEmailSent(true);
-      
-      return newUser;
+      try {
+        // Use direct fetch instead of apiRequest for better error handling
+        const response = await fetch('/api/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(memberData),
+          credentials: 'include',
+        });
+        
+        // Check if response is ok
+        if (!response.ok) {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to create member');
+          } else {
+            const errorText = await response.text();
+            console.error('Server response:', errorText);
+            throw new Error('Server error: ' + response.status);
+          }
+        }
+        
+        // Parse response as JSON
+        const newUser = await response.json();
+        
+        // The welcome email is now automatically sent by the server
+        // through SendGrid when a new member is added
+        setEmailSent(true);
+        
+        return newUser;
+      } catch (error) {
+        console.error('Error creating member:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       // Invalidate relevant queries
