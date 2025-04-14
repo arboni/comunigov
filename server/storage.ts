@@ -98,6 +98,8 @@ export interface IStorage {
   // Communications
   getCommunication(id: number): Promise<Communication | undefined>;
   getCommunicationWithRecipients(id: number): Promise<CommunicationWithRecipients | undefined>;
+  getCommunicationWithFiles(id: number): Promise<CommunicationWithFiles | undefined>;
+  getCommunicationWithRecipientsAndFiles(id: number): Promise<CommunicationWithRecipientsAndFiles | undefined>;
   createCommunication(communication: InsertCommunication): Promise<Communication>;
   getAllCommunications(): Promise<Communication[]>;
   
@@ -106,6 +108,11 @@ export interface IStorage {
   createCommunicationRecipient(recipient: InsertCommunicationRecipient): Promise<CommunicationRecipient>;
   updateCommunicationRecipient(id: number, recipientData: Partial<CommunicationRecipient>): Promise<CommunicationRecipient | undefined>;
   getCommunicationRecipientsByCommunicationId(communicationId: number): Promise<CommunicationRecipient[]>;
+  
+  // Communication Files
+  getCommunicationFile(id: number): Promise<CommunicationFile | undefined>;
+  createCommunicationFile(file: InsertCommunicationFile): Promise<CommunicationFile>;
+  getCommunicationFilesByCommunicationId(communicationId: number): Promise<CommunicationFile[]>;
   
   // Achievement Badges
   getAchievementBadge(id: number): Promise<AchievementBadge | undefined>;
@@ -138,6 +145,7 @@ export class MemStorage implements IStorage {
   private taskComments: Map<number, TaskComment>;
   private communications: Map<number, Communication>;
   private communicationRecipients: Map<number, CommunicationRecipient>;
+  private communicationFiles: Map<number, CommunicationFile>;
   
   // Auto-increment IDs
   currentUserId: number;
@@ -150,6 +158,7 @@ export class MemStorage implements IStorage {
   currentTaskCommentId: number;
   currentCommunicationId: number;
   currentCommunicationRecipientId: number;
+  currentCommunicationFileId: number;
   
   // Session store
   sessionStore: any; // Use any type for sessionStore
@@ -166,6 +175,7 @@ export class MemStorage implements IStorage {
     this.taskComments = new Map();
     this.communications = new Map();
     this.communicationRecipients = new Map();
+    this.communicationFiles = new Map();
     this.achievementBadges = new Map();
     this.userBadges = new Map();
     
