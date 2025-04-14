@@ -70,6 +70,9 @@ export interface IStorage {
   getMeetingDocument(id: number): Promise<MeetingDocument | undefined>;
   createMeetingDocument(document: InsertMeetingDocument): Promise<MeetingDocument>;
   getMeetingDocumentsByMeetingId(meetingId: number): Promise<MeetingDocument[]>;
+  getMeetingWithDocuments(id: number): Promise<MeetingWithDocuments | undefined>;
+  getMeetingWithAttendeesAndDocuments(id: number): Promise<MeetingWithAttendeesAndDocuments | undefined>;
+  getMeetingWithAll(id: number): Promise<MeetingWithAll | undefined>;
   
   // Subjects
   getSubject(id: number): Promise<Subject | undefined>;
@@ -1282,6 +1285,87 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(meetingDocuments)
       .where(eq(meetingDocuments.meetingId, meetingId));
+  }
+  
+  async getMeetingWithDocuments(id: number): Promise<MeetingWithDocuments | undefined> {
+    const [meeting] = await db
+      .select()
+      .from(meetings)
+      .where(eq(meetings.id, id));
+      
+    if (!meeting) return undefined;
+    
+    const documents = await db
+      .select()
+      .from(meetingDocuments)
+      .where(eq(meetingDocuments.meetingId, id));
+      
+    return {
+      ...meeting,
+      documents
+    };
+  }
+  
+  async getMeetingWithAttendeesAndDocuments(id: number): Promise<MeetingWithAttendeesAndDocuments | undefined> {
+    const [meeting] = await db
+      .select()
+      .from(meetings)
+      .where(eq(meetings.id, id));
+      
+    if (!meeting) return undefined;
+    
+    const attendees = await db
+      .select()
+      .from(meetingAttendees)
+      .where(eq(meetingAttendees.meetingId, id));
+      
+    const documents = await db
+      .select()
+      .from(meetingDocuments)
+      .where(eq(meetingDocuments.meetingId, id));
+      
+    return {
+      ...meeting,
+      attendees,
+      documents
+    };
+  }
+  
+  async getMeetingWithAll(id: number): Promise<MeetingWithAll | undefined> {
+    const [meeting] = await db
+      .select()
+      .from(meetings)
+      .where(eq(meetings.id, id));
+      
+    if (!meeting) return undefined;
+    
+    const attendees = await db
+      .select()
+      .from(meetingAttendees)
+      .where(eq(meetingAttendees.meetingId, id));
+      
+    const documents = await db
+      .select()
+      .from(meetingDocuments)
+      .where(eq(meetingDocuments.meetingId, id));
+    
+    let registeredSubject = undefined;
+    
+    if (meeting.subjectId) {
+      const [subject] = await db
+        .select()
+        .from(subjects)
+        .where(eq(subjects.id, meeting.subjectId));
+        
+      registeredSubject = subject;
+    }
+    
+    return {
+      ...meeting,
+      attendees,
+      documents,
+      registeredSubject
+    };
   }
 
   // Task methods

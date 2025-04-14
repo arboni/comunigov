@@ -458,12 +458,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid meeting ID" });
       }
       
-      const meeting = await storage.getMeeting(id);
+      const meeting = await storage.getMeetingWithAll(id);
       if (!meeting) {
         return res.status(404).json({ message: "Meeting not found" });
       }
       
       res.json(meeting);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/meetings/:id/documents", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid meeting ID" });
+      }
+      
+      const documents = await storage.getMeetingDocumentsByMeetingId(id);
+      res.json(documents);
     } catch (error) {
       next(error);
     }
@@ -897,6 +911,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // File upload for meeting documents
+  app.post("/api/meeting-documents", isAuthenticated, upload.any(), async (req, res, next) => {
+    try {
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
+      
+      // Limit to 5 files as requested
+      if (req.files.length > 5) {
+        return res.status(400).json({ message: "Maximum 5 files can be uploaded at once" });
+      }
+      
+      const meetingId = parseInt(req.body.meetingId);
+      if (isNaN(meetingId)) {
+        return res.status(400).json({ message: "Invalid meeting ID" });
+      }
+      
+      // Verify the meeting exists
+      const meeting = await storage.getMeeting(meetingId);
+      if (!meeting) {
+        return res.status(404).json({ message: "Meeting not found" });
+      }
+      
+      // Get the existing documents to check the limit
+      const existingDocs = await storage.getMeetingDocumentsByMeetingId(meetingId);
+      if (existingDocs.length + req.files.length > 5) {
+        return res.status(400).json({ 
+          message: `Cannot upload more documents. Maximum allowed is 5, and meeting already has ${existingDocs.length} documents.`
+        });
+      }
+      
+      // Add each file to the database
+      const uploadedDocuments = [];
+      
+      for (const file of req.files as Express.Multer.File[]) {
+        const documentData = {
+          name: file.originalname,
+          type: req.body.documentType || 'attachment',
+          meetingId: meetingId,
+          filePath: file.path,
+          uploadedBy: req.user.id,
+          uploadedAt: new Date()
+        };
+        
+        const savedDocument = await storage.createMeetingDocument(documentData);
+        uploadedDocuments.push(savedDocument);
+      }
+      
+      res.status(201).json(uploadedDocuments);
+    } catch (error) {
+      console.error("Error uploading meeting documents:", error);
+      next(error);
+    }
+  });
+  
   // Dashboard stats
   app.get("/api/dashboard/stats", isAuthenticated, async (req, res, next) => {
     try {
