@@ -3,6 +3,10 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, hashPassword, comparePasswords } from "./auth";
 import { sendNewMemberWelcomeEmail, sendPasswordResetEmail } from "./email-service";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { 
   insertEntitySchema, 

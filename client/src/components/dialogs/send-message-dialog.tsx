@@ -57,6 +57,12 @@ const formSchema = z.object({
   recipientType: z.enum(["users", "entities"]),
   selectedUsers: z.array(z.number()).optional(),
   selectedEntities: z.array(z.number()).optional(),
+  files: z.array(z.object({
+    file: z.any(), // Actual file object
+    name: z.string(),
+    size: z.number(),
+    type: z.string(),
+  })).optional(),
 }).refine(
   (data) => {
     if (data.recipientType === "users") {
@@ -90,6 +96,14 @@ export default function SendMessageDialog({
     queryKey: ["/api/entities"],
   });
   
+  const [selectedFiles, setSelectedFiles] = useState<Array<{
+    file: File;
+    name: string;
+    size: number;
+    type: string;
+  }>>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -99,6 +113,7 @@ export default function SendMessageDialog({
       recipientType: "users",
       selectedUsers: [],
       selectedEntities: [],
+      files: [],
     },
   });
 
@@ -109,6 +124,7 @@ export default function SendMessageDialog({
         ? (data.selectedUsers || []).map(userId => ({ userId }))
         : (data.selectedEntities || []).map(entityId => ({ entityId }));
       
+      // Create the communication
       const res = await apiRequest("POST", "/api/communications", {
         subject: data.subject,
         content: data.content,
@@ -116,7 +132,29 @@ export default function SendMessageDialog({
         sentBy: user?.id,
         recipients,
       });
-      return await res.json();
+      
+      const communication = await res.json();
+      
+      // If we have files, upload them
+      if (data.files && data.files.length > 0) {
+        const formData = new FormData();
+        
+        // Add the communication ID
+        formData.append('communicationId', communication.id.toString());
+        
+        // Add each file
+        data.files.forEach((fileData, index) => {
+          formData.append(`file-${index}`, fileData.file);
+        });
+        
+        // Send the files
+        await fetch('/api/communication-files', {
+          method: 'POST',
+          body: formData,
+        });
+      }
+      
+      return communication;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/communications"] });
@@ -136,7 +174,37 @@ export default function SendMessageDialog({
     },
   });
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files).map(file => ({
+        file,
+        name: file.name,
+        size: file.size,
+        type: file.type
+      }));
+      
+      const updatedFiles = [...selectedFiles, ...newFiles];
+      setSelectedFiles(updatedFiles);
+      
+      // Update form value
+      form.setValue('files', updatedFiles);
+    }
+  };
+  
+  const removeFile = (index: number) => {
+    const updatedFiles = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(updatedFiles);
+    form.setValue('files', updatedFiles);
+  };
+  
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' bytes';
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    else return (bytes / 1048576).toFixed(1) + ' MB';
+  };
+  
   function onSubmit(data: FormValues) {
+    data.files = selectedFiles;
     sendMessageMutation.mutate(data);
   }
 
@@ -237,6 +305,68 @@ export default function SendMessageDialog({
                       </SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="files"
+              render={() => (
+                <FormItem>
+                  <div className="mb-4">
+                    <FormLabel>Attachments</FormLabel>
+                    <FormDescription>
+                      Add files to be attached to the message
+                    </FormDescription>
+                  </div>
+                  
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                        multiple
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="flex items-center gap-2"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Upload className="h-4 w-4" />
+                        Add Files
+                      </Button>
+                    </div>
+                    
+                    {selectedFiles.length > 0 && (
+                      <div className="border rounded-md p-4 space-y-2">
+                        {selectedFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                            <div className="flex items-center space-x-2">
+                              <FileIcon className="h-4 w-4 text-blue-500" />
+                              <div className="text-sm">
+                                <div className="font-medium">{file.name}</div>
+                                <div className="text-xs text-muted-foreground">{formatFileSize(file.size)}</div>
+                              </div>
+                            </div>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => removeFile(index)} 
+                              className="h-6 w-6"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
