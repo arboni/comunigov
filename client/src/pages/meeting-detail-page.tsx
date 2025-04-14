@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation, Link } from "wouter";
 import { format, isValid } from "date-fns";
-import { Clock, Users, MapPin, Calendar, ArrowLeft } from "lucide-react";
+import { Clock, Users, MapPin, Calendar, ArrowLeft, FileIcon, Download, File } from "lucide-react";
 import DashboardLayout from "@/components/layouts/dashboard-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,12 @@ export default function MeetingDetailPage() {
   // Fetch all users to display proper names
   const { data: users = [] } = useQuery({
     queryKey: ['/api/users'],
+  });
+  
+  // Fetch meeting documents
+  const { data: documents = [], isLoading: loadingDocuments } = useQuery({
+    queryKey: [`/api/meetings/${id}/documents`],
+    enabled: !!id
   });
   
   // Create a lookup map for user information
@@ -172,6 +178,95 @@ export default function MeetingDetailPage() {
     );
   };
 
+  // Get file extension from filename
+  const getFileExtension = (filename: string): string => {
+    return filename.split('.').pop()?.toLowerCase() || '';
+  };
+  
+  // Get appropriate icon based on file type
+  const getFileIcon = (filename: string) => {
+    const extension = getFileExtension(filename);
+    
+    // Return appropriate icon based on file type
+    switch (extension) {
+      case 'pdf':
+        return <FileIcon className="h-4 w-4 text-red-500" />;
+      case 'doc':
+      case 'docx':
+        return <FileIcon className="h-4 w-4 text-blue-500" />;
+      case 'xls':
+      case 'xlsx':
+        return <FileIcon className="h-4 w-4 text-green-500" />;
+      case 'ppt':
+      case 'pptx':
+        return <FileIcon className="h-4 w-4 text-orange-500" />;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+        return <FileIcon className="h-4 w-4 text-purple-500" />;
+      default:
+        return <File className="h-4 w-4 text-neutral-500" />;
+    }
+  };
+  
+  // Format file size
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+  
+  // Rendering Documents
+  const renderDocuments = () => {
+    if (loadingDocuments) {
+      return (
+        <div className="animate-pulse space-y-2">
+          <div className="h-10 bg-neutral-100 rounded"></div>
+          <div className="h-10 bg-neutral-100 rounded"></div>
+        </div>
+      );
+    }
+    
+    if (documents.length === 0) {
+      return (
+        <p className="text-neutral-500 text-sm text-center py-4">
+          No files available for this meeting
+        </p>
+      );
+    }
+    
+    return (
+      <ul className="space-y-2">
+        {documents.map((document: any) => (
+          <li key={document.id} className="flex items-center p-2 rounded-md bg-neutral-50">
+            <div className="mr-3">
+              {getFileIcon(document.name)}
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-neutral-800">
+                {document.name}
+              </p>
+              <p className="text-xs text-neutral-500">
+                {formatFileSize(document.size || 0)} • Uploaded {new Date(document.uploadedAt).toLocaleDateString()}
+              </p>
+            </div>
+            <a 
+              href={document.filePath} 
+              download={document.name}
+              className="p-1 rounded-full hover:bg-neutral-200 transition-colors"
+              title="Download file"
+            >
+              <Download className="h-4 w-4 text-neutral-600" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    );
+  };
+  
   // Rendering Attendees
   const renderAttendees = () => {
     if (loadingAttendees) {
@@ -305,11 +400,14 @@ export default function MeetingDetailPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Meeting Files</CardTitle>
+                  {documents.length > 0 && (
+                    <div className="text-sm text-muted-foreground">
+                      {documents.length} {documents.length === 1 ? 'file' : 'files'} attached
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
-                  <p className="text-neutral-500 text-sm text-center py-4">
-                    No files available for this meeting
-                  </p>
+                  {renderDocuments()}
                 </CardContent>
               </Card>
               
