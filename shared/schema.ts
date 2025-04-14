@@ -180,6 +180,7 @@ export const insertTaskSchema = createInsertSchema(tasks).omit({ id: true, creat
 export const insertTaskCommentSchema = createInsertSchema(taskComments).omit({ id: true, createdAt: true });
 export const insertCommunicationSchema = createInsertSchema(communications).omit({ id: true, sentAt: true });
 export const insertCommunicationRecipientSchema = createInsertSchema(communicationRecipients).omit({ id: true, readAt: true });
+export const insertCommunicationFileSchema = createInsertSchema(communicationFiles).omit({ id: true, uploadedAt: true });
 export const insertAchievementBadgeSchema = createInsertSchema(achievementBadges).omit({ id: true, createdAt: true });
 export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({ id: true, earnedAt: true });
 
@@ -213,6 +214,9 @@ export type Communication = typeof communications.$inferSelect;
 
 export type InsertCommunicationRecipient = z.infer<typeof insertCommunicationRecipientSchema>;
 export type CommunicationRecipient = typeof communicationRecipients.$inferSelect;
+
+export type InsertCommunicationFile = z.infer<typeof insertCommunicationFileSchema>;
+export type CommunicationFile = typeof communicationFiles.$inferSelect;
 
 export type InsertAchievementBadge = z.infer<typeof insertAchievementBadgeSchema>;
 export type AchievementBadge = typeof achievementBadges.$inferSelect;
@@ -338,6 +342,14 @@ export const communicationsRelations = relations(communications, ({ one, many })
     references: [users.id],
   }),
   recipients: many(communicationRecipients),
+  files: many(communicationFiles),
+}));
+
+export const communicationFilesRelations = relations(communicationFiles, ({ one }) => ({
+  communication: one(communications, {
+    fields: [communicationFiles.communicationId],
+    references: [communications.id],
+  }),
 }));
 
 export const communicationRecipientsRelations = relations(communicationRecipients, ({ one }) => ({
@@ -377,5 +389,7 @@ export type MeetingWithSubject = Meeting & { registeredSubject?: Subject };
 export type MeetingWithAttendeesAndSubject = MeetingWithAttendees & { registeredSubject?: Subject };
 export type TaskWithAssignee = Task & { assignee: User };
 export type CommunicationWithRecipients = Communication & { recipients: CommunicationRecipient[] };
+export type CommunicationWithFiles = Communication & { files: CommunicationFile[] };
+export type CommunicationWithRecipientsAndFiles = CommunicationWithRecipients & { files: CommunicationFile[] };
 export type UserWithBadges = User & { badges: (UserBadge & { badge: AchievementBadge })[] };
 export type UserBadgeWithDetails = UserBadge & { badge: AchievementBadge, user: User };
