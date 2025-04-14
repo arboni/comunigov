@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Clock, Users, BookOpen } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Users, BookOpen, Upload, FileIcon, X } from "lucide-react";
 import { apiRequest, queryClient, invalidateMeetings, invalidateDashboardStats } from "@/lib/queryClient";
 import { SubjectsApi } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
@@ -86,6 +86,15 @@ export default function ScheduleMeetingDialog({
   const { user } = useSimpleAuth();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<Array<{name: string; size: number; type: string; file: File}>>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Function to format file size
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  };
   
   // Fetch users for the attendee selection
   const { data: users = [] } = useQuery({
@@ -163,7 +172,21 @@ export default function ScheduleMeetingDialog({
           );
         }
         
-        // After all attendees are added, invalidate the queries to refresh the data
+        // Upload files if any were selected
+        if (selectedFiles.length > 0) {
+          try {
+            await uploadMeetingFiles(meeting.id);
+          } catch (error) {
+            console.error("Error uploading meeting files:", error);
+            toast({
+              title: "Meeting files upload issue",
+              description: "The meeting was created but there was an issue uploading files.",
+              variant: "destructive",
+            });
+          }
+        }
+        
+        // After all operations are completed, invalidate the queries to refresh the data
         await invalidateMeetings();
         await invalidateDashboardStats();
         
@@ -172,6 +195,7 @@ export default function ScheduleMeetingDialog({
           description: "The meeting has been successfully scheduled.",
         });
         form.reset();
+        setSelectedFiles([]);
         onOpenChange(false);
       } catch (error) {
         console.error("Error adding attendees:", error);
@@ -192,7 +216,75 @@ export default function ScheduleMeetingDialog({
     },
   });
 
-  function onSubmit(data: FormValues) {
+  // Handle file selection
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0) return;
+    
+    const newFiles = Array.from(event.target.files).map(file => ({
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      file: file
+    }));
+    
+    // Check if adding these files would exceed the 5-file limit
+    if (selectedFiles.length + newFiles.length > 5) {
+      toast({
+        title: "File limit exceeded",
+        description: "You can only upload up to 5 files per meeting.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setSelectedFiles([...selectedFiles, ...newFiles]);
+    
+    // Reset the file input to allow selecting the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+  
+  // Remove a file from the selected files
+  const removeFile = (index: number) => {
+    const updatedFiles = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(updatedFiles);
+  };
+  
+  // Upload files after meeting creation
+  const uploadMeetingFiles = async (meetingId: number) => {
+    if (selectedFiles.length === 0) return;
+    
+    try {
+      const formData = new FormData();
+      
+      // Add meeting ID to form data
+      formData.append('meetingId', meetingId.toString());
+      
+      // Add all files to form data
+      selectedFiles.forEach((fileData, index) => {
+        formData.append(`file-${index}`, fileData.file);
+      });
+      
+      // Upload files
+      const response = await fetch('/api/meeting-documents', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload meeting documents');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error uploading meeting documents:', error);
+      throw error;
+    }
+  };
+  
+  async function onSubmit(data: FormValues) {
     console.log("Form data being submitted:", data);
     scheduleMeetingMutation.mutate(data);
   }
@@ -519,6 +611,59 @@ export default function ScheduleMeetingDialog({
                 </FormItem>
               )}
             />
+            
+            <FormItem>
+              <div className="mb-2">
+                <FormLabel className="text-base">Meeting Documents</FormLabel>
+                <FormDescription>
+                  Attach up to 5 documents to share with the attendees (optional).
+                </FormDescription>
+              </div>
+              
+              <div className="mt-2">
+                <input
+                  type="file"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  multiple
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Documents
+                </Button>
+              </div>
+              
+              {selectedFiles.length > 0 && (
+                <div className="border rounded-md p-4 mt-4 space-y-2">
+                  {selectedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                      <div className="flex items-center space-x-2">
+                        <FileIcon className="h-4 w-4 text-blue-500" />
+                        <div className="text-sm">
+                          <div className="font-medium">{file.name}</div>
+                          <div className="text-xs text-muted-foreground">{formatFileSize(file.size)}</div>
+                        </div>
+                      </div>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => removeFile(index)} 
+                        className="h-6 w-6"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </FormItem>
             
             <DialogFooter className="pt-4">
               <Button 
