@@ -385,8 +385,11 @@ export const userBadgesRelations = relations(userBadges, ({ one }) => ({
 // Utility types
 export type UserWithEntity = User & { entity?: Entity };
 export type MeetingWithAttendees = Meeting & { attendees: MeetingAttendee[] };
+export type MeetingWithDocuments = Meeting & { documents: MeetingDocument[] };
 export type MeetingWithSubject = Meeting & { registeredSubject?: Subject };
 export type MeetingWithAttendeesAndSubject = MeetingWithAttendees & { registeredSubject?: Subject };
+export type MeetingWithAttendeesAndDocuments = MeetingWithAttendees & { documents: MeetingDocument[] };
+export type MeetingWithAll = MeetingWithAttendees & { registeredSubject?: Subject, documents: MeetingDocument[] };
 export type TaskWithAssignee = Task & { assignee: User };
 export type CommunicationWithRecipients = Communication & { recipients: CommunicationRecipient[] };
 export type CommunicationWithFiles = Communication & { files: CommunicationFile[] };

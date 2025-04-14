@@ -418,6 +418,51 @@ export class MemStorage implements IStorage {
       (document) => document.meetingId === meetingId,
     );
   }
+  
+  async getMeetingWithDocuments(id: number): Promise<MeetingWithDocuments | undefined> {
+    const meeting = this.meetings.get(id);
+    if (!meeting) return undefined;
+    
+    const documents = await this.getMeetingDocumentsByMeetingId(id);
+    return {
+      ...meeting,
+      documents,
+    };
+  }
+  
+  async getMeetingWithAttendeesAndDocuments(id: number): Promise<MeetingWithAttendeesAndDocuments | undefined> {
+    const meeting = this.meetings.get(id);
+    if (!meeting) return undefined;
+    
+    const attendees = await this.getMeetingAttendeesByMeetingId(id);
+    const documents = await this.getMeetingDocumentsByMeetingId(id);
+    
+    return {
+      ...meeting,
+      attendees,
+      documents,
+    };
+  }
+  
+  async getMeetingWithAll(id: number): Promise<MeetingWithAll | undefined> {
+    const meeting = this.meetings.get(id);
+    if (!meeting) return undefined;
+    
+    const attendees = await this.getMeetingAttendeesByMeetingId(id);
+    const documents = await this.getMeetingDocumentsByMeetingId(id);
+    let registeredSubject = undefined;
+    
+    if (meeting.subjectId) {
+      registeredSubject = await this.getSubject(meeting.subjectId);
+    }
+    
+    return {
+      ...meeting,
+      attendees,
+      documents,
+      registeredSubject,
+    };
+  }
 
   // Subject methods
   async getSubject(id: number): Promise<Subject | undefined> {
