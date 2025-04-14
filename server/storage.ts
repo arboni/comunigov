@@ -190,6 +190,7 @@ export class MemStorage implements IStorage {
     this.currentTaskCommentId = 1;
     this.currentCommunicationId = 1;
     this.currentCommunicationRecipientId = 1;
+    this.currentCommunicationFileId = 1;
     this.currentAchievementBadgeId = 1;
     this.currentUserBadgeId = 1;
     
@@ -642,6 +643,53 @@ export class MemStorage implements IStorage {
     return Array.from(this.communicationRecipients.values()).filter(
       (recipient) => recipient.communicationId === communicationId,
     );
+  }
+
+  // Communication File methods
+  async getCommunicationFile(id: number): Promise<CommunicationFile | undefined> {
+    return this.communicationFiles.get(id);
+  }
+
+  async createCommunicationFile(insertFile: InsertCommunicationFile): Promise<CommunicationFile> {
+    const id = this.currentCommunicationFileId++;
+    const file: CommunicationFile = { 
+      ...insertFile, 
+      id,
+      uploadedAt: new Date()
+    };
+    this.communicationFiles.set(id, file);
+    return file;
+  }
+
+  async getCommunicationFilesByCommunicationId(communicationId: number): Promise<CommunicationFile[]> {
+    return Array.from(this.communicationFiles.values()).filter(
+      (file) => file.communicationId === communicationId,
+    );
+  }
+
+  async getCommunicationWithFiles(id: number): Promise<CommunicationWithFiles | undefined> {
+    const communication = this.communications.get(id);
+    if (!communication) return undefined;
+
+    const files = await this.getCommunicationFilesByCommunicationId(id);
+    return {
+      ...communication,
+      files,
+    };
+  }
+
+  async getCommunicationWithRecipientsAndFiles(id: number): Promise<CommunicationWithRecipientsAndFiles | undefined> {
+    const communication = this.communications.get(id);
+    if (!communication) return undefined;
+
+    const recipients = await this.getCommunicationRecipientsByCommunicationId(id);
+    const files = await this.getCommunicationFilesByCommunicationId(id);
+    
+    return {
+      ...communication,
+      recipients,
+      files,
+    };
   }
 
   // Achievement badge properties
@@ -1458,6 +1506,80 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(communicationRecipients)
       .where(eq(communicationRecipients.communicationId, communicationId));
+  }
+  
+  // Communication File methods
+  async getCommunicationFile(id: number): Promise<CommunicationFile | undefined> {
+    const [file] = await db
+      .select()
+      .from(communicationFiles)
+      .where(eq(communicationFiles.id, id));
+    return file || undefined;
+  }
+
+  async createCommunicationFile(insertFile: InsertCommunicationFile): Promise<CommunicationFile> {
+    // Add current timestamp for uploadedAt if not provided
+    const fileWithUploadedAt = {
+      ...insertFile,
+      uploadedAt: new Date()
+    };
+    
+    const [file] = await db
+      .insert(communicationFiles)
+      .values(fileWithUploadedAt)
+      .returning();
+    return file;
+  }
+
+  async getCommunicationFilesByCommunicationId(communicationId: number): Promise<CommunicationFile[]> {
+    return await db
+      .select()
+      .from(communicationFiles)
+      .where(eq(communicationFiles.communicationId, communicationId));
+  }
+  
+  async getCommunicationWithFiles(id: number): Promise<CommunicationWithFiles | undefined> {
+    const [communication] = await db
+      .select()
+      .from(communications)
+      .where(eq(communications.id, id));
+
+    if (!communication) return undefined;
+
+    const files = await db
+      .select()
+      .from(communicationFiles)
+      .where(eq(communicationFiles.communicationId, id));
+
+    return {
+      ...communication,
+      files
+    };
+  }
+
+  async getCommunicationWithRecipientsAndFiles(id: number): Promise<CommunicationWithRecipientsAndFiles | undefined> {
+    const [communication] = await db
+      .select()
+      .from(communications)
+      .where(eq(communications.id, id));
+
+    if (!communication) return undefined;
+
+    const recipients = await db
+      .select()
+      .from(communicationRecipients)
+      .where(eq(communicationRecipients.communicationId, id));
+      
+    const files = await db
+      .select()
+      .from(communicationFiles)
+      .where(eq(communicationFiles.communicationId, id));
+
+    return {
+      ...communication,
+      recipients,
+      files
+    };
   }
 }
 
