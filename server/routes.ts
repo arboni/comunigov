@@ -283,6 +283,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
+  
+  // Create a new user (typically an entity member)
+  app.post("/api/users", isAuthenticated, async (req, res, next) => {
+    try {
+      console.log("[POST /api/users] Request body:", req.body);
+      
+      // Validate request
+      if (!req.body.username || !req.body.password || !req.body.email) {
+        return res.status(400).json({ message: "Username, password, and email are required" });
+      }
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(req.body.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      // Check if email already exists
+      const existingEmail = await storage.getUserByEmail(req.body.email);
+      if (existingEmail) {
+        return res.status(400).json({ message: "Email already exists" });
+      }
+      
+      // Check if entity exists if entityId is provided
+      if (req.body.entityId) {
+        const entity = await storage.getEntity(req.body.entityId);
+        if (!entity) {
+          return res.status(400).json({ message: "Entity not found" });
+        }
+      }
+      
+      // Hash the password
+      const hashedPassword = await hashPassword(req.body.password);
+      
+      // Create user with hashed password
+      const userData = {
+        ...req.body,
+        password: hashedPassword
+      };
+      
+      console.log("[POST /api/users] Creating user with data:", {...userData, password: "[REDACTED]"});
+      
+      const newUser = await storage.createUser(userData);
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = newUser;
+      
+      // Send welcome email if this is an entity member
+      if (newUser.email && newUser.entityId && 
+          (newUser.role === 'entity_head' || newUser.role === 'entity_member')) {
+        try {
+          const entity = await storage.getEntity(newUser.entityId);
+          
+          await sendNewMemberWelcomeEmail(
+            newUser.email,
+            newUser.fullName,
+            newUser.username,
+            req.body.password, // Use original password for email
+            entity.name
+          );
+        } catch (emailError) {
+          console.error("Error sending welcome email:", emailError);
+          // Continue with the user creation even if email fails
+        }
+      }
+      
+      res.status(201).json(userWithoutPassword);
+    } catch (error) {
+      console.error("[POST /api/users] Error:", error);
+      
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      
+      next(error);
+    }
+  });
 
   // Entity Management
   app.get("/api/entities", isAuthenticated, async (req, res, next) => {
