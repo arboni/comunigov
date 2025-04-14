@@ -140,10 +140,10 @@ export const communicationRecipients = pgTable("communication_recipients", {
 export const communicationFiles = pgTable("communication_files", {
   id: serial("id").primaryKey(),
   communicationId: integer("communication_id").references(() => communications.id).notNull(),
-  fileName: text("file_name").notNull(),
-  fileSize: integer("file_size").notNull(),
-  fileType: text("file_type").notNull(),
+  name: text("name").notNull(),
+  type: text("type").notNull(),
   filePath: text("file_path").notNull(),
+  uploadedBy: integer("uploaded_by").references(() => users.id).notNull(),
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
 });
 

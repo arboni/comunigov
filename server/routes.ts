@@ -829,6 +829,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
+  
+  // Configure multer for file uploads
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  
+  // Create uploads directory if it doesn't exist
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  
+  const storage_config = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+      // Generate a unique filename with original extension
+      const uniqueFilename = `${uuidv4()}${path.extname(file.originalname)}`;
+      cb(null, uniqueFilename);
+    },
+  });
+  
+  const upload = multer({ 
+    storage: storage_config,
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB file size limit
+    }
+  });
+  
+  // File upload for communications
+  app.post("/api/communication-files", isAuthenticated, upload.any(), async (req, res, next) => {
+    try {
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
+      
+      const communicationId = parseInt(req.body.communicationId);
+      if (isNaN(communicationId)) {
+        return res.status(400).json({ message: "Invalid communication ID" });
+      }
+      
+      // Verify the communication exists
+      const communication = await storage.getCommunication(communicationId);
+      if (!communication) {
+        return res.status(404).json({ message: "Communication not found" });
+      }
+      
+      // Add each file to the database
+      const uploadedFiles = [];
+      
+      for (const file of req.files as Express.Multer.File[]) {
+        const fileData = {
+          name: file.originalname,
+          type: file.mimetype,
+          communicationId: communicationId,
+          filePath: file.path,
+          uploadedBy: req.user.id,
+        };
+        
+        const savedFile = await storage.createCommunicationFile(fileData);
+        uploadedFiles.push(savedFile);
+      }
+      
+      res.status(201).json(uploadedFiles);
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      next(error);
+    }
+  });
 
   // Dashboard stats
   app.get("/api/dashboard/stats", isAuthenticated, async (req, res, next) => {
