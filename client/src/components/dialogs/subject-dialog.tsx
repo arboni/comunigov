@@ -8,6 +8,7 @@ import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { useToast } from "@/hooks/use-toast";
 import { insertSubjectSchema } from "@shared/schema";
 import { apiRequest, invalidateSubjects } from "@/lib/queryClient";
+import { reloadPage } from "@/lib/utils";
 
 // Components
 import { Button } from "@/components/ui/button";
@@ -97,6 +98,9 @@ export default function SubjectDialog({
       invalidateSubjects();
       form.reset();
       onOpenChange(false);
+      
+      // Reload page to show updated subjects
+      reloadPage(1500, "/subjects");
     },
     onError: (error: Error) => {
       console.error("Create subject mutation error:", error);
@@ -303,6 +307,9 @@ export default function SubjectDialog({
                       invalidateSubjects();
                       form.reset();
                       onOpenChange(false);
+                      
+                      // Reload page to show updated subjects
+                      reloadPage(1500, "/subjects");
                     } catch (error) {
                       console.error("Direct API request failed:", error);
                       toast({

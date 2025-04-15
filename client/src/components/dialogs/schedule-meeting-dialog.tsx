@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
+import { cn, reloadPage } from "@/lib/utils";
 
 interface ScheduleMeetingDialogProps {
   open: boolean;
@@ -199,6 +199,9 @@ export default function ScheduleMeetingDialog({
         form.reset();
         setSelectedFiles([]);
         onOpenChange(false);
+        
+        // Reload the page to reflect changes
+        reloadPage(1500, "/meetings");
       } catch (error) {
         console.error("Error adding attendees:", error);
         toast({
