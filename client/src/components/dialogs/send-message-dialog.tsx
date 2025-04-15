@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Mail, MessageSquare, Send, Bell, Users, User, Building, Upload, FileIcon, X } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { reloadPage } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { Button } from "@/components/ui/button";
@@ -164,6 +165,9 @@ export default function SendMessageDialog({
       });
       form.reset();
       onOpenChange(false);
+      
+      // Reload page to show updated communications
+      reloadPage(1500, "/communications");
     },
     onError: (error: Error) => {
       toast({

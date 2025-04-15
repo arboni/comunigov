@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, reloadPage } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertTaskSchema, type InsertTask } from "@shared/schema";
@@ -127,6 +127,9 @@ export default function CreateTaskDialog({
       queryClient.invalidateQueries({ queryKey: ["/api/subjects"] });
       form.reset();
       onOpenChange(false);
+      
+      // Reload page to show updated tasks
+      reloadPage(1500, "/tasks");
     },
     onError: (error) => {
       toast({
