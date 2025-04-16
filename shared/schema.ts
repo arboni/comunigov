@@ -124,6 +124,7 @@ export const communications = pgTable("communications", {
   channel: communicationChannelEnum("channel").notNull(),
   sentBy: integer("sent_by").references(() => users.id).notNull(),
   sentAt: timestamp("sent_at").defaultNow().notNull(),
+  hasAttachments: boolean("has_attachments").default(false).notNull(),
 });
 
 // Communication recipients

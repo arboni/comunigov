@@ -1,6 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db } from "./db";
 import { setupAuth, hashPassword, comparePasswords } from "./auth";
 import { sendNewMemberWelcomeEmail, sendPasswordResetEmail } from "./email-service";
 import { sendMessage, sendMessageWithFallback, sendMessageToAll, MessageChannel } from "./messaging-service";
@@ -1001,7 +1002,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update communication to mark it as having attachments
       if (uploadedFiles.length > 0) {
-        await storage.updateCommunication(communicationId, { hasAttachments: true });
+        try {
+          // Use raw SQL to update the hasAttachments field directly
+          await db.execute(
+            `UPDATE communications SET has_attachments = true WHERE id = $1`,
+            [communicationId]
+          );
+          console.log(`Successfully updated communication ${communicationId} to set has_attachments=true`);
+        } catch (updateError) {
+          console.error(`Error updating hasAttachments flag for communication ${communicationId}:`, updateError);
+        }
         
         // Get sender information
         const sender = await storage.getUser(req.user.id);
