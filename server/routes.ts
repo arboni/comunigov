@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, hashPassword, comparePasswords } from "./auth";
-import { sendNewMemberWelcomeEmail, sendPasswordResetEmail } from "./email-service";
+import { sendNewMemberWelcomeEmail, sendPasswordResetEmail, sendCommunicationEmail } from "./email-service";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -843,7 +843,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (recipient.userId) {
               const userRecipient = await storage.getUser(recipient.userId);
               if (userRecipient && userRecipient.email) {
-                await emailService.sendCommunicationEmail(
+                await sendCommunicationEmail(
                   userRecipient.email,
                   userRecipient.fullName || userRecipient.username,
                   senderName,
@@ -858,7 +858,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (recipient.entityId) {
               const entityRecipient = await storage.getEntity(recipient.entityId);
               if (entityRecipient && entityRecipient.email) {
-                await emailService.sendCommunicationEmail(
+                await sendCommunicationEmail(
                   entityRecipient.email,
                   entityRecipient.name,
                   senderName,
@@ -872,7 +872,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const entityMembers = await storage.getUsersByEntityId(recipient.entityId);
               for (const member of entityMembers) {
                 if (member.email) {
-                  await emailService.sendCommunicationEmail(
+                  await sendCommunicationEmail(
                     member.email,
                     member.fullName || member.username,
                     senderName,
