@@ -664,6 +664,15 @@ export class MemStorage implements IStorage {
     return communication;
   }
 
+  async updateCommunication(id: number, communicationData: Partial<Communication>): Promise<Communication | undefined> {
+    const communication = this.communications.get(id);
+    if (!communication) return undefined;
+
+    const updatedCommunication = { ...communication, ...communicationData };
+    this.communications.set(id, updatedCommunication);
+    return updatedCommunication;
+  }
+
   async getAllCommunications(): Promise<Communication[]> {
     return Array.from(this.communications.values());
   }
@@ -1594,6 +1603,15 @@ export class DatabaseStorage implements IStorage {
       .values(communicationWithSentAt)
       .returning();
     return communication;
+  }
+
+  async updateCommunication(id: number, communicationData: Partial<Communication>): Promise<Communication | undefined> {
+    const [updatedCommunication] = await db
+      .update(communications)
+      .set(communicationData)
+      .where(eq(communications.id, id))
+      .returning();
+    return updatedCommunication || undefined;
   }
 
   async getAllCommunications(): Promise<Communication[]> {
