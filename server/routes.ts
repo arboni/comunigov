@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, hashPassword, comparePasswords } from "./auth";
 import { sendNewMemberWelcomeEmail, sendPasswordResetEmail } from "./email-service";
-import { sendMessage, sendMessageWithFallback, MessageChannel } from "./messaging-service";
+import { sendMessage, sendMessageWithFallback, sendMessageToAll, MessageChannel } from "./messaging-service";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -829,64 +829,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sender = await storage.getUser(req.user.id);
       const senderName = sender ? sender.fullName || sender.username : "Unknown Sender";
       
-      // Process recipients and send emails if channel is 'email'
+      // Process recipients and send messages
       if (req.body.recipients && Array.isArray(req.body.recipients)) {
+        // Check for attachments
+        const hasAttachments = !!req.body.hasAttachments;
+        
+        // Get message channel
+        const channel = communication.channel as MessageChannel;
+        
+        // Prepare recipient list for the unified messaging service
+        const recipientList: Array<{
+          userId?: number;
+          entityId?: number;
+          name: string;
+          contactInfo: Record<MessageChannel, string | undefined>;
+        }> = [];
+        
+        // Process each recipient
         for (const recipient of req.body.recipients) {
+          // Save recipient in the database
           const recipientData = insertCommunicationRecipientSchema.parse({
             communicationId: communication.id,
             ...recipient
           });
           await storage.createCommunicationRecipient(recipientData);
           
-          // Check for attachments
-          let hasAttachments = false;
-          if (req.body.hasAttachments) {
-            hasAttachments = true;
-          }
-          
-          // Send message based on selected channel
-          const channel = communication.channel as MessageChannel;
-          
           // For user recipients
           if (recipient.userId) {
             const userRecipient = await storage.getUser(recipient.userId);
             if (userRecipient) {
-              // Try to send message through the primary channel
-              const contactInfo: Record<MessageChannel, string | undefined> = {
-                email: userRecipient.email,
-                whatsapp: userRecipient.whatsapp ?? undefined,
-                telegram: userRecipient.telegram ?? undefined,
-                system_notification: undefined // Not implemented yet
-              };
-              
-              // Define fallback channels in order of preference
-              const fallbackChannels: MessageChannel[] = ['email', 'whatsapp', 'telegram'];
-              
-              // Try primary channel first, then fallbacks
-              console.log(`Attempting to send message to user ${userRecipient.fullName || userRecipient.username} via ${channel}`);
-              const result = await sendMessage(
-                channel,
-                contactInfo[channel] || '',
-                userRecipient.fullName || userRecipient.username,
-                senderName,
-                communication.subject,
-                communication.content,
-                hasAttachments
-              );
-              
-              if (!result.success && channel !== 'system_notification') {
-                console.log(`Failed to send via ${channel}, trying fallbacks...`);
-                // Try fallback channels if primary fails
-                await sendMessageWithFallback(
-                  fallbackChannels.filter(c => c !== channel), // Remove primary channel from fallbacks
-                  contactInfo,
-                  userRecipient.fullName || userRecipient.username,
-                  senderName,
-                  communication.subject,
-                  communication.content,
-                  hasAttachments
-                );
-              }
+              // Add user to recipient list
+              recipientList.push({
+                userId: userRecipient.id,
+                name: userRecipient.fullName || userRecipient.username,
+                contactInfo: {
+                  email: userRecipient.email,
+                  whatsapp: userRecipient.whatsapp ?? undefined,
+                  telegram: userRecipient.telegram ?? undefined,
+                  system_notification: undefined // Not implemented yet
+                }
+              });
             }
           }
           
@@ -896,47 +878,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (entityRecipient) {
               // Send to entity head
               if (entityRecipient.headEmail) {
-                await sendMessage(
-                  'email', // Always use email for entity head
-                  entityRecipient.headEmail,
-                  entityRecipient.name,
-                  senderName,
-                  communication.subject,
-                  communication.content,
-                  hasAttachments
-                );
+                // Add entity head to recipient list
+                recipientList.push({
+                  entityId: entityRecipient.id,
+                  name: entityRecipient.headName,
+                  contactInfo: {
+                    email: entityRecipient.headEmail,
+                    whatsapp: undefined,
+                    telegram: undefined,
+                    system_notification: undefined
+                  }
+                });
               }
               
-              // Also send to all entity members if entity has members
+              // Also send to all entity members
               const entityMembers = await storage.getUsersByEntityId(recipient.entityId);
               for (const member of entityMembers) {
                 if (member) {
-                  // Try to send message through the primary channel
-                  const contactInfo: Record<MessageChannel, string | undefined> = {
-                    email: member.email,
-                    whatsapp: member.whatsapp ?? undefined,
-                    telegram: member.telegram ?? undefined,
-                    system_notification: undefined // Not implemented yet
-                  };
-                  
-                  // Define fallback channels in order of preference
-                  const fallbackChannels: MessageChannel[] = ['email', 'whatsapp', 'telegram'];
-                  
-                  // Try primary channel first, then fallbacks
-                  await sendMessageWithFallback(
-                    [channel, ...fallbackChannels.filter(c => c !== channel)],
-                    contactInfo,
-                    member.fullName || member.username,
-                    senderName,
-                    communication.subject,
-                    communication.content,
-                    hasAttachments
-                  );
+                  // Add member to recipient list
+                  recipientList.push({
+                    userId: member.id,
+                    entityId: entityRecipient.id,
+                    name: member.fullName || member.username,
+                    contactInfo: {
+                      email: member.email,
+                      whatsapp: member.whatsapp ?? undefined,
+                      telegram: member.telegram ?? undefined,
+                      system_notification: undefined
+                    }
+                  });
                 }
               }
             }
           }
         }
+        
+        // Send messages to all recipients using the unified messaging service
+        console.log(`Sending message to ${recipientList.length} recipients via ${channel} with fallback`);
+        const messageResults = await sendMessageToAll(
+          recipientList,
+          channel,
+          senderName,
+          communication.subject,
+          communication.content,
+          hasAttachments
+        );
+        
+        // Log message delivery results
+        console.log(`Message delivery results: ${Object.keys(messageResults).length} recipients processed`);
       }
       
       res.status(201).json(communication);
