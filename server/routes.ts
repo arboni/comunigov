@@ -921,6 +921,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           senderName,
           communication.subject,
           communication.content,
+          communication.id, // Pass the communication ID for file attachments
           hasAttachments
         );
         

@@ -300,6 +300,7 @@ The ComuniGov Team
  * @param senderName - Sender's name
  * @param subject - Email subject
  * @param content - Email content (message body)
+ * @param communicationId - The ID of the communication (for fetching attachments) 
  * @param hasAttachments - Whether the communication has file attachments 
  * @returns Promise resolving to true if sent successfully, false otherwise
  */
@@ -309,6 +310,7 @@ export async function sendCommunicationEmail(
   senderName: string,
   subject: string,
   content: string,
+  communicationId?: number,
   hasAttachments: boolean = false
 ): Promise<boolean> {
   const emailSubject = `ComuniGov: ${subject}`;
@@ -323,7 +325,7 @@ Subject: ${subject}
 Message:
 ${content}
 
-${hasAttachments ? 'This message has attachments. Please log in to the ComuniGov platform to view them.' : ''}
+${hasAttachments ? 'This message has attachments included in this email. You can also log in to the ComuniGov platform to view them.' : ''}
 
 Access the platform at: https://comunigov.app
 
@@ -364,7 +366,7 @@ The ComuniGov Team
       
       ${hasAttachments ? `
       <div class="attachments-note">
-        <p><strong>Note:</strong> This message has attachments. Please log in to the ComuniGov platform to view them.</p>
+        <p><strong>Note:</strong> This message has attachments included in this email. You can also log in to the ComuniGov platform to view them.</p>
       </div>
       ` : ''}
       
@@ -381,10 +383,47 @@ The ComuniGov Team
 </html>
   `;
   
-  return await sendEmail({
+  // Prepare email data
+  const emailData: EmailContent = {
     to,
     subject: emailSubject,
     text,
     html
-  });
+  };
+  
+  // If this communication has attachments and we have its ID, try to fetch and attach them
+  if (hasAttachments && communicationId) {
+    try {
+      // Fetch files for this communication
+      const files = await storage.getCommunicationFilesByCommunicationId(communicationId);
+      
+      if (files && files.length > 0) {
+        // Read each file and add it as an attachment
+        const attachments = [];
+        
+        for (const file of files) {
+          if (fs.existsSync(file.filePath)) {
+            const fileBuffer = fs.readFileSync(file.filePath);
+            attachments.push({
+              filename: file.name,
+              content: fileBuffer,
+              type: file.type,
+              disposition: 'attachment'
+            });
+          } else {
+            console.warn(`File not found: ${file.filePath}`);
+          }
+        }
+        
+        if (attachments.length > 0) {
+          console.log(`Adding ${attachments.length} attachments to email for communication ${communicationId}`);
+          emailData.attachments = attachments;
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching or adding attachments:', err);
+    }
+  }
+  
+  return await sendEmail(emailData);
 }

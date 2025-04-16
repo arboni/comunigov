@@ -29,6 +29,7 @@ export interface MessageSendResult {
  * @param senderName - Sender's name
  * @param subject - Message subject
  * @param content - Message content
+ * @param communicationId - The ID of the communication (for fetching attachments)
  * @param hasAttachments - Whether the message has attachments
  * @returns Promise resolving to a MessageSendResult
  */
@@ -39,6 +40,7 @@ export async function sendMessage(
   senderName: string,
   subject: string,
   content: string,
+  communicationId?: number,
   hasAttachments: boolean = false
 ): Promise<MessageSendResult> {
   try {
@@ -52,6 +54,7 @@ export async function sendMessage(
           senderName,
           subject,
           content,
+          communicationId,
           hasAttachments
         );
         break;
@@ -116,6 +119,7 @@ export async function sendMessage(
  * @param senderName - Sender's name
  * @param subject - Message subject
  * @param content - Message content
+ * @param communicationId - The ID of the communication (for fetching attachments)
  * @param hasAttachments - Whether the message has attachments
  * @returns Promise resolving to an array of MessageSendResults for each attempted channel
  */
@@ -126,6 +130,7 @@ export async function sendMessageWithFallback(
   senderName: string,
   subject: string,
   content: string,
+  communicationId?: number,
   hasAttachments: boolean = false
 ): Promise<MessageSendResult[]> {
   const results: MessageSendResult[] = [];
@@ -151,6 +156,7 @@ export async function sendMessageWithFallback(
       senderName,
       subject,
       content,
+      communicationId,
       hasAttachments
     );
     
@@ -170,6 +176,7 @@ export async function sendMessageWithFallback(
  * @param senderName - Name of the sender
  * @param subject - Subject of the message
  * @param content - Content of the message
+ * @param communicationId - The ID of the communication (for fetching attachments)
  * @param hasAttachments - Whether the message has attachments
  * @returns Promise resolving to an array of results for each recipient
  */
@@ -184,6 +191,7 @@ export async function sendMessageToAll(
   senderName: string,
   subject: string,
   content: string,
+  communicationId?: number,
   hasAttachments: boolean = false
 ): Promise<Record<string, MessageSendResult[]>> {
   const results: Record<string, MessageSendResult[]> = {};
@@ -202,6 +210,7 @@ export async function sendMessageToAll(
       senderName,
       subject,
       content,
+      communicationId,
       hasAttachments
     );
   }
