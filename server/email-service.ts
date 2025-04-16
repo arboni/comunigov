@@ -1,4 +1,6 @@
-import nodemailer from 'nodemailer';
+import fs from 'fs';
+import path from 'path';
+import { google } from 'googleapis';
 
 // Interface for communication recipient info
 export interface CommunicationRecipientInfo {
@@ -9,29 +11,41 @@ export interface CommunicationRecipientInfo {
 }
 
 // Email configuration
-const FROM_EMAIL = process.env.GMAIL_USER || 'notifications@comunigov.app';
 const DEFAULT_SUBJECT = 'ComuniGov Notification';
+const SERVICE_ACCOUNT_EMAIL = 'notifications@comunigov.app';
+const FROM_NAME = 'ComuniGov Notifications';
 
-// Create a transporter object
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD
+// Path to the service account credentials file
+const SERVICE_ACCOUNT_PATH = path.join(process.cwd(), 'config/credentials/service-account.json');
+
+// Check if the credentials file exists
+let gmailClient: any = null;
+let serviceAccount: any = null;
+
+try {
+  if (fs.existsSync(SERVICE_ACCOUNT_PATH)) {
+    // Load the service account key JSON file
+    serviceAccount = require(SERVICE_ACCOUNT_PATH);
+    
+    // Create a JWT client using the service account credentials
+    const jwtClient = new google.auth.JWT(
+      serviceAccount.client_email,
+      undefined,
+      serviceAccount.private_key,
+      ['https://www.googleapis.com/auth/gmail.send'],
+      // If you're using domain-wide delegation, specify the user email here
+      // process.env.GMAIL_USER
+    );
+
+    // Initialize the Gmail API client
+    gmailClient = google.gmail({ version: 'v1', auth: jwtClient });
+    
+    console.log('Gmail API client initialized successfully');
+  } else {
+    console.warn('Service account credentials file not found. Email functionality will not be available.');
   }
-});
-
-// Verify transporter connection
-if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
-  transporter.verify((error: Error | null) => {
-    if (error) {
-      console.error('Email service configuration error:', error);
-    } else {
-      console.log('Email service ready to send messages');
-    }
-  });
-} else {
-  console.warn('GMAIL_USER or GMAIL_APP_PASSWORD is not set. Email notifications will not be sent.');
+} catch (error) {
+  console.error('Error initializing Gmail API client:', error);
 }
 
 /**
