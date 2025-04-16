@@ -2,7 +2,7 @@
  * Unified Messaging Service for ComuniGov
  * 
  * This service provides a unified interface for sending messages through various channels:
- * - Email (via SendGrid)
+ * - Email (via Gmail SMTP)
  * - WhatsApp 
  * - Telegram
  */

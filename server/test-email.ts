@@ -1,5 +1,5 @@
 /**
- * Test script for sending an email via SendGrid
+ * Test script for sending an email via Gmail SMTP
  * 
  * This file is for testing purposes only and should be removed after verification
  */
@@ -8,17 +8,17 @@ import { sendCommunicationEmail } from './email-service';
 
 async function testSendEmail() {
   console.log('Testing email sending...');
-  console.log('FROM_EMAIL:', process.env.SENDGRID_FROM_EMAIL);
-  console.log('API_KEY exists:', !!process.env.SENDGRID_API_KEY);
+  console.log('Gmail user:', process.env.GMAIL_USER);
+  console.log('Gmail app password exists:', !!process.env.GMAIL_APP_PASSWORD);
   
   try {
     // Attempt to send a test email
     const result = await sendCommunicationEmail(
-      'admin@comunigov.test', // Replace with the recipient email address
+      process.env.GMAIL_USER || '', // Send test email to yourself
       'Admin User',
       'System',
       'Test Email from ComuniGov',
-      'This is a test email to verify the SendGrid integration is working correctly.\n\nIf you can read this, the email service is functioning properly!',
+      'This is a test email to verify the Gmail SMTP integration is working correctly.\n\nIf you can read this, the email service is functioning properly!',
       false
     );
     

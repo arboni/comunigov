@@ -1,4 +1,4 @@
-import sgMail from '@sendgrid/mail';
+import nodemailer from 'nodemailer';
 
 // Interface for communication recipient info
 export interface CommunicationRecipientInfo {
@@ -8,16 +8,31 @@ export interface CommunicationRecipientInfo {
   name: string;
 }
 
-// Set SendGrid API key from environment variable
-if (!process.env.SENDGRID_API_KEY) {
-  console.warn('SENDGRID_API_KEY is not set. Email notifications will not be sent.');
-} else {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
-
-// Email sender configuration
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'test@example.com'; // Use environment variable or fallback
+// Email configuration
+const FROM_EMAIL = process.env.GMAIL_USER || 'notifications@comunigov.app';
 const DEFAULT_SUBJECT = 'ComuniGov Notification';
+
+// Create a transporter object
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD
+  }
+});
+
+// Verify transporter connection
+if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+  transporter.verify((error: Error | null) => {
+    if (error) {
+      console.error('Email service configuration error:', error);
+    } else {
+      console.log('Email service ready to send messages');
+    }
+  });
+} else {
+  console.warn('GMAIL_USER or GMAIL_APP_PASSWORD is not set. Email notifications will not be sent.');
+}
 
 /**
  * Interface for email content
@@ -30,13 +45,13 @@ interface EmailContent {
 }
 
 /**
- * Sends an email using SendGrid
+ * Sends an email using Nodemailer with Gmail
  * @param emailContent - The email content to send
  * @returns Promise resolving to true if sent successfully, false otherwise
  */
 export async function sendEmail(emailContent: EmailContent): Promise<boolean> {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.warn('Email not sent: SENDGRID_API_KEY is not set');
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    console.warn('Email not sent: Gmail credentials are not set');
     return false;
   }
 
@@ -47,30 +62,21 @@ export async function sendEmail(emailContent: EmailContent): Promise<boolean> {
       return false;
     }
 
-    const msg = {
+    // Prepare the email message
+    const mailOptions = {
+      from: `ComuniGov <${FROM_EMAIL}>`,
       to: emailContent.to,
-      from: FROM_EMAIL,
       subject: emailContent.subject || DEFAULT_SUBJECT,
       text: emailContent.text || '',
-      html: emailContent.html || '',
+      html: emailContent.html || ''
     };
 
-    await sgMail.send(msg);
-    console.log(`Email sent to ${emailContent.to}`);
+    // Send the email
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${emailContent.to}. Message ID: ${info.messageId}`);
     return true;
   } catch (error) {
-    // Detailed error logging for debugging
-    if (error && typeof error === 'object' && 'response' in error) {
-      const response = (error as any).response;
-      console.error('SendGrid API error:', {
-        code: (error as any).code,
-        statusCode: response?.statusCode,
-        body: response?.body,
-        headers: response?.headers
-      });
-    } else {
-      console.error('Error sending email:', error);
-    }
+    console.error('Error sending email:', error);
     return false;
   }
 }
