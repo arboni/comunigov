@@ -190,7 +190,7 @@ The ComuniGov Team
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     .header {
-      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
       color: white;
       padding: 25px 20px;
       text-align: center;
@@ -223,7 +223,7 @@ The ComuniGov Team
       padding: 20px;
       border-radius: 6px;
       margin: 20px 0;
-      border-left: 4px solid #4f46e5;
+      border-left: 4px solid #60a5fa;
     }
     .credentials p {
       margin: 10px 0;
@@ -252,14 +252,14 @@ The ComuniGov Team
     }
     .button {
       display: inline-block;
-      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
       color: white;
       padding: 12px 25px;
       text-decoration: none;
       border-radius: 6px;
       font-weight: 600;
       transition: transform 0.3s ease;
-      box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
     }
     .divider {
       height: 1px;
@@ -282,7 +282,7 @@ The ComuniGov Team
     .social-links a {
       display: inline-block;
       margin: 0 8px;
-      color: #4f46e5;
+      color: #3b82f6;
       text-decoration: none;
     }
     /* Responsive adjustments */
@@ -425,7 +425,7 @@ The ComuniGov Team
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     .header {
-      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
       color: white;
       padding: 25px 20px;
       text-align: center;
@@ -458,7 +458,7 @@ The ComuniGov Team
       padding: 20px;
       border-radius: 6px;
       margin: 20px 0;
-      border-left: 4px solid #4f46e5;
+      border-left: 4px solid #60a5fa;
     }
     .credentials p {
       margin: 10px 0;
@@ -505,14 +505,14 @@ The ComuniGov Team
     }
     .button {
       display: inline-block;
-      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
       color: white;
       padding: 12px 25px;
       text-decoration: none;
       border-radius: 6px;
       font-weight: 600;
       transition: transform 0.3s ease;
-      box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
     }
     .divider {
       height: 1px;
@@ -535,7 +535,7 @@ The ComuniGov Team
     .social-links a {
       display: inline-block;
       margin: 0 8px;
-      color: #4f46e5;
+      color: #3b82f6;
       text-decoration: none;
     }
     /* Responsive adjustments */
@@ -693,7 +693,7 @@ The ComuniGov Team
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     .header {
-      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
       color: white;
       padding: 25px 20px;
       text-align: center;
@@ -732,7 +732,7 @@ The ComuniGov Team
     .message {
       background-color: #fff;
       padding: 20px;
-      border-left: 4px solid #4f46e5;
+      border-left: 4px solid #60a5fa;
       margin: 20px 0;
       border-radius: 0 6px 6px 0;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -762,14 +762,14 @@ The ComuniGov Team
     }
     .button {
       display: inline-block;
-      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
       color: white;
       padding: 12px 25px;
       text-decoration: none;
       border-radius: 6px;
       font-weight: 600;
       transition: transform 0.3s ease;
-      box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
     }
     .divider {
       height: 1px;
@@ -792,7 +792,7 @@ The ComuniGov Team
     .social-links a {
       display: inline-block;
       margin: 0 8px;
-      color: #4f46e5;
+      color: #3b82f6;
       text-decoration: none;
     }
     /* Responsive adjustments */
