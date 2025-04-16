@@ -44,10 +44,12 @@ export async function sendMessage(
   hasAttachments: boolean = false
 ): Promise<MessageSendResult> {
   try {
+    console.log(`sendMessage called with channel: ${channel}, communicationId: ${communicationId}, hasAttachments: ${hasAttachments}`);
     let success = false;
     
     switch (channel) {
       case 'email':
+        console.log(`Sending email for communication ID: ${communicationId} with attachments: ${hasAttachments}`);
         success = await sendCommunicationEmail(
           to,
           recipientName,

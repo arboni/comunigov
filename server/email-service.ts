@@ -104,6 +104,20 @@ export async function sendEmail(emailContent: EmailContent): Promise<boolean> {
       console.log(`Including ${emailContent.attachments.length} attachments in email`);
     }
 
+    // Log email details
+    console.log('Sending email with details:');
+    console.log(`To: ${emailContent.to}`);
+    console.log(`Subject: ${emailContent.subject}`);
+    
+    if (message.attachments) {
+      console.log(`Attachments: ${message.attachments.length}`);
+      message.attachments.forEach((att: any, idx: number) => {
+        console.log(`  Attachment ${idx+1}: ${att.filename}, type: ${att.type}, size: ${att.content.length} bytes`);
+      });
+    } else {
+      console.log('No attachments included');
+    }
+    
     // Send the email
     await mailService.send(message);
     console.log(`Email sent to ${emailContent.to} using SendGrid`);
@@ -392,24 +406,37 @@ The ComuniGov Team
   };
   
   // If this communication has attachments and we have its ID, try to fetch and attach them
+  console.log(`Checking attachments for communication ID: ${communicationId}, hasAttachments flag: ${hasAttachments}`);
+  
   if (hasAttachments && communicationId) {
     try {
       // Fetch files for this communication
+      console.log(`Fetching files for communication ID: ${communicationId}`);
       const files = await storage.getCommunicationFilesByCommunicationId(communicationId);
+      console.log(`Found ${files?.length || 0} files for communication ID: ${communicationId}`);
       
       if (files && files.length > 0) {
         // Read each file and add it as an attachment
         const attachments = [];
+        console.log(`Processing ${files.length} files as attachments`);
         
         for (const file of files) {
+          console.log(`Processing file: ${file.name}, path: ${file.filePath}`);
           if (fs.existsSync(file.filePath)) {
             const fileBuffer = fs.readFileSync(file.filePath);
+            console.log(`File read successfully, size: ${fileBuffer.length} bytes`);
+            
+            // Convert buffer to base64 string as required by SendGrid
+            const content = fileBuffer.toString('base64');
+            
             attachments.push({
               filename: file.name,
-              content: fileBuffer,
+              content: content,
               type: file.type,
-              disposition: 'attachment'
+              disposition: 'attachment',
+              contentId: `attachment-${file.id}`
             });
+            console.log(`Added file ${file.name} as an attachment`);
           } else {
             console.warn(`File not found: ${file.filePath}`);
           }
