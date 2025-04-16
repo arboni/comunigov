@@ -1003,7 +1003,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update communication to mark it as having attachments
       if (uploadedFiles.length > 0) {
         try {
-          // Use raw SQL to update the hasAttachments field directly
+          // Use raw SQL for a simple update that we know works
           await db.execute(
             `UPDATE communications SET has_attachments = true WHERE id = $1`,
             [communicationId]
