@@ -16,7 +16,7 @@ if (!process.env.SENDGRID_API_KEY) {
 }
 
 // Email sender configuration
-const FROM_EMAIL = 'notifications@comunigov.app'; // Update with your sender email
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'test@example.com'; // Use environment variable or fallback
 const DEFAULT_SUBJECT = 'ComuniGov Notification';
 
 /**
@@ -41,6 +41,12 @@ export async function sendEmail(emailContent: EmailContent): Promise<boolean> {
   }
 
   try {
+    // Validate inputs
+    if (!emailContent.to || !emailContent.to.includes('@')) {
+      console.error('Invalid recipient email address:', emailContent.to);
+      return false;
+    }
+
     const msg = {
       to: emailContent.to,
       from: FROM_EMAIL,
@@ -53,7 +59,18 @@ export async function sendEmail(emailContent: EmailContent): Promise<boolean> {
     console.log(`Email sent to ${emailContent.to}`);
     return true;
   } catch (error) {
-    console.error('Error sending email:', error);
+    // Detailed error logging for debugging
+    if (error && typeof error === 'object' && 'response' in error) {
+      const response = (error as any).response;
+      console.error('SendGrid API error:', {
+        code: (error as any).code,
+        statusCode: response?.statusCode,
+        body: response?.body,
+        headers: response?.headers
+      });
+    } else {
+      console.error('Error sending email:', error);
+    }
     return false;
   }
 }
