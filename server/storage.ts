@@ -1606,12 +1606,41 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateCommunication(id: number, communicationData: Partial<Communication>): Promise<Communication | undefined> {
-    const [updatedCommunication] = await db
-      .update(communications)
-      .set(communicationData)
-      .where(eq(communications.id, id))
-      .returning();
-    return updatedCommunication || undefined;
+    try {
+      console.log(`Updating communication ${id} with data:`, communicationData);
+      const [updatedCommunication] = await db
+        .update(communications)
+        .set(communicationData)
+        .where(eq(communications.id, id))
+        .returning();
+      console.log(`Updated communication:`, updatedCommunication);
+      return updatedCommunication || undefined;
+    } catch (error) {
+      console.error('Error updating communication:', error);
+      // Try a different approach if the first one fails
+      try {
+        // Get the current communication
+        const [communication] = await db
+          .select()
+          .from(communications)
+          .where(eq(communications.id, id));
+        
+        if (!communication) return undefined;
+        
+        // Manually update only the hasAttachments field
+        if ('hasAttachments' in communicationData) {
+          const [updated] = await db.execute(
+            `UPDATE communications SET "hasAttachments" = $1 WHERE id = $2 RETURNING *`,
+            [communicationData.hasAttachments, id]
+          );
+          return updated;
+        }
+        return communication;
+      } catch (secondError) {
+        console.error('Second error updating communication:', secondError);
+        throw secondError;
+      }
+    }
   }
 
   async getAllCommunications(): Promise<Communication[]> {
