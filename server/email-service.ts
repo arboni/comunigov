@@ -191,7 +191,7 @@ The ComuniGov Team
     }
     .header {
       background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-      color: white;
+      color: #ffffff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
       padding: 25px 20px;
       text-align: center;
     }
@@ -201,7 +201,7 @@ The ComuniGov Team
     .header h1 {
       margin: 0;
       font-size: 24px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.5px;
     }
     .content {
@@ -209,7 +209,7 @@ The ComuniGov Team
       background-color: #ffffff;
     }
     .greeting {
-      font-weight: 600;
+      font-weight: 700;
       font-size: 18px;
       margin-bottom: 20px;
       color: #1f2937;
@@ -221,7 +221,7 @@ The ComuniGov Team
     .credentials {
       background-color: #f3f4f6;
       padding: 20px;
-      border-radius: 6px;
+      border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.5);
       margin: 20px 0;
       border-left: 4px solid #60a5fa;
     }
@@ -233,7 +233,7 @@ The ComuniGov Team
       background-color: #fffbeb;
       border: 1px solid #fcd34d;
       padding: 15px;
-      border-radius: 6px;
+      border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.5);
       margin-top: 25px;
       display: flex;
       align-items: center;
@@ -253,11 +253,11 @@ The ComuniGov Team
     .button {
       display: inline-block;
       background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-      color: white;
+      color: #ffffff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
       padding: 12px 25px;
       text-decoration: none;
-      border-radius: 6px;
-      font-weight: 600;
+      border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.5);
+      font-weight: 700;
       transition: transform 0.3s ease;
       box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
     }
@@ -426,7 +426,7 @@ The ComuniGov Team
     }
     .header {
       background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-      color: white;
+      color: #ffffff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
       padding: 25px 20px;
       text-align: center;
     }
@@ -436,7 +436,7 @@ The ComuniGov Team
     .header h1 {
       margin: 0;
       font-size: 24px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.5px;
     }
     .content {
@@ -444,7 +444,7 @@ The ComuniGov Team
       background-color: #ffffff;
     }
     .greeting {
-      font-weight: 600;
+      font-weight: 700;
       font-size: 18px;
       margin-bottom: 20px;
       color: #1f2937;
@@ -456,7 +456,7 @@ The ComuniGov Team
     .credentials {
       background-color: #f3f4f6;
       padding: 20px;
-      border-radius: 6px;
+      border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.5);
       margin: 20px 0;
       border-left: 4px solid #60a5fa;
     }
@@ -468,7 +468,7 @@ The ComuniGov Team
       background-color: #fffbeb;
       border: 1px solid #fcd34d;
       padding: 15px;
-      border-radius: 6px;
+      border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.5);
       margin-top: 25px;
       display: flex;
       align-items: center;
@@ -485,7 +485,7 @@ The ComuniGov Team
       background-color: #fee2e2;
       border: 1px solid #ef4444;
       padding: 15px;
-      border-radius: 6px;
+      border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.5);
       margin-top: 25px;
       display: flex;
       align-items: center;
@@ -506,11 +506,11 @@ The ComuniGov Team
     .button {
       display: inline-block;
       background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-      color: white;
+      color: #ffffff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
       padding: 12px 25px;
       text-decoration: none;
-      border-radius: 6px;
-      font-weight: 600;
+      border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.5);
+      font-weight: 700;
       transition: transform 0.3s ease;
       box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
     }
@@ -694,7 +694,7 @@ The ComuniGov Team
     }
     .header {
       background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-      color: white;
+      color: #ffffff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
       padding: 25px 20px;
       text-align: center;
     }
@@ -704,7 +704,7 @@ The ComuniGov Team
     .header h1 {
       margin: 0;
       font-size: 24px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.5px;
     }
     .content {
@@ -712,7 +712,7 @@ The ComuniGov Team
       background-color: #ffffff;
     }
     .greeting {
-      font-weight: 600;
+      font-weight: 700;
       font-size: 18px;
       margin-bottom: 20px;
       color: #1f2937;
@@ -724,8 +724,8 @@ The ComuniGov Team
     .subject {
       background-color: #f3f4f6;
       padding: 12px 15px;
-      border-radius: 6px;
-      font-weight: 600;
+      border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.5);
+      font-weight: 700;
       margin-bottom: 20px;
       color: #1f2937;
     }
@@ -743,7 +743,7 @@ The ComuniGov Team
       background-color: #fffbeb;
       border: 1px solid #fcd34d;
       padding: 15px;
-      border-radius: 6px;
+      border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.5);
       margin-top: 25px;
       display: flex;
       align-items: center;
@@ -763,11 +763,11 @@ The ComuniGov Team
     .button {
       display: inline-block;
       background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-      color: white;
+      color: #ffffff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
       padding: 12px 25px;
       text-decoration: none;
-      border-radius: 6px;
-      font-weight: 600;
+      border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.5);
+      font-weight: 700;
       transition: transform 0.3s ease;
       box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
     }
