@@ -837,6 +837,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
           await storage.createCommunicationRecipient(recipientData);
           
+          // Check for attachments
+          let hasAttachments = false;
+          if (req.body.hasAttachments) {
+            hasAttachments = true;
+          }
+          
           // Send email if communication channel is 'email'
           if (communication.channel === 'email') {
             // For user recipients
@@ -849,7 +855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   senderName,
                   communication.subject,
                   communication.content,
-                  false // We'll check for attachments later
+                  hasAttachments
                 );
               }
             }
@@ -857,14 +863,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // For entity recipients
             if (recipient.entityId) {
               const entityRecipient = await storage.getEntity(recipient.entityId);
-              if (entityRecipient && entityRecipient.email) {
+              if (entityRecipient && entityRecipient.headEmail) {
                 await sendCommunicationEmail(
-                  entityRecipient.email,
+                  entityRecipient.headEmail,
                   entityRecipient.name,
                   senderName,
                   communication.subject,
                   communication.content,
-                  false // We'll check for attachments later
+                  hasAttachments
                 );
               }
               
@@ -878,7 +884,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     senderName,
                     communication.subject,
                     communication.content,
-                    false // We'll check for attachments later
+                    hasAttachments
                   );
                 }
               }
