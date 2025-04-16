@@ -8,6 +8,7 @@ import SimpleAuthPage from "@/pages/simple-auth-page";
 import DashboardPage from "@/pages/dashboard-page";
 import EntitiesPage from "@/pages/entities-page";
 import CommunicationsPage from "@/pages/communications-page";
+import CommunicationDetailPage from "@/pages/communication-detail-page";
 import MeetingsPage from "@/pages/meetings-page";
 import MeetingDetailPage from "@/pages/meeting-detail-page";
 import EntityDetailPage from "@/pages/entity-detail-page";
@@ -64,6 +65,7 @@ function Router() {
       <ProtectedRoute path="/" component={DashboardPage} />
       <ProtectedRoute path="/entities" component={EntitiesPage} />
       <ProtectedRoute path="/communications" component={CommunicationsPage} />
+      <ProtectedRoute path="/communications/:id" component={CommunicationDetailPage} />
       <ProtectedRoute path="/meetings" component={MeetingsPage} />
       <ProtectedRoute path="/meeting/:id" component={MeetingDetailPage} />
       <ProtectedRoute path="/entity/:id" component={EntityDetailPage} />
