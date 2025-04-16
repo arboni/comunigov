@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Email test script
-echo "Testing email functionality in ComuniGov"
-echo "----------------------------------------"
+echo "Testing email functionality in ComuniGov with SendGrid"
+echo "-----------------------------------------------------"
 
 # Check if recipient email is provided
 if [ -z "$1" ]; then

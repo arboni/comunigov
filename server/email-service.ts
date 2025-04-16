@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { MailService } from '@sendgrid/mail';
 
 // Interface for communication recipient info
 export interface CommunicationRecipientInfo {
@@ -10,47 +10,38 @@ export interface CommunicationRecipientInfo {
 
 // Email configuration
 const DEFAULT_SUBJECT = 'ComuniGov Notification';
-const FROM_EMAIL = process.env.GMAIL_USER || 'notifications@comunigov.app';
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'notifications@comunigov.app';
 const FROM_NAME = 'ComuniGov Notifications';
 
-// Create a reusable transporter object
-let transporter: nodemailer.Transporter | null = null;
+// Create a SendGrid mail service instance
+let mailService: MailService | null = null;
 
 /**
- * Initialize the email transporter
+ * Initialize the SendGrid mail service
  */
-function initializeTransporter() {
-  if (transporter) {
+function initializeMailService() {
+  if (mailService) {
     return;
   }
   
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-    console.warn('GMAIL_USER or GMAIL_APP_PASSWORD environment variables are not set. Email functionality will not be available.');
+  if (!process.env.SENDGRID_API_KEY) {
+    console.warn('SENDGRID_API_KEY environment variable is not set. Email functionality will not be available.');
     return;
   }
 
-  // Create transporter with Gmail SMTP
-  transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD
-    }
-  });
-
-  // Verify the connection
-  transporter.verify((error: Error | null) => {
-    if (error) {
-      console.error('Error connecting to Gmail:', error);
-      transporter = null;
-    } else {
-      console.log('Email service is ready to send messages');
-    }
-  });
+  try {
+    // Initialize SendGrid mail service
+    mailService = new MailService();
+    mailService.setApiKey(process.env.SENDGRID_API_KEY);
+    console.log('SendGrid email service is ready to send messages');
+  } catch (error) {
+    console.error('Error initializing SendGrid mail service:', error);
+    mailService = null;
+  }
 }
 
-// Initialize the transporter on module load
-initializeTransporter();
+// Initialize the mail service on module load
+initializeMailService();
 
 /**
  * Interface for email content
@@ -63,7 +54,7 @@ interface EmailContent {
 }
 
 /**
- * Sends an email using Gmail SMTP
+ * Sends an email using SendGrid
  * @param emailContent - The email content to send
  * @returns Promise resolving to true if sent successfully, false otherwise
  */
@@ -75,30 +66,33 @@ export async function sendEmail(emailContent: EmailContent): Promise<boolean> {
       return false;
     }
 
-    // Make sure transporter is initialized
-    if (!transporter) {
-      console.warn('Email not sent: Email service is not configured');
-      initializeTransporter(); // Try to initialize again
-      if (!transporter) {
+    // Make sure mail service is initialized
+    if (!mailService) {
+      console.warn('Email not sent: SendGrid email service is not configured');
+      initializeMailService(); // Try to initialize again
+      if (!mailService) {
         return false;
       }
     }
 
     // Prepare the email message
-    const mailOptions = {
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+    const message = {
       to: emailContent.to,
+      from: {
+        email: FROM_EMAIL,
+        name: FROM_NAME
+      },
       subject: emailContent.subject || DEFAULT_SUBJECT,
       text: emailContent.text || '',
       html: emailContent.html || ''
     };
 
     // Send the email
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Email sent to ${emailContent.to}. Message ID: ${info.messageId}`);
+    await mailService.send(message);
+    console.log(`Email sent to ${emailContent.to} using SendGrid`);
     return true;
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('Error sending email with SendGrid:', error);
     return false;
   }
 }
