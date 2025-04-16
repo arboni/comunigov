@@ -238,19 +238,66 @@ export default function SendMessageDialog({
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="subject"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Subject</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Important Meeting Reminder" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Two-column grid layout for desktop, single column for mobile */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="subject"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subject</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Important Meeting Reminder" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="channel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Communication Channel</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select channel" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="email">
+                          <div className="flex items-center">
+                            <Mail className="h-4 w-4 mr-2" />
+                            Email
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="whatsapp">
+                          <div className="flex items-center">
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            WhatsApp
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="telegram">
+                          <div className="flex items-center">
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Telegram
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="system_notification">
+                          <div className="flex items-center">
+                            <Bell className="h-4 w-4 mr-2" />
+                            System Notification
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             
             <FormField
               control={form.control}
@@ -261,7 +308,7 @@ export default function SendMessageDialog({
                   <FormControl>
                     <Textarea 
                       placeholder="Write your message here..." 
-                      className="min-h-32"
+                      className="min-h-28"
                       {...field} 
                     />
                   </FormControl>
@@ -272,62 +319,18 @@ export default function SendMessageDialog({
             
             <FormField
               control={form.control}
-              name="channel"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Communication Channel</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select channel" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="email">
-                        <div className="flex items-center">
-                          <Mail className="h-4 w-4 mr-2" />
-                          Email
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="whatsapp">
-                        <div className="flex items-center">
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          WhatsApp
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="telegram">
-                        <div className="flex items-center">
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          Telegram
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="system_notification">
-                        <div className="flex items-center">
-                          <Bell className="h-4 w-4 mr-2" />
-                          System Notification
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
               name="files"
               render={() => (
                 <FormItem>
-                  <div className="mb-4">
-                    <FormLabel>Attachments</FormLabel>
-                    <FormDescription>
-                      Add files to be attached to the message
-                    </FormDescription>
-                  </div>
-                  
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-center">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2">
+                    <div>
+                      <FormLabel>Attachments</FormLabel>
+                      <FormDescription>
+                        Add files to be attached to the message
+                      </FormDescription>
+                    </div>
+                    
+                    <div>
                       <input
                         type="file"
                         ref={fileInputRef}
@@ -345,15 +348,17 @@ export default function SendMessageDialog({
                         Add Files
                       </Button>
                     </div>
-                    
-                    {selectedFiles.length > 0 && (
-                      <div className="border rounded-md p-4 space-y-2">
+                  </div>
+                  
+                  {selectedFiles.length > 0 && (
+                    <div className="border rounded-md p-3 space-y-2 mt-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {selectedFiles.map((file, index) => (
                           <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                            <div className="flex items-center space-x-2">
-                              <FileIcon className="h-4 w-4 text-blue-500" />
-                              <div className="text-sm">
-                                <div className="font-medium">{file.name}</div>
+                            <div className="flex items-center space-x-2 overflow-hidden">
+                              <FileIcon className="h-4 w-4 flex-shrink-0 text-blue-500" />
+                              <div className="text-sm overflow-hidden">
+                                <div className="font-medium truncate">{file.name}</div>
                                 <div className="text-xs text-muted-foreground">{formatFileSize(file.size)}</div>
                               </div>
                             </div>
@@ -362,15 +367,15 @@ export default function SendMessageDialog({
                               variant="ghost" 
                               size="icon" 
                               onClick={() => removeFile(index)} 
-                              className="h-6 w-6"
+                              className="h-6 w-6 flex-shrink-0 ml-2"
                             >
                               <X className="h-4 w-4" />
                             </Button>
                           </div>
                         ))}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -417,11 +422,11 @@ export default function SendMessageDialog({
                               
                               <div className="border rounded-md p-4 max-h-60 overflow-y-auto">
                                 {users && Array.isArray(users) && users.length > 0 ? (
-                                  <div className="space-y-2">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     {users.map((user: any) => (
                                       <FormItem
                                         key={user.id}
-                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                        className="flex flex-row items-start space-x-3 space-y-0 m-0"
                                       >
                                         <FormControl>
                                           <Checkbox
@@ -438,11 +443,11 @@ export default function SendMessageDialog({
                                             }}
                                           />
                                         </FormControl>
-                                        <FormLabel className="text-sm font-normal flex items-center justify-between w-full">
-                                          <span>{user.fullName}</span>
-                                          <Badge variant="outline" className="ml-2">
-                                            {user.role === 'master_implementer' ? 'Master Implementer' :
-                                             user.role === 'entity_head' ? 'Entity Head' : 'Entity Member'}
+                                        <FormLabel className="text-sm font-normal flex items-center justify-between w-full overflow-hidden">
+                                          <span className="truncate">{user.fullName}</span>
+                                          <Badge variant="outline" className="ml-2 flex-shrink-0">
+                                            {user.role === 'master_implementer' ? 'Master' :
+                                             user.role === 'entity_head' ? 'Head' : 'Member'}
                                           </Badge>
                                         </FormLabel>
                                       </FormItem>
@@ -474,11 +479,11 @@ export default function SendMessageDialog({
                               
                               <div className="border rounded-md p-4 max-h-60 overflow-y-auto">
                                 {entities && Array.isArray(entities) && entities.length > 0 ? (
-                                  <div className="space-y-2">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     {entities.map((entity: any) => (
                                       <FormItem
                                         key={entity.id}
-                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                        className="flex flex-row items-start space-x-3 space-y-0 m-0"
                                       >
                                         <FormControl>
                                           <Checkbox
@@ -495,9 +500,9 @@ export default function SendMessageDialog({
                                             }}
                                           />
                                         </FormControl>
-                                        <FormLabel className="text-sm font-normal flex items-center justify-between w-full">
-                                          <span>{entity.name}</span>
-                                          <Badge variant="outline" className="ml-2">
+                                        <FormLabel className="text-sm font-normal flex items-center justify-between w-full overflow-hidden">
+                                          <span className="truncate">{entity.name}</span>
+                                          <Badge variant="outline" className="ml-2 flex-shrink-0">
                                             {entity.type.replace("_", " ")}
                                           </Badge>
                                         </FormLabel>
