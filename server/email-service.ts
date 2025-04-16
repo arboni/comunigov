@@ -1,6 +1,3 @@
-import fs from 'fs';
-import path from 'path';
-import { google } from 'googleapis';
 import nodemailer from 'nodemailer';
 
 // Interface for communication recipient info
@@ -16,16 +13,44 @@ const DEFAULT_SUBJECT = 'ComuniGov Notification';
 const FROM_EMAIL = process.env.GMAIL_USER || 'notifications@comunigov.app';
 const FROM_NAME = 'ComuniGov Notifications';
 
-// Path to the OAuth2 credentials file
-const OAUTH2_CREDENTIALS_PATH = path.join(process.cwd(), 'config/credentials/service-account.json');
+// Create a reusable transporter object
+let transporter: nodemailer.Transporter | null = null;
 
-// OAuth2 token storage path
-const TOKEN_PATH = path.join(process.cwd(), 'config/credentials/token.json');
+/**
+ * Initialize the email transporter
+ */
+function initializeTransporter() {
+  if (transporter) {
+    return;
+  }
+  
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    console.warn('GMAIL_USER or GMAIL_APP_PASSWORD environment variables are not set. Email functionality will not be available.');
+    return;
+  }
 
-// Gmail API client and OAuth2 client
-let gmailClient: any = null;
-let oauth2Client: any = null;
-let isOAuth2Configured = false;
+  // Create transporter with Gmail
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD
+    }
+  });
+
+  // Verify the connection
+  transporter.verify((error: Error | null) => {
+    if (error) {
+      console.error('Error connecting to Gmail:', error);
+      transporter = null;
+    } else {
+      console.log('Email service is ready to send messages');
+    }
+  });
+}
+
+// Initialize the transporter on module load
+initializeTransporter();
 
 /**
  * Interface for email content
@@ -35,92 +60,6 @@ interface EmailContent {
   subject?: string;
   text?: string;
   html?: string;
-}
-
-/**
- * Get OAuth2 client
- * @returns OAuth2 client or null if configuration fails
- */
-async function getOAuth2Client() {
-  if (oauth2Client) {
-    return oauth2Client;
-  }
-
-  try {
-    // Check if credentials file exists
-    if (!fs.existsSync(OAUTH2_CREDENTIALS_PATH)) {
-      console.warn('OAuth2 credentials file not found. Email functionality will not be available.');
-      return null;
-    }
-
-    // Load client credentials from file
-    const credentials = JSON.parse(fs.readFileSync(OAUTH2_CREDENTIALS_PATH, 'utf8'));
-    const { client_id, client_secret } = credentials.web;
-    
-    // Create OAuth2 client
-    oauth2Client = new google.auth.OAuth2(
-      client_id,
-      client_secret,
-      'https://developers.google.com/oauthplayground'  // Redirect URI for testing - you may need to adjust this
-    );
-
-    // Check if we have stored token and set it
-    if (fs.existsSync(TOKEN_PATH)) {
-      const token = JSON.parse(fs.readFileSync(TOKEN_PATH, 'utf8'));
-      oauth2Client.setCredentials(token);
-      isOAuth2Configured = true;
-      console.log('OAuth2 token loaded successfully');
-    } else {
-      // We would normally have a flow to get a token here, but for simplicity
-      // in this app, we'll use an app password instead if OAuth2 isn't fully configured
-      console.log('No OAuth2 token found - will fallback to app password if available');
-    }
-    
-    return oauth2Client;
-  } catch (error) {
-    console.error('Error initializing OAuth2 client:', error);
-    return null;
-  }
-}
-
-/**
- * Creates a nodemailer transporter with either OAuth2 or app password authentication
- * @returns Nodemailer transporter
- */
-async function createTransporter() {
-  // Try to get OAuth2 client first
-  const auth = await getOAuth2Client();
-  
-  // If OAuth2 is configured and we have a token, use it
-  if (auth && isOAuth2Configured) {
-    console.log('Creating Gmail transporter with OAuth2');
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        type: 'OAuth2',
-        user: process.env.GMAIL_USER,
-        clientId: auth._clientId,
-        clientSecret: auth._clientSecret,
-        refreshToken: auth.credentials.refresh_token,
-        accessToken: auth.credentials.access_token
-      }
-    });
-  }
-  
-  // Fallback to app password
-  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
-    console.log('Creating Gmail transporter with app password');
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
-      }
-    });
-  }
-  
-  console.warn('Neither OAuth2 nor app password credentials are available for email');
-  return null;
 }
 
 /**
@@ -136,10 +75,9 @@ export async function sendEmail(emailContent: EmailContent): Promise<boolean> {
       return false;
     }
 
-    // Get transporter
-    const transporter = await createTransporter();
+    // Make sure transporter is initialized
     if (!transporter) {
-      console.warn('Email not sent: No valid transporter available');
+      console.warn('Email not sent: Email service is not configured');
       return false;
     }
 
