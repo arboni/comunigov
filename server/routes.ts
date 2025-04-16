@@ -10,7 +10,7 @@ import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { 
   insertEntitySchema, 
   insertMeetingSchema, 
@@ -1004,17 +1004,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update communication to mark it as having attachments
       if (uploadedFiles.length > 0) {
         try {
-          // Use Drizzle to update the hasAttachments flag
-          const result = await db.update(communications)
-            .set({ hasAttachments: true })
-            .where(eq(communications.id, communicationId))
-            .returning();
+          // Use raw SQL for a simple update that we know works
+          await db.execute(
+            sql`UPDATE communications SET has_attachments = true WHERE id = ${communicationId}`
+          );
           
-          if (result.length > 0) {
-            console.log(`Successfully updated communication ${communicationId} to set hasAttachments=true`);
-          } else {
-            console.warn(`No communication was updated for ID ${communicationId}`);
-          }
+          console.log(`Successfully updated communication ${communicationId} to set hasAttachments=true`);
         } catch (updateError) {
           console.error(`Error updating hasAttachments flag for communication ${communicationId}:`, updateError);
         }
