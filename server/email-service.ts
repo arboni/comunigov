@@ -55,7 +55,7 @@ interface EmailContent {
   text?: string;
   html?: string;
   attachments?: Array<{
-    content?: Buffer | string;
+    content?: string;
     path?: string;
     filename: string;
     type?: string;
@@ -112,7 +112,7 @@ export async function sendEmail(emailContent: EmailContent): Promise<boolean> {
     if (message.attachments) {
       console.log(`Attachments: ${message.attachments.length}`);
       message.attachments.forEach((att: any, idx: number) => {
-        console.log(`  Attachment ${idx+1}: ${att.filename}, type: ${att.type}, size: ${att.content.length} bytes`);
+        console.log(`  Attachment ${idx+1}: ${att.filename}, type: ${att.type}`);
       });
     } else {
       console.log('No attachments included');
@@ -423,20 +423,28 @@ The ComuniGov Team
         for (const file of files) {
           console.log(`Processing file: ${file.name}, path: ${file.filePath}`);
           if (fs.existsSync(file.filePath)) {
-            const fileBuffer = fs.readFileSync(file.filePath);
-            console.log(`File read successfully, size: ${fileBuffer.length} bytes`);
-            
-            // Convert buffer to base64 string as required by SendGrid
-            const content = fileBuffer.toString('base64');
-            
-            attachments.push({
-              filename: file.name,
-              content: content,
-              type: file.type,
-              disposition: 'attachment',
-              contentId: `attachment-${file.id}`
-            });
-            console.log(`Added file ${file.name} as an attachment`);
+            try {
+              const fileBuffer = fs.readFileSync(file.filePath);
+              console.log(`File read successfully, size: ${fileBuffer.length} bytes`);
+              
+              // Convert buffer to base64 string as required by SendGrid
+              const content = fileBuffer.toString('base64');
+              
+              // Create metadata for the attachment
+              const attachmentData = {
+                filename: file.name,
+                content,
+                type: file.type || 'application/octet-stream', // Default MIME type if not specified
+                disposition: 'attachment',
+                contentId: `attachment-${file.id}@comunigov`
+              };
+              
+              console.log(`Attachment metadata created for ${file.name}, content type: ${attachmentData.type}`);
+              attachments.push(attachmentData);
+              console.log(`Added file ${file.name} as an attachment`);
+            } catch (attachError) {
+              console.error(`Error processing attachment ${file.name}:`, attachError);
+            }
           } else {
             console.warn(`File not found: ${file.filePath}`);
           }
