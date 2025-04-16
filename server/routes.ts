@@ -2,7 +2,8 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, hashPassword, comparePasswords } from "./auth";
-import { sendNewMemberWelcomeEmail, sendPasswordResetEmail, sendCommunicationEmail } from "./email-service";
+import { sendNewMemberWelcomeEmail, sendPasswordResetEmail } from "./email-service";
+import { sendMessage, sendMessageWithFallback, MessageChannel } from "./messaging-service";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -843,14 +844,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
             hasAttachments = true;
           }
           
-          // Send email if communication channel is 'email'
-          if (communication.channel === 'email') {
-            // For user recipients
-            if (recipient.userId) {
-              const userRecipient = await storage.getUser(recipient.userId);
-              if (userRecipient && userRecipient.email) {
-                await sendCommunicationEmail(
-                  userRecipient.email,
+          // Send message based on selected channel
+          const channel = communication.channel as MessageChannel;
+          
+          // For user recipients
+          if (recipient.userId) {
+            const userRecipient = await storage.getUser(recipient.userId);
+            if (userRecipient) {
+              // Try to send message through the primary channel
+              const contactInfo: Record<MessageChannel, string | undefined> = {
+                email: userRecipient.email,
+                whatsapp: userRecipient.whatsapp,
+                telegram: userRecipient.telegram,
+                system_notification: undefined // Not implemented yet
+              };
+              
+              // Define fallback channels in order of preference
+              const fallbackChannels: MessageChannel[] = ['email', 'whatsapp', 'telegram'];
+              
+              // Try primary channel first, then fallbacks
+              console.log(`Attempting to send message to user ${userRecipient.fullName || userRecipient.username} via ${channel}`);
+              const result = await sendMessage(
+                channel,
+                contactInfo[channel] || '',
+                userRecipient.fullName || userRecipient.username,
+                senderName,
+                communication.subject,
+                communication.content,
+                hasAttachments
+              );
+              
+              if (!result.success && channel !== 'system_notification') {
+                console.log(`Failed to send via ${channel}, trying fallbacks...`);
+                // Try fallback channels if primary fails
+                await sendMessageWithFallback(
+                  fallbackChannels.filter(c => c !== channel), // Remove primary channel from fallbacks
+                  contactInfo,
                   userRecipient.fullName || userRecipient.username,
                   senderName,
                   communication.subject,
@@ -859,12 +888,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 );
               }
             }
-            
-            // For entity recipients
-            if (recipient.entityId) {
-              const entityRecipient = await storage.getEntity(recipient.entityId);
-              if (entityRecipient && entityRecipient.headEmail) {
-                await sendCommunicationEmail(
+          }
+          
+          // For entity recipients
+          if (recipient.entityId) {
+            const entityRecipient = await storage.getEntity(recipient.entityId);
+            if (entityRecipient) {
+              // Send to entity head
+              if (entityRecipient.headEmail) {
+                await sendMessage(
+                  'email', // Always use email for entity head
                   entityRecipient.headEmail,
                   entityRecipient.name,
                   senderName,
@@ -877,9 +910,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Also send to all entity members if entity has members
               const entityMembers = await storage.getUsersByEntityId(recipient.entityId);
               for (const member of entityMembers) {
-                if (member.email) {
-                  await sendCommunicationEmail(
-                    member.email,
+                if (member) {
+                  // Try to send message through the primary channel
+                  const contactInfo: Record<MessageChannel, string | undefined> = {
+                    email: member.email,
+                    whatsapp: member.whatsapp,
+                    telegram: member.telegram,
+                    system_notification: undefined // Not implemented yet
+                  };
+                  
+                  // Define fallback channels in order of preference
+                  const fallbackChannels: MessageChannel[] = ['email', 'whatsapp', 'telegram'];
+                  
+                  // Try primary channel first, then fallbacks
+                  await sendMessageWithFallback(
+                    [channel, ...fallbackChannels.filter(c => c !== channel)],
+                    contactInfo,
                     member.fullName || member.username,
                     senderName,
                     communication.subject,

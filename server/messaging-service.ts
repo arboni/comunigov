@@ -12,7 +12,7 @@ import { sendWhatsAppMessage } from './whatsapp-service';
 import { sendTelegramMessage } from './telegram-service';
 
 // Message channel types
-export type MessageChannel = 'email' | 'whatsapp' | 'telegram';
+export type MessageChannel = 'email' | 'whatsapp' | 'telegram' | 'system_notification';
 
 // Message send result
 export interface MessageSendResult {
