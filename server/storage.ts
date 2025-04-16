@@ -9,6 +9,7 @@ import {
   TaskComment, InsertTaskComment,
   Communication, InsertCommunication,
   CommunicationRecipient, InsertCommunicationRecipient,
+  CommunicationFile, InsertCommunicationFile,
   AchievementBadge, InsertAchievementBadge,
   UserBadge, InsertUserBadge,
   UserWithEntity,
@@ -19,7 +20,7 @@ import {
   CommunicationWithRecipients,
   UserWithBadges,
   users, entities, meetings, meetingAttendees, meetingDocuments, subjects, tasks, taskComments, 
-  communications, communicationRecipients, achievementBadges, userBadges
+  communications, communicationRecipients, communicationFiles, achievementBadges, userBadges
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
