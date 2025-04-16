@@ -854,8 +854,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Try to send message through the primary channel
               const contactInfo: Record<MessageChannel, string | undefined> = {
                 email: userRecipient.email,
-                whatsapp: userRecipient.whatsapp,
-                telegram: userRecipient.telegram,
+                whatsapp: userRecipient.whatsapp ?? undefined,
+                telegram: userRecipient.telegram ?? undefined,
                 system_notification: undefined // Not implemented yet
               };
               
@@ -914,8 +914,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   // Try to send message through the primary channel
                   const contactInfo: Record<MessageChannel, string | undefined> = {
                     email: member.email,
-                    whatsapp: member.whatsapp,
-                    telegram: member.telegram,
+                    whatsapp: member.whatsapp ?? undefined,
+                    telegram: member.telegram ?? undefined,
                     system_notification: undefined // Not implemented yet
                   };
                   

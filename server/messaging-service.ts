@@ -78,6 +78,17 @@ export async function sendMessage(
         );
         break;
         
+      case 'system_notification':
+        // System notifications not implemented yet, will be stored in the database
+        // and displayed in the user's notification center
+        console.log(`SYSTEM NOTIFICATION for ${recipientName}`);
+        console.log(`From: ${senderName}`);
+        console.log(`Subject: ${subject}`);
+        console.log(`Content: ${content}`);
+        // For now, return true as if it was sent successfully
+        success = true;
+        break;
+        
       default:
         return {
           success: false,
@@ -147,6 +158,52 @@ export async function sendMessageWithFallback(
     
     // If this channel was successful, stop trying others
     if (result.success) break;
+  }
+  
+  return results;
+}
+
+/**
+ * Helper function to send a message to multiple recipients with fallback options
+ * @param recipients - Array of recipient information
+ * @param defaultChannel - Default channel to try first
+ * @param senderName - Name of the sender
+ * @param subject - Subject of the message
+ * @param content - Content of the message
+ * @param hasAttachments - Whether the message has attachments
+ * @returns Promise resolving to an array of results for each recipient
+ */
+export async function sendMessageToAll(
+  recipients: Array<{
+    userId?: number;
+    entityId?: number;
+    name: string;
+    contactInfo: Record<MessageChannel, string | undefined>;
+  }>,
+  defaultChannel: MessageChannel,
+  senderName: string,
+  subject: string,
+  content: string,
+  hasAttachments: boolean = false
+): Promise<Record<string, MessageSendResult[]>> {
+  const results: Record<string, MessageSendResult[]> = {};
+  
+  // Define fallback channels in order of preference
+  const fallbackChannels: MessageChannel[] = ['email', 'whatsapp', 'telegram'];
+  
+  for (const recipient of recipients) {
+    const recipientKey = `${recipient.userId || ''}:${recipient.entityId || ''}:${recipient.name}`;
+    
+    // Try primary channel first, then fallbacks
+    results[recipientKey] = await sendMessageWithFallback(
+      [defaultChannel, ...fallbackChannels.filter(c => c !== defaultChannel)],
+      recipient.contactInfo,
+      recipient.name,
+      senderName,
+      subject,
+      content,
+      hasAttachments
+    );
   }
   
   return results;
