@@ -168,41 +168,189 @@ The ComuniGov Team
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to ComuniGov</title>
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background-color: #4f46e5; color: white; padding: 20px; text-align: center; }
-    .content { padding: 20px; background-color: #f9fafb; }
-    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #6b7280; }
-    .credentials { background-color: #e5e7eb; padding: 15px; border-radius: 5px; margin: 15px 0; }
-    .button { display: inline-block; background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+    /* Base styles - these work in most email clients */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    .header {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: white;
+      padding: 25px 20px;
+      text-align: center;
+    }
+    .logo {
+      margin-bottom: 15px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .content {
+      padding: 30px;
+      background-color: #ffffff;
+    }
+    .greeting {
+      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #1f2937;
+    }
+    .info-text {
+      margin-bottom: 25px;
+      color: #4b5563;
+    }
+    .credentials {
+      background-color: #f3f4f6;
+      padding: 20px;
+      border-radius: 6px;
+      margin: 20px 0;
+      border-left: 4px solid #4f46e5;
+    }
+    .credentials p {
+      margin: 10px 0;
+      color: #1f2937;
+    }
+    .important-notice {
+      background-color: #fffbeb;
+      border: 1px solid #fcd34d;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 25px;
+      display: flex;
+      align-items: center;
+    }
+    .important-notice svg {
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .important-notice p {
+      margin: 0;
+      color: #92400e;
+    }
+    .cta {
+      text-align: center;
+      margin: 35px 0 25px;
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: white;
+      padding: 12px 25px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: transform 0.3s ease;
+      box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);
+    }
+    .divider {
+      height: 1px;
+      background-color: #e5e7eb;
+      margin: 25px 0;
+    }
+    .footer {
+      padding: 20px;
+      text-align: center;
+      background-color: #f9fafb;
+      color: #6b7280;
+      font-size: 13px;
+    }
+    .footer p {
+      margin: 5px 0;
+    }
+    .social-links {
+      margin: 15px 0;
+    }
+    .social-links a {
+      display: inline-block;
+      margin: 0 8px;
+      color: #4f46e5;
+      text-decoration: none;
+    }
+    /* Responsive adjustments */
+    @media only screen and (max-width: 650px) {
+      .container {
+        width: 100% !important;
+        border-radius: 0;
+      }
+      .content {
+        padding: 20px !important;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
+      <div class="logo">
+        <!-- Simple text logo since images might be blocked -->
+        <div style="font-size: 22px; font-weight: bold; letter-spacing: 1px;">ComuniGov</div>
+      </div>
       <h1>Welcome to ComuniGov</h1>
     </div>
+    
     <div class="content">
-      <p>Hello ${fullName},</p>
+      <div class="greeting">Hello ${fullName},</div>
       
-      <p>You have been added as a member of <strong>${entityName}</strong> on the ComuniGov platform.</p>
+      <div class="info-text">
+        You have been added as a member of <strong>${entityName}</strong> on the ComuniGov institutional communication platform.
+      </div>
       
-      <p>Here are your account details:</p>
+      <div class="info-text">
+        Here are your account details:
+      </div>
+      
       <div class="credentials">
         <p><strong>Username:</strong> ${username}</p>
         <p><strong>Temporary Password:</strong> ${tempPassword}</p>
       </div>
       
-      <p><strong>Important:</strong> For security reasons, please change your password after your first login.</p>
+      <div class="important-notice">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p><strong>Important:</strong> For security reasons, please change your password immediately after your first login.</p>
+      </div>
       
-      <p style="text-align: center; margin-top: 30px;">
+      <div class="cta">
         <a href="https://comunigov.app" class="button">Access ComuniGov Platform</a>
-      </p>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <div style="color: #6b7280; font-size: 14px; text-align: center; margin-top: 5px;">
+        Please keep your login credentials secure and do not share them with others.
+      </div>
     </div>
+    
     <div class="footer">
+      <div class="social-links">
+        <a href="#">Facebook</a> • 
+        <a href="#">Twitter</a> • 
+        <a href="#">LinkedIn</a>
+      </div>
       <p>If you have any questions, please contact your entity administrator.</p>
-      <p>&copy; ComuniGov - Institutional Communication Platform</p>
+      <p>&copy; 2025 ComuniGov - Institutional Communication Platform</p>
     </div>
   </div>
 </body>
@@ -255,44 +403,216 @@ The ComuniGov Team
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ComuniGov Password Reset</title>
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background-color: #4f46e5; color: white; padding: 20px; text-align: center; }
-    .content { padding: 20px; background-color: #f9fafb; }
-    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #6b7280; }
-    .credentials { background-color: #e5e7eb; padding: 15px; border-radius: 5px; margin: 15px 0; }
-    .button { display: inline-block; background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
-    .warning { color: #b91c1c; font-weight: bold; }
+    /* Base styles - these work in most email clients */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    .header {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: white;
+      padding: 25px 20px;
+      text-align: center;
+    }
+    .logo {
+      margin-bottom: 15px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .content {
+      padding: 30px;
+      background-color: #ffffff;
+    }
+    .greeting {
+      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #1f2937;
+    }
+    .info-text {
+      margin-bottom: 25px;
+      color: #4b5563;
+    }
+    .credentials {
+      background-color: #f3f4f6;
+      padding: 20px;
+      border-radius: 6px;
+      margin: 20px 0;
+      border-left: 4px solid #4f46e5;
+    }
+    .credentials p {
+      margin: 10px 0;
+      color: #1f2937;
+    }
+    .important-notice {
+      background-color: #fffbeb;
+      border: 1px solid #fcd34d;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 25px;
+      display: flex;
+      align-items: center;
+    }
+    .important-notice svg {
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .important-notice p {
+      margin: 0;
+      color: #92400e;
+    }
+    .warning-notice {
+      background-color: #fee2e2;
+      border: 1px solid #ef4444;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 25px;
+      display: flex;
+      align-items: center;
+    }
+    .warning-notice svg {
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .warning-notice p {
+      margin: 0;
+      color: #b91c1c;
+      font-weight: 500;
+    }
+    .cta {
+      text-align: center;
+      margin: 35px 0 25px;
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: white;
+      padding: 12px 25px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: transform 0.3s ease;
+      box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);
+    }
+    .divider {
+      height: 1px;
+      background-color: #e5e7eb;
+      margin: 25px 0;
+    }
+    .footer {
+      padding: 20px;
+      text-align: center;
+      background-color: #f9fafb;
+      color: #6b7280;
+      font-size: 13px;
+    }
+    .footer p {
+      margin: 5px 0;
+    }
+    .social-links {
+      margin: 15px 0;
+    }
+    .social-links a {
+      display: inline-block;
+      margin: 0 8px;
+      color: #4f46e5;
+      text-decoration: none;
+    }
+    /* Responsive adjustments */
+    @media only screen and (max-width: 650px) {
+      .container {
+        width: 100% !important;
+        border-radius: 0;
+      }
+      .content {
+        padding: 20px !important;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
+      <div class="logo">
+        <!-- Simple text logo since images might be blocked -->
+        <div style="font-size: 22px; font-weight: bold; letter-spacing: 1px;">ComuniGov</div>
+      </div>
       <h1>Password Reset</h1>
     </div>
+    
     <div class="content">
-      <p>Hello ${fullName},</p>
+      <div class="greeting">Hello ${fullName},</div>
       
-      <p>Your password on the ComuniGov platform has been reset.</p>
+      <div class="info-text">
+        Your password on the ComuniGov platform has been reset. Please use the credentials below to access your account.
+      </div>
       
-      <p>Here are your updated account details:</p>
+      <div class="info-text">
+        Here are your updated account details:
+      </div>
+      
       <div class="credentials">
         <p><strong>Username:</strong> ${username}</p>
         <p><strong>Temporary Password:</strong> ${tempPassword}</p>
       </div>
       
-      <p><strong>Important:</strong> For security reasons, please change your password after your next login.</p>
+      <div class="important-notice">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p><strong>Important:</strong> For security reasons, please change your password immediately after your next login.</p>
+      </div>
       
-      <p class="warning">If you did not request this password reset, please contact your entity administrator immediately.</p>
+      <div class="warning-notice">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <p>If you did not request this password reset, please contact your entity administrator immediately.</p>
+      </div>
       
-      <p style="text-align: center; margin-top: 30px;">
+      <div class="cta">
         <a href="https://comunigov.app" class="button">Access ComuniGov Platform</a>
-      </p>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <div style="color: #6b7280; font-size: 14px; text-align: center; margin-top: 5px;">
+        Please keep your login credentials secure and do not share them with others.
+      </div>
     </div>
+    
     <div class="footer">
+      <div class="social-links">
+        <a href="#">Facebook</a> • 
+        <a href="#">Twitter</a> • 
+        <a href="#">LinkedIn</a>
+      </div>
       <p>If you have any questions, please contact your entity administrator.</p>
-      <p>&copy; ComuniGov - Institutional Communication Platform</p>
+      <p>&copy; 2025 ComuniGov - Institutional Communication Platform</p>
     </div>
   </div>
 </body>
@@ -351,28 +671,162 @@ The ComuniGov Team
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ComuniGov Message: ${subject}</title>
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background-color: #4f46e5; color: white; padding: 20px; text-align: center; }
-    .content { padding: 20px; background-color: #f9fafb; }
-    .message { background-color: #fff; padding: 15px; border-left: 4px solid #4f46e5; margin: 15px 0; }
-    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #6b7280; }
-    .attachments-note { background-color: #fef3c7; padding: 10px; border-radius: 5px; margin-top: 15px; }
-    .button { display: inline-block; background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+    /* Base styles - these work in most email clients */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    .header {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: white;
+      padding: 25px 20px;
+      text-align: center;
+    }
+    .logo {
+      margin-bottom: 15px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .content {
+      padding: 30px;
+      background-color: #ffffff;
+    }
+    .greeting {
+      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #1f2937;
+    }
+    .sender-info {
+      margin-bottom: 25px;
+      color: #4b5563;
+    }
+    .subject {
+      background-color: #f3f4f6;
+      padding: 12px 15px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #1f2937;
+    }
+    .message {
+      background-color: #fff;
+      padding: 20px;
+      border-left: 4px solid #4f46e5;
+      margin: 20px 0;
+      border-radius: 0 6px 6px 0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      color: #374151;
+      line-height: 1.7;
+    }
+    .attachments-note {
+      background-color: #fffbeb;
+      border: 1px solid #fcd34d;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 25px;
+      display: flex;
+      align-items: center;
+    }
+    .attachments-note svg {
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .attachments-note p {
+      margin: 0;
+      color: #92400e;
+    }
+    .cta {
+      text-align: center;
+      margin: 35px 0 25px;
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: white;
+      padding: 12px 25px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: transform 0.3s ease;
+      box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);
+    }
+    .divider {
+      height: 1px;
+      background-color: #e5e7eb;
+      margin: 25px 0;
+    }
+    .footer {
+      padding: 20px;
+      text-align: center;
+      background-color: #f9fafb;
+      color: #6b7280;
+      font-size: 13px;
+    }
+    .footer p {
+      margin: 5px 0;
+    }
+    .social-links {
+      margin: 15px 0;
+    }
+    .social-links a {
+      display: inline-block;
+      margin: 0 8px;
+      color: #4f46e5;
+      text-decoration: none;
+    }
+    /* Responsive adjustments */
+    @media only screen and (max-width: 650px) {
+      .container {
+        width: 100% !important;
+        border-radius: 0;
+      }
+      .content {
+        padding: 20px !important;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>New Message</h1>
+      <div class="logo">
+        <!-- Simple text logo since images might be blocked -->
+        <div style="font-size: 22px; font-weight: bold; letter-spacing: 1px;">ComuniGov</div>
+      </div>
+      <h1>New Institutional Communication</h1>
     </div>
+    
     <div class="content">
-      <p>Hello ${recipientName},</p>
+      <div class="greeting">Hello ${recipientName},</div>
       
-      <p>You have received a new message from <strong>${senderName}</strong> via ComuniGov.</p>
+      <div class="sender-info">
+        You have received a new message from <strong>${senderName}</strong> through the ComuniGov platform.
+      </div>
       
-      <p><strong>Subject:</strong> ${subject}</p>
+      <div class="subject">
+        <span style="color: #6b7280; display: inline-block; width: 80px;">Subject:</span> ${subject}
+      </div>
       
       <div class="message">
         ${content.replace(/\n/g, '<br>')}
@@ -380,17 +834,32 @@ The ComuniGov Team
       
       ${hasAttachments ? `
       <div class="attachments-note">
-        <p><strong>Note:</strong> This message has attachments included in this email. You can also log in to the ComuniGov platform to view them.</p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"></path>
+        </svg>
+        <p><strong>Files attached:</strong> This message includes file attachments. You can also view them by logging into the ComuniGov platform.</p>
       </div>
       ` : ''}
       
-      <p style="text-align: center; margin-top: 30px;">
-        <a href="https://comunigov.app" class="button">View in ComuniGov</a>
-      </p>
+      <div class="cta">
+        <a href="https://comunigov.app" class="button">View in ComuniGov Platform</a>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <div style="color: #6b7280; font-size: 14px; text-align: center; margin-top: 5px;">
+        For better security and features, please access all your communications through the platform.
+      </div>
     </div>
+    
     <div class="footer">
-      <p>This is an automated message from the ComuniGov platform.</p>
-      <p>&copy; ComuniGov - Institutional Communication Platform</p>
+      <div class="social-links">
+        <a href="#">Facebook</a> • 
+        <a href="#">Twitter</a> • 
+        <a href="#">LinkedIn</a>
+      </div>
+      <p>This is an automated message. Please do not reply directly to this email.</p>
+      <p>&copy; 2025 ComuniGov - Institutional Communication Platform</p>
     </div>
   </div>
 </body>
