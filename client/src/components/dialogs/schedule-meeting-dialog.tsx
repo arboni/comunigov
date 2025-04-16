@@ -511,7 +511,7 @@ export default function ScheduleMeetingDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {subjects.length > 0 ? (
+                        {subjects && Array.isArray(subjects) && subjects.length > 0 ? (
                           subjects.map((subject: any) => (
                             <SelectItem
                               key={`subject-${subject.id}`}
@@ -567,7 +567,7 @@ export default function ScheduleMeetingDialog({
                   </div>
                   
                   <div className="space-y-4">
-                    {users.length > 0 ? (
+                    {users && Array.isArray(users) && users.length > 0 ? (
                       <div className="space-y-2">
                         <h4 className="text-sm font-medium text-neutral-700 flex items-center">
                           <Users className="h-4 w-4 mr-2" />

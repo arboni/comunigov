@@ -416,9 +416,9 @@ export default function SendMessageDialog({
                               </div>
                               
                               <div className="border rounded-md p-4 max-h-60 overflow-y-auto">
-                                {users && users.length > 0 ? (
+                                {users && Array.isArray(users) && users.length > 0 ? (
                                   <div className="space-y-2">
-                                    {users.map((user) => (
+                                    {users.map((user: any) => (
                                       <FormItem
                                         key={user.id}
                                         className="flex flex-row items-start space-x-3 space-y-0"
@@ -473,9 +473,9 @@ export default function SendMessageDialog({
                               </div>
                               
                               <div className="border rounded-md p-4 max-h-60 overflow-y-auto">
-                                {entities && entities.length > 0 ? (
+                                {entities && Array.isArray(entities) && entities.length > 0 ? (
                                   <div className="space-y-2">
-                                    {entities.map((entity) => (
+                                    {entities.map((entity: any) => (
                                       <FormItem
                                         key={entity.id}
                                         className="flex flex-row items-start space-x-3 space-y-0"
