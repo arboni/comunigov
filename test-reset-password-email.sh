@@ -17,7 +17,7 @@ echo "Will send test password reset email to: $RECIPIENT_EMAIL"
 
 # Execute test using tsx
 npx tsx << SCRIPT
-import { sendPasswordResetEmail } from './server/email-service';
+const { sendPasswordResetEmail } = require('./server/email-service');
 
 async function testResetEmail() {
   console.log('Sending test password reset email to ${RECIPIENT_EMAIL}');

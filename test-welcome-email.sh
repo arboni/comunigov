@@ -17,7 +17,7 @@ echo "Will send test welcome email to: $RECIPIENT_EMAIL"
 
 # Execute test using tsx
 npx tsx << SCRIPT
-import { sendNewMemberWelcomeEmail } from './server/email-service';
+const { sendNewMemberWelcomeEmail } = require('./server/email-service');
 
 async function testWelcomeEmail() {
   console.log('Sending test welcome email to ${RECIPIENT_EMAIL}');
