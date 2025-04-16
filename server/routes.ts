@@ -1083,6 +1083,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // File download endpoint
+  app.get("/api/download/:fileId", isAuthenticated, async (req, res, next) => {
+    try {
+      const fileId = parseInt(req.params.fileId);
+      if (isNaN(fileId)) {
+        return res.status(400).json({ message: "Invalid file ID" });
+      }
+      
+      // Try to get the file as a communication file first
+      let file = await storage.getCommunicationFile(fileId);
+      
+      // If not found as a communication file, try as a meeting document
+      if (!file) {
+        const meetingDoc = await storage.getMeetingDocument(fileId);
+        if (meetingDoc) {
+          file = {
+            id: meetingDoc.id,
+            name: meetingDoc.name,
+            type: meetingDoc.type,
+            filePath: meetingDoc.filePath,
+            uploadedAt: meetingDoc.uploadedAt
+          };
+        }
+      }
+      
+      if (!file || !file.filePath) {
+        return res.status(404).json({ message: "File not found" });
+      }
+      
+      // Check if file exists
+      if (!fs.existsSync(file.filePath)) {
+        return res.status(404).json({ message: "File not found on disk" });
+      }
+      
+      // Set appropriate headers
+      res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(file.name)}"`);
+      if (file.type) {
+        res.setHeader('Content-Type', file.type);
+      }
+      
+      // Stream the file
+      const fileStream = fs.createReadStream(file.filePath);
+      fileStream.pipe(res);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      next(error);
+    }
+  });
+
   // Achievement Badges
   app.get("/api/badges", isAuthenticated, async (req, res, next) => {
     try {
