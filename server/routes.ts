@@ -824,7 +824,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       const communication = await storage.createCommunication(validatedData);
       
-      // Process recipients
+      // Get the sender's name
+      const sender = await storage.getUser(req.user.id);
+      const senderName = sender ? sender.fullName || sender.username : "Unknown Sender";
+      
+      // Process recipients and send emails if channel is 'email'
       if (req.body.recipients && Array.isArray(req.body.recipients)) {
         for (const recipient of req.body.recipients) {
           const recipientData = insertCommunicationRecipientSchema.parse({
@@ -832,6 +836,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ...recipient
           });
           await storage.createCommunicationRecipient(recipientData);
+          
+          // Send email if communication channel is 'email'
+          if (communication.channel === 'email') {
+            // For user recipients
+            if (recipient.userId) {
+              const userRecipient = await storage.getUser(recipient.userId);
+              if (userRecipient && userRecipient.email) {
+                await emailService.sendCommunicationEmail(
+                  userRecipient.email,
+                  userRecipient.fullName || userRecipient.username,
+                  senderName,
+                  communication.subject,
+                  communication.content,
+                  false // We'll check for attachments later
+                );
+              }
+            }
+            
+            // For entity recipients
+            if (recipient.entityId) {
+              const entityRecipient = await storage.getEntity(recipient.entityId);
+              if (entityRecipient && entityRecipient.email) {
+                await emailService.sendCommunicationEmail(
+                  entityRecipient.email,
+                  entityRecipient.name,
+                  senderName,
+                  communication.subject,
+                  communication.content,
+                  false // We'll check for attachments later
+                );
+              }
+              
+              // Also send to all entity members if entity has members
+              const entityMembers = await storage.getUsersByEntityId(recipient.entityId);
+              for (const member of entityMembers) {
+                if (member.email) {
+                  await emailService.sendCommunicationEmail(
+                    member.email,
+                    member.fullName || member.username,
+                    senderName,
+                    communication.subject,
+                    communication.content,
+                    false // We'll check for attachments later
+                  );
+                }
+              }
+            }
+          }
         }
       }
       
@@ -840,6 +892,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Validation error", errors: error.errors });
       }
+      console.error("Error sending communication:", error);
       next(error);
     }
   });

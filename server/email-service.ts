@@ -1,5 +1,13 @@
 import sgMail from '@sendgrid/mail';
 
+// Interface for communication recipient info
+export interface CommunicationRecipientInfo {
+  userId?: number;
+  entityId?: number;
+  email: string;
+  name: string;
+}
+
 // Set SendGrid API key from environment variable
 if (!process.env.SENDGRID_API_KEY) {
   console.warn('SENDGRID_API_KEY is not set. Email notifications will not be sent.');
@@ -224,6 +232,102 @@ The ComuniGov Team
   return await sendEmail({
     to,
     subject,
+    text,
+    html
+  });
+}
+
+/**
+ * Sends a communication email to a recipient
+ * @param to - Recipient email
+ * @param recipientName - Recipient's name
+ * @param senderName - Sender's name
+ * @param subject - Email subject
+ * @param content - Email content (message body)
+ * @param hasAttachments - Whether the communication has file attachments 
+ * @returns Promise resolving to true if sent successfully, false otherwise
+ */
+export async function sendCommunicationEmail(
+  to: string,
+  recipientName: string,
+  senderName: string,
+  subject: string,
+  content: string,
+  hasAttachments: boolean = false
+): Promise<boolean> {
+  const emailSubject = `ComuniGov: ${subject}`;
+  
+  const text = `
+Hello ${recipientName},
+
+You have received a new message from ${senderName} via ComuniGov.
+
+Subject: ${subject}
+
+Message:
+${content}
+
+${hasAttachments ? 'This message has attachments. Please log in to the ComuniGov platform to view them.' : ''}
+
+Access the platform at: https://comunigov.app
+
+Best regards,
+The ComuniGov Team
+  `;
+  
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background-color: #4f46e5; color: white; padding: 20px; text-align: center; }
+    .content { padding: 20px; background-color: #f9fafb; }
+    .message { background-color: #fff; padding: 15px; border-left: 4px solid #4f46e5; margin: 15px 0; }
+    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #6b7280; }
+    .attachments-note { background-color: #fef3c7; padding: 10px; border-radius: 5px; margin-top: 15px; }
+    .button { display: inline-block; background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>New Message</h1>
+    </div>
+    <div class="content">
+      <p>Hello ${recipientName},</p>
+      
+      <p>You have received a new message from <strong>${senderName}</strong> via ComuniGov.</p>
+      
+      <p><strong>Subject:</strong> ${subject}</p>
+      
+      <div class="message">
+        ${content.replace(/\n/g, '<br>')}
+      </div>
+      
+      ${hasAttachments ? `
+      <div class="attachments-note">
+        <p><strong>Note:</strong> This message has attachments. Please log in to the ComuniGov platform to view them.</p>
+      </div>
+      ` : ''}
+      
+      <p style="text-align: center; margin-top: 30px;">
+        <a href="https://comunigov.app" class="button">View in ComuniGov</a>
+      </p>
+    </div>
+    <div class="footer">
+      <p>This is an automated message from the ComuniGov platform.</p>
+      <p>&copy; ComuniGov - Institutional Communication Platform</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+  
+  return await sendEmail({
+    to,
+    subject: emailSubject,
     text,
     html
   });
