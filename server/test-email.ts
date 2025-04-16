@@ -1,34 +1,44 @@
+import { sendEmail } from './email-service';
+
 /**
- * Test script for sending an email via Gmail SMTP
- * 
- * This file is for testing purposes only and should be removed after verification
+ * Test email sending
  */
-
-import { sendCommunicationEmail } from './email-service';
-
-async function testSendEmail() {
-  console.log('Testing email sending...');
-  console.log('Gmail user:', process.env.GMAIL_USER);
-  console.log('Gmail app password exists:', !!process.env.GMAIL_APP_PASSWORD);
+async function testEmailSending() {
+  // Get recipient email from command line arguments or use default
+  const recipientEmail = process.argv[2] || process.env.GMAIL_USER;
   
-  try {
-    // Attempt to send a test email
-    const result = await sendCommunicationEmail(
-      process.env.GMAIL_USER || '', // Send test email to yourself
-      'Admin User',
-      'System',
-      'Test Email from ComuniGov',
-      'This is a test email to verify the Gmail SMTP integration is working correctly.\n\nIf you can read this, the email service is functioning properly!',
-      false
-    );
-    
-    console.log('Email send result:', result);
-  } catch (error) {
-    console.error('Error in test script:', error);
+  if (!recipientEmail) {
+    console.error('Error: No recipient email specified.');
+    console.error('Usage: npm run test:email <recipient-email>');
+    process.exit(1);
+  }
+  
+  console.log(`Sending test email to ${recipientEmail}`);
+  
+  // Try to send a test email
+  const result = await sendEmail({
+    to: recipientEmail,
+    subject: 'ComuniGov - Test Email',
+    text: 'This is a test email from ComuniGov to verify that email sending is working correctly.',
+    html: `
+      <div style="font-family: Arial, sans-serif; padding: 20px;">
+        <h2 style="color: #4f46e5;">ComuniGov - Email Test</h2>
+        <p>This is a test email from ComuniGov to verify that email sending is working correctly.</p>
+        <p>If you received this email, it means the setup is working!</p>
+        <hr>
+        <p style="color: #6b7280; font-size: 12px;">ComuniGov - Institutional Communication Platform</p>
+      </div>
+    `
+  });
+  
+  if (result) {
+    console.log('Email sent successfully!');
+    process.exit(0);
+  } else {
+    console.error('Failed to send email.');
+    process.exit(1);
   }
 }
 
 // Run the test
-testSendEmail()
-  .then(() => console.log('Test completed'))
-  .catch(err => console.error('Test failed with error:', err));
+testEmailSending();

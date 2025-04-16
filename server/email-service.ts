@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { google } from 'googleapis';
+import nodemailer from 'nodemailer';
 
 // Interface for communication recipient info
 export interface CommunicationRecipientInfo {
@@ -12,41 +13,19 @@ export interface CommunicationRecipientInfo {
 
 // Email configuration
 const DEFAULT_SUBJECT = 'ComuniGov Notification';
-const SERVICE_ACCOUNT_EMAIL = 'notifications@comunigov.app';
+const FROM_EMAIL = process.env.GMAIL_USER || 'notifications@comunigov.app';
 const FROM_NAME = 'ComuniGov Notifications';
 
-// Path to the service account credentials file
-const SERVICE_ACCOUNT_PATH = path.join(process.cwd(), 'config/credentials/service-account.json');
+// Path to the OAuth2 credentials file
+const OAUTH2_CREDENTIALS_PATH = path.join(process.cwd(), 'config/credentials/service-account.json');
 
-// Check if the credentials file exists
+// OAuth2 token storage path
+const TOKEN_PATH = path.join(process.cwd(), 'config/credentials/token.json');
+
+// Gmail API client and OAuth2 client
 let gmailClient: any = null;
-let serviceAccount: any = null;
-
-try {
-  if (fs.existsSync(SERVICE_ACCOUNT_PATH)) {
-    // Load the service account key JSON file
-    serviceAccount = require(SERVICE_ACCOUNT_PATH);
-    
-    // Create a JWT client using the service account credentials
-    const jwtClient = new google.auth.JWT(
-      serviceAccount.client_email,
-      undefined,
-      serviceAccount.private_key,
-      ['https://www.googleapis.com/auth/gmail.send'],
-      // If you're using domain-wide delegation, specify the user email here
-      // process.env.GMAIL_USER
-    );
-
-    // Initialize the Gmail API client
-    gmailClient = google.gmail({ version: 'v1', auth: jwtClient });
-    
-    console.log('Gmail API client initialized successfully');
-  } else {
-    console.warn('Service account credentials file not found. Email functionality will not be available.');
-  }
-} catch (error) {
-  console.error('Error initializing Gmail API client:', error);
-}
+let oauth2Client: any = null;
+let isOAuth2Configured = false;
 
 /**
  * Interface for email content
@@ -59,16 +38,97 @@ interface EmailContent {
 }
 
 /**
- * Sends an email using Nodemailer with Gmail
+ * Get OAuth2 client
+ * @returns OAuth2 client or null if configuration fails
+ */
+async function getOAuth2Client() {
+  if (oauth2Client) {
+    return oauth2Client;
+  }
+
+  try {
+    // Check if credentials file exists
+    if (!fs.existsSync(OAUTH2_CREDENTIALS_PATH)) {
+      console.warn('OAuth2 credentials file not found. Email functionality will not be available.');
+      return null;
+    }
+
+    // Load client credentials from file
+    const credentials = JSON.parse(fs.readFileSync(OAUTH2_CREDENTIALS_PATH, 'utf8'));
+    const { client_id, client_secret } = credentials.web;
+    
+    // Create OAuth2 client
+    oauth2Client = new google.auth.OAuth2(
+      client_id,
+      client_secret,
+      'https://developers.google.com/oauthplayground'  // Redirect URI for testing - you may need to adjust this
+    );
+
+    // Check if we have stored token and set it
+    if (fs.existsSync(TOKEN_PATH)) {
+      const token = JSON.parse(fs.readFileSync(TOKEN_PATH, 'utf8'));
+      oauth2Client.setCredentials(token);
+      isOAuth2Configured = true;
+      console.log('OAuth2 token loaded successfully');
+    } else {
+      // We would normally have a flow to get a token here, but for simplicity
+      // in this app, we'll use an app password instead if OAuth2 isn't fully configured
+      console.log('No OAuth2 token found - will fallback to app password if available');
+    }
+    
+    return oauth2Client;
+  } catch (error) {
+    console.error('Error initializing OAuth2 client:', error);
+    return null;
+  }
+}
+
+/**
+ * Creates a nodemailer transporter with either OAuth2 or app password authentication
+ * @returns Nodemailer transporter
+ */
+async function createTransporter() {
+  // Try to get OAuth2 client first
+  const auth = await getOAuth2Client();
+  
+  // If OAuth2 is configured and we have a token, use it
+  if (auth && isOAuth2Configured) {
+    console.log('Creating Gmail transporter with OAuth2');
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: process.env.GMAIL_USER,
+        clientId: auth._clientId,
+        clientSecret: auth._clientSecret,
+        refreshToken: auth.credentials.refresh_token,
+        accessToken: auth.credentials.access_token
+      }
+    });
+  }
+  
+  // Fallback to app password
+  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+    console.log('Creating Gmail transporter with app password');
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD
+      }
+    });
+  }
+  
+  console.warn('Neither OAuth2 nor app password credentials are available for email');
+  return null;
+}
+
+/**
+ * Sends an email using Gmail
  * @param emailContent - The email content to send
  * @returns Promise resolving to true if sent successfully, false otherwise
  */
 export async function sendEmail(emailContent: EmailContent): Promise<boolean> {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-    console.warn('Email not sent: Gmail credentials are not set');
-    return false;
-  }
-
   try {
     // Validate inputs
     if (!emailContent.to || !emailContent.to.includes('@')) {
@@ -76,9 +136,16 @@ export async function sendEmail(emailContent: EmailContent): Promise<boolean> {
       return false;
     }
 
+    // Get transporter
+    const transporter = await createTransporter();
+    if (!transporter) {
+      console.warn('Email not sent: No valid transporter available');
+      return false;
+    }
+
     // Prepare the email message
     const mailOptions = {
-      from: `ComuniGov <${FROM_EMAIL}>`,
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
       to: emailContent.to,
       subject: emailContent.subject || DEFAULT_SUBJECT,
       text: emailContent.text || '',
