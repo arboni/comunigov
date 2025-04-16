@@ -1,4 +1,7 @@
 import { MailService } from '@sendgrid/mail';
+import * as fs from 'fs';
+import * as path from 'path';
+import { storage } from './storage';
 
 // Interface for communication recipient info
 export interface CommunicationRecipientInfo {
@@ -51,6 +54,14 @@ interface EmailContent {
   subject?: string;
   text?: string;
   html?: string;
+  attachments?: Array<{
+    content?: Buffer | string;
+    path?: string;
+    filename: string;
+    type?: string;
+    disposition?: string;
+    contentId?: string;
+  }>;
 }
 
 /**
@@ -76,7 +87,7 @@ export async function sendEmail(emailContent: EmailContent): Promise<boolean> {
     }
 
     // Prepare the email message
-    const message = {
+    const message: any = {
       to: emailContent.to,
       from: {
         email: FROM_EMAIL,
@@ -86,6 +97,12 @@ export async function sendEmail(emailContent: EmailContent): Promise<boolean> {
       text: emailContent.text || '',
       html: emailContent.html || ''
     };
+    
+    // Add attachments if they exist
+    if (emailContent.attachments && emailContent.attachments.length > 0) {
+      message.attachments = emailContent.attachments;
+      console.log(`Including ${emailContent.attachments.length} attachments in email`);
+    }
 
     // Send the email
     await mailService.send(message);
