@@ -115,6 +115,25 @@ async function applyMigrations() {
       console.log('Dropped assigned_to column from tasks table');
     }
     
+    // Check if communication_files table exists
+    console.log('Checking if communication_files table exists...');
+    const communicationFilesTableExists = await tableExists('communication_files');
+    if (!communicationFilesTableExists) {
+      console.log('Creating communication_files table...');
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS communication_files (
+          id SERIAL PRIMARY KEY,
+          communication_id INTEGER NOT NULL REFERENCES communications(id),
+          name VARCHAR(255) NOT NULL,
+          type VARCHAR(100) NOT NULL,
+          file_path TEXT NOT NULL,
+          uploaded_by INTEGER NOT NULL REFERENCES users(id),
+          uploaded_at TIMESTAMP NOT NULL DEFAULT NOW()
+        );
+      `);
+      console.log('Created communication_files table');
+    }
+    
     console.log('Database migrations completed successfully!');
   } catch (error) {
     console.error('Error applying migrations:', error);
@@ -129,6 +148,19 @@ async function columnExists(tableName: string, columnName: string): Promise<bool
       SELECT 1 
       FROM information_schema.columns 
       WHERE table_name = ${tableName} AND column_name = ${columnName}
+    );
+  `);
+  
+  return result.rows[0].exists;
+}
+
+// Helper function to check if a table exists
+async function tableExists(tableName: string): Promise<boolean> {
+  const result = await db.execute(sql`
+    SELECT EXISTS (
+      SELECT 1 
+      FROM information_schema.tables 
+      WHERE table_name = ${tableName}
     );
   `);
   
