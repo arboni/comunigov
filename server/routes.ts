@@ -999,6 +999,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
         uploadedFiles.push(savedFile);
       }
       
+      // Update communication to mark it as having attachments
+      if (uploadedFiles.length > 0) {
+        await storage.updateCommunication(communicationId, { hasAttachments: true });
+        
+        // Get sender information
+        const sender = await storage.getUser(req.user.id);
+        const senderName = sender ? sender.fullName || sender.username : "Unknown Sender";
+        
+        // Get recipients of this communication
+        const recipients = await storage.getCommunicationRecipientsByCommunicationId(communicationId);
+        if (recipients && recipients.length > 0) {
+          console.log(`Found ${recipients.length} recipients for communication ${communicationId}`);
+          
+          // Prepare recipient list for the unified messaging service
+          const recipientList = [];
+          for (const recipient of recipients) {
+            try {
+              // Try to get user data if it's a user recipient
+              if (recipient.userId) {
+                const user = await storage.getUser(recipient.userId);
+                if (user) {
+                  recipientList.push({
+                    userId: user.id,
+                    name: user.fullName || user.username,
+                    contactInfo: {
+                      email: user.email,
+                      whatsapp: user.whatsapp || undefined,
+                      telegram: user.telegram || undefined,
+                      system_notification: user.id.toString()
+                    }
+                  });
+                }
+              }
+              // Try to get entity data if it's an entity recipient
+              else if (recipient.entityId) {
+                const entity = await storage.getEntity(recipient.entityId);
+                if (entity) {
+                  recipientList.push({
+                    entityId: entity.id,
+                    name: entity.name,
+                    contactInfo: {
+                      email: entity.email,
+                      whatsapp: entity.whatsapp || undefined,
+                      telegram: entity.telegram || undefined,
+                      system_notification: undefined
+                    }
+                  });
+                }
+              }
+            } catch (error) {
+              console.error(`Error processing recipient ${recipient.id}:`, error);
+            }
+          }
+          
+          // Send messages to all recipients with proper file attachments
+          console.log(`Sending message with attachments to ${recipientList.length} recipients via ${communication.channel} with fallback`);
+          const messageResults = await sendMessageToAll(
+            recipientList,
+            communication.channel as MessageChannel,
+            senderName,
+            communication.subject,
+            communication.content,
+            communicationId, // Pass the communication ID for file attachments
+            true // Now explicitly set hasAttachments to true
+          );
+          
+          // Log message delivery results
+          console.log(`Message delivery results: ${Object.keys(messageResults).length} recipients processed`);
+        }
+      }
+      
       res.status(201).json(uploadedFiles);
     } catch (error) {
       console.error("Error uploading files:", error);

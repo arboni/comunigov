@@ -105,6 +105,7 @@ export interface IStorage {
   getCommunicationWithFiles(id: number): Promise<CommunicationWithFiles | undefined>;
   getCommunicationWithRecipientsAndFiles(id: number): Promise<CommunicationWithRecipientsAndFiles | undefined>;
   createCommunication(communication: InsertCommunication): Promise<Communication>;
+  updateCommunication(id: number, communicationData: Partial<Communication>): Promise<Communication | undefined>;
   getAllCommunications(): Promise<Communication[]>;
   
   // Communication Recipients
