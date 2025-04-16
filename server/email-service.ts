@@ -29,7 +29,7 @@ function initializeTransporter() {
     return;
   }
 
-  // Create transporter with Gmail
+  // Create transporter with Gmail SMTP
   transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -63,7 +63,7 @@ interface EmailContent {
 }
 
 /**
- * Sends an email using Gmail
+ * Sends an email using Gmail SMTP
  * @param emailContent - The email content to send
  * @returns Promise resolving to true if sent successfully, false otherwise
  */
@@ -78,7 +78,10 @@ export async function sendEmail(emailContent: EmailContent): Promise<boolean> {
     // Make sure transporter is initialized
     if (!transporter) {
       console.warn('Email not sent: Email service is not configured');
-      return false;
+      initializeTransporter(); // Try to initialize again
+      if (!transporter) {
+        return false;
+      }
     }
 
     // Prepare the email message
