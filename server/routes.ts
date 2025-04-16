@@ -1050,9 +1050,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     entityId: entity.id,
                     name: entity.name,
                     contactInfo: {
-                      email: entity.email,
-                      whatsapp: entity.whatsapp || undefined,
-                      telegram: entity.telegram || undefined,
+                      email: entity.headEmail, // Use the head's email which we know exists
+                      whatsapp: undefined, // Entity might not have WhatsApp
+                      telegram: undefined, // Entity might not have Telegram
                       system_notification: undefined
                     }
                   });
