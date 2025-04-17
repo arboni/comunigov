@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, X, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import { Download, X, ZoomIn, ZoomOut, RotateCw, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,10 +21,27 @@ export default function FilePreview({ fileId, fileName, fileType }: FilePreviewP
   const [isOpen, setIsOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
-  const isImage = /^image\/(jpeg|jpg|png|gif|webp)$/i.test(fileType);
-  const isPdf = fileType === 'application/pdf';
-  const isPreviewable = isImage || isPdf;
+  console.log('File preview props:', { fileId, fileName, fileType });
+  
+  // Use both regex and simple includes check for more robust type detection
+  const isImage = fileType && (
+    /^image\/(jpeg|jpg|png|gif|webp)$/i.test(fileType) || 
+    ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'].includes(fileType.toLowerCase()) ||
+    fileType.toLowerCase().includes('image')
+  );
+  
+  const isPdf = fileType && (
+    fileType === 'application/pdf' || 
+    fileType.toLowerCase().includes('pdf')
+  );
+  
+  // Force all files to be previewable for testing
+  const isPreviewable = true; // isImage || isPdf;
+  
+  console.log('File preview analysis:', { isImage, isPdf, isPreviewable });
   
   // If file is not previewable, just provide a download button
   if (!isPreviewable) {
@@ -50,9 +67,20 @@ export default function FilePreview({ fileId, fileName, fileType }: FilePreviewP
     setRotation(prevRotation => (prevRotation + 90) % 360);
   };
   
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      // Reset states when opening the dialog
+      setError(null);
+      setIsLoading(true);
+      setZoom(1);
+      setRotation(0);
+    }
+    setIsOpen(open);
+  };
+  
   return (
     <div className="flex gap-2">
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
           <Button variant="outline" size="sm">
             View
@@ -92,9 +120,29 @@ export default function FilePreview({ fileId, fileName, fileType }: FilePreviewP
           </DialogHeader>
           
           <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-md">
-            {isImage ? (
+            {error ? (
+              <div className="text-center py-8">
+                <p className="text-red-500 font-medium mb-2">Error loading preview</p>
+                <p className="text-sm text-muted-foreground">{error}</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-4" 
+                  asChild
+                >
+                  <a href={`/api/download/${fileId}`} download>
+                    <Download className="h-4 w-4 mr-1" />
+                    Download instead
+                  </a>
+                </Button>
+              </div>
+            ) : isLoading ? (
+              <div className="text-center">
+                <p>Loading preview...</p>
+              </div>
+            ) : isImage ? (
               <img 
-                src={`/api/download/${fileId}`} 
+                src={`/api/download/${fileId}`}
                 alt={fileName}
                 style={{ 
                   transform: `scale(${zoom}) rotate(${rotation}deg)`,
@@ -103,8 +151,13 @@ export default function FilePreview({ fileId, fileName, fileType }: FilePreviewP
                   maxHeight: '100%',
                   objectFit: 'contain'
                 }}
+                onLoad={() => setIsLoading(false)}
+                onError={() => {
+                  setError("Failed to load image. The file may be corrupted or not accessible.");
+                  setIsLoading(false);
+                }}
               />
-            ) : isPdf && (
+            ) : isPdf ? (
               <iframe
                 src={`/api/download/${fileId}?embed=true`}
                 title={fileName}
@@ -114,7 +167,28 @@ export default function FilePreview({ fileId, fileName, fileType }: FilePreviewP
                   transformOrigin: 'center center',
                   transition: 'transform 0.2s ease',
                 }}
+                onLoad={() => setIsLoading(false)}
+                onError={() => {
+                  setError("Failed to load PDF. The file may be corrupted or not accessible.");
+                  setIsLoading(false);
+                }}
               />
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-2">Preview not available</p>
+                <p className="text-sm text-muted-foreground">This file type cannot be previewed.</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-4" 
+                  asChild
+                >
+                  <a href={`/api/download/${fileId}`} download>
+                    <Download className="h-4 w-4 mr-1" />
+                    Download file
+                  </a>
+                </Button>
+              </div>
             )}
           </div>
         </DialogContent>
