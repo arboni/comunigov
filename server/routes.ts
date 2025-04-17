@@ -1570,6 +1570,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
+  
+  app.post("/api/users/badges/mark-seen", isAuthenticated, async (req, res, next) => {
+    try {
+      const { badgeIds } = req.body;
+      
+      if (!Array.isArray(badgeIds) || badgeIds.length === 0) {
+        return res.status(400).json({ message: "Invalid badgeIds: must be a non-empty array of badge IDs" });
+      }
+      
+      await storage.markUserBadgesAsSeen(badgeIds);
+      
+      // Log that badges were marked as seen
+      await ActivityLogger.log(
+        req.user!.id,
+        'update',
+        `Marked ${badgeIds.length} badges as seen`,
+        'badge',
+        null,
+        req,
+        { badgeIds }
+      );
+      
+      res.status(200).json({ success: true, message: `${badgeIds.length} badges marked as seen` });
+    } catch (error) {
+      next(error);
+    }
+  });
 
   app.post("/api/users/:userId/badges", isMasterImplementer, async (req, res, next) => {
     try {

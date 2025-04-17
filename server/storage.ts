@@ -33,7 +33,7 @@ import {
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { db } from "./db";
-import { eq, and, isNull, or, gt, desc, sql, ne } from "drizzle-orm";
+import { eq, and, inArray, isNull, or, gt, desc, sql, ne } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 
@@ -937,6 +937,16 @@ export class MemStorage implements IStorage {
     const userBadges = await this.getUserBadgesByUserId(userId);
     return userBadges.filter(userBadge => userBadge.featured);
   }
+  
+  async markUserBadgesAsSeen(badgeIds: number[]): Promise<void> {
+    for (const id of badgeIds) {
+      const userBadge = this.userBadges.get(id);
+      if (userBadge) {
+        const updatedBadge = { ...userBadge, seen: true };
+        this.userBadges.set(id, updatedBadge);
+      }
+    }
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1059,6 +1069,15 @@ export class DatabaseStorage implements IStorage {
       ));
 
     return result as unknown as (UserBadge & { badge: AchievementBadge })[];
+  }
+  
+  async markUserBadgesAsSeen(badgeIds: number[]): Promise<void> {
+    if (badgeIds.length === 0) return;
+    
+    await db
+      .update(userBadges)
+      .set({ seen: true })
+      .where(inArray(userBadges.id, badgeIds));
   }
 
   // User methods
