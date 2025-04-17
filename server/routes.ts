@@ -1471,7 +1471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Fetch all communications for the time period
       let communicationsQuery = await db.select()
-        .from(communications)
+        .from(communicationsTable)
         .where(sql`sent_at >= ${startDate.toISOString()}`);
         
       // If not a master implementer, filter by entity access
@@ -1480,16 +1480,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (entityId) {
           // Only include communications where the user's entity is a recipient
           const entityRecipients = await db.select()
-            .from(storage.tables.communicationRecipients)
-            .where(eq(storage.tables.communicationRecipients.entityId, entityId));
+            .from(communicationRecipientsTable)
+            .where(eq(communicationRecipientsTable.entityId, entityId));
           
           const entityComIds = entityRecipients.map(r => r.communicationId);
           communicationsQuery = communicationsQuery.filter(c => entityComIds.includes(c.id));
         } else {
           // Only include communications where the user is a sender or recipient
           const userRecipients = await db.select()
-            .from(storage.tables.communicationRecipients)
-            .where(eq(storage.tables.communicationRecipients.userId, userId));
+            .from(communicationRecipientsTable)
+            .where(eq(communicationRecipientsTable.userId, userId));
           
           const userComIds = userRecipients.map(r => r.communicationId);
           communicationsQuery = communicationsQuery.filter(c => 
@@ -1500,7 +1500,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Fetch tasks for the time period
       let tasksQuery = await db.select()
-        .from(storage.tables.tasks)
+        .from(tasksTable)
         .where(sql`created_at >= ${startDate.toISOString()}`);
         
       // If not a master implementer, filter by access
