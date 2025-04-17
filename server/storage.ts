@@ -394,7 +394,20 @@ export class MemStorage implements IStorage {
   async getUpcomingMeetings(): Promise<Meeting[]> {
     const now = new Date();
     return Array.from(this.meetings.values())
-      .filter((meeting) => new Date(meeting.date) >= now)
+      .filter(meeting => {
+        const meetingDate = new Date(meeting.date);
+        // Convert time strings to hours and minutes
+        const startTimeParts = meeting.startTime.split(':').map(Number);
+        const meetingDateTime = new Date(
+          meetingDate.getFullYear(),
+          meetingDate.getMonth(),
+          meetingDate.getDate(),
+          startTimeParts[0],  // Hours from startTime
+          startTimeParts[1]   // Minutes from startTime
+        );
+        
+        return meetingDateTime > now;
+      })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }
 
@@ -1409,11 +1422,25 @@ export class DatabaseStorage implements IStorage {
 
   async getUpcomingMeetings(): Promise<Meeting[]> {
     const now = new Date();
-    return await db
-      .select()
-      .from(meetings)
-      .where(gt(meetings.date, now))
-      .orderBy(meetings.date);
+    const allMeetings = await db.select().from(meetings);
+    
+    // Filter meetings that are in the future (considering both date and time)
+    return allMeetings
+      .filter(meeting => {
+        const meetingDate = new Date(meeting.date);
+        // Convert time strings to hours and minutes
+        const startTimeParts = meeting.startTime.split(':').map(Number);
+        const meetingDateTime = new Date(
+          meetingDate.getFullYear(),
+          meetingDate.getMonth(),
+          meetingDate.getDate(),
+          startTimeParts[0],  // Hours from startTime
+          startTimeParts[1]   // Minutes from startTime
+        );
+        
+        return meetingDateTime > now;
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }
 
   // Meeting Attendee methods
