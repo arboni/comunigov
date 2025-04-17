@@ -1619,6 +1619,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         uploadedDocuments.push(savedDocument);
       }
       
+      // Send invitation emails with the attached documents
+      const sendEmails = req.body.sendEmails === 'true';
+      if (sendEmails) {
+        try {
+          // Get the meeting attendees
+          const attendeeRecords = await storage.getMeetingAttendeesByMeetingId(meetingId);
+          
+          if (attendeeRecords && attendeeRecords.length > 0) {
+            // Get the organizer name
+            const organizer = await storage.getUser(meeting.createdBy);
+            const organizerName = organizer ? (organizer.fullName || organizer.username) : 'Meeting Organizer';
+            
+            // Add user info to attendees
+            const attendeesWithUsers = await Promise.all(
+              attendeeRecords.map(async (attendee) => {
+                if (attendee.userId) {
+                  const user = await storage.getUser(attendee.userId);
+                  return { ...attendee, user };
+                }
+                return attendee;
+              })
+            );
+            
+            console.log(`Sending meeting invitations with ${uploadedDocuments.length} documents to ${attendeesWithUsers.length} attendees`);
+            
+            // Send the invitations with documents included
+            const emailResult = await sendMeetingInvitationsToAllAttendees(
+              meeting,
+              attendeesWithUsers,
+              organizerName
+            );
+            
+            console.log(`Meeting invitations with documents sent: ${emailResult.success} successful, ${emailResult.failed} failed`);
+          } else {
+            console.log(`No attendees found for meeting ${meetingId}, skipping email notifications`);
+          }
+        } catch (error) {
+          console.error("Error sending meeting invitations after document upload:", error);
+          // Continue with the response even if email sending fails
+        }
+      }
+      
       res.status(201).json(uploadedDocuments);
     } catch (error) {
       console.error("Error uploading meeting documents:", error);

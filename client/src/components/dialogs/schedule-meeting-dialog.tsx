@@ -287,6 +287,9 @@ export default function ScheduleMeetingDialog({
       // Add meeting ID to form data
       formData.append('meetingId', meetingId.toString());
       
+      // Request that emails be sent with the attachments after upload
+      formData.append('sendEmails', 'true');
+      
       // Add all files to form data
       selectedFiles.forEach((fileData, index) => {
         formData.append(`file-${index}`, fileData.file);
