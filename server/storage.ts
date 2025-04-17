@@ -41,6 +41,9 @@ const MemoryStore = createMemoryStore(session);
 const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
+  // Admin operations
+  truncateCommunicationsAndFiles(): Promise<{ success: boolean; message: string; tablesAffected: string[] }>;
+  
   // Users
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -1938,6 +1941,55 @@ export class DatabaseStorage implements IStorage {
       recipients,
       files
     };
+  }
+  
+  /**
+   * Truncate communications and files tables while preserving users, entities, and subjects
+   * @returns Object with success status and message
+   */
+  async truncateCommunicationsAndFiles(): Promise<{ success: boolean; message: string; tablesAffected: string[] }> {
+    try {
+      // Define tables to be truncated
+      const tablesToTruncate = [
+        'communication_files',
+        'communication_recipients',
+        'communications',
+        'meeting_reactions',
+        'meeting_documents',
+        'meeting_attendees',
+        'meetings',
+        'task_comments',
+        'tasks'
+      ];
+      
+      // Begin transaction
+      await db.transaction(async (tx) => {
+        // Temporarily disable foreign key constraints for the truncation
+        await tx.execute(sql`SET CONSTRAINTS ALL DEFERRED`);
+        
+        // Truncate each table
+        for (const table of tablesToTruncate) {
+          await tx.execute(sql`TRUNCATE TABLE ${sql.identifier(table)} CASCADE`);
+          console.log(`Truncated table: ${table}`);
+        }
+        
+        // Re-enable foreign key constraints
+        await tx.execute(sql`SET CONSTRAINTS ALL IMMEDIATE`);
+      });
+      
+      return {
+        success: true,
+        message: `Successfully truncated ${tablesToTruncate.length} tables while preserving users, entities, and subjects data.`,
+        tablesAffected: tablesToTruncate
+      };
+    } catch (error) {
+      console.error('Error truncating tables:', error);
+      return {
+        success: false,
+        message: `Failed to truncate tables: ${error instanceof Error ? error.message : String(error)}`,
+        tablesAffected: []
+      };
+    }
   }
 }
 
