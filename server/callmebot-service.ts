@@ -157,18 +157,28 @@ For more information, visit comunigov.app
     // Make an API request to CallMeBot
     const response = await axios.get(`${CALLMEBOT_API_URL}?${params.toString()}`);
     
-    if (response.status === 200) {
+    // CallMeBot may return 200, 201, 202, or 203 for successful messages
+    if (response.status >= 200 && response.status < 300) {
       console.log(`CallMeBot message sent to ${formattedNumber}`);
       console.log(`Response: ${response.data}`);
       
-      // Check if response contains error message
+      // Check if response contains error message (even if status is 2xx)
       if (response.data.includes('ERROR') || response.data.includes('error')) {
         console.error(`CallMeBot API returned an error: ${response.data}`);
         console.error(setupNote);
         return false;
       }
       
-      console.log(`CallMeBot message sent successfully`);
+      // Check if response contains success indicators
+      if (response.data.includes('Message queued') || 
+          response.data.includes('will receive it') ||
+          response.data.includes('successfully')) {
+        console.log(`CallMeBot message sent successfully`);
+        return true;
+      }
+      
+      // Log the full response for debugging
+      console.log(`Full CallMeBot response: ${response.data}`);
       return true;
     } else {
       console.error(`CallMeBot API returned status code: ${response.status}`);
