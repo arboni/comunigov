@@ -9,6 +9,7 @@ export const entityTypeEnum = pgEnum('entity_type', ['secretariat', 'administrat
 export const taskStatusEnum = pgEnum('task_status', ['pending', 'in_progress', 'completed', 'cancelled']);
 export const communicationChannelEnum = pgEnum('communication_channel', ['email', 'whatsapp', 'telegram', 'system_notification']);
 export const emojiTypeEnum = pgEnum('emoji_type', ['👍', '👎', '❤️', '🎉', '👀', '🙏', '😂', '🤔', '✅', '❌']);
+export const userActionEnum = pgEnum('user_action', ['login', 'logout', 'view', 'create', 'update', 'delete', 'send', 'download', 'upload']);
 
 // Users table
 export const users = pgTable("users", {
@@ -178,6 +179,20 @@ export const userBadges = pgTable("user_badges", {
   earnedAt: timestamp("earned_at").defaultNow().notNull(),
   progress: jsonb("progress"), // JSON object tracking progress towards earning the badge
   featured: boolean("featured").default(false), // if the user wants to feature this badge on their profile
+});
+
+// User activity logs
+export const userActivityLogs = pgTable("user_activity_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  action: userActionEnum("action").notNull(),
+  description: text("description").notNull(),
+  entityType: text("entity_type").notNull(), // Type of entity affected (user, meeting, task, etc.)
+  entityId: integer("entity_id"), // ID of the affected entity
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  metadata: jsonb("metadata"), // Additional context information
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
 });
 
 // Zod insert schemas
