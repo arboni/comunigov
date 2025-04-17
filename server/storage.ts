@@ -1585,9 +1585,12 @@ export class DatabaseStorage implements IStorage {
       .from(communicationRecipients)
       .where(eq(communicationRecipients.communicationId, id));
 
+    const files = await this.getCommunicationFilesByCommunicationId(id);
+
     return {
       ...communication,
-      recipients
+      recipients,
+      files
     };
   }
 
