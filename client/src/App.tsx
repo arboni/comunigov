@@ -18,6 +18,7 @@ import UserDetailPage from "@/pages/user-detail-page";
 import UserEditPage from "@/pages/user-edit-page";
 import SettingsPage from "@/pages/settings-page";
 import SubjectsPage from "@/pages/subjects-page";
+import AnalyticsPage from "@/pages/analytics-page";
 
 // This is a simpler implementation that doesn't rely on the auth context
 function ProtectedRoute({ component: Component, path }: { component: () => JSX.Element, path: string }) {
@@ -71,6 +72,7 @@ function Router() {
       <ProtectedRoute path="/entity/:id" component={EntityDetailPage} />
       <ProtectedRoute path="/tasks" component={TasksPage} />
       <ProtectedRoute path="/subjects" component={SubjectsPage} />
+      <ProtectedRoute path="/analytics" component={AnalyticsPage} />
       <ProtectedRoute path="/users/:id/edit" component={UserEditPage} />
       <ProtectedRoute path="/users/:id" component={UserDetailPage} />
       <ProtectedRoute path="/users" component={UsersPage} />
