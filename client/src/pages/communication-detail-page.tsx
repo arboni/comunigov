@@ -29,12 +29,15 @@ interface CommunicationWithDetails {
   channel: string;
   sentBy: number;
   sentAt: string;
+  hasAttachments: boolean;
   files?: Array<{
     id: number;
     name: string;
     type: string;
     filePath: string;
     uploadedAt: string;
+    uploadedBy: number;
+    communicationId: number;
   }>;
   recipients?: Array<{
     id: number;

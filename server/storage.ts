@@ -1572,7 +1572,7 @@ export class DatabaseStorage implements IStorage {
     return communication || undefined;
   }
 
-  async getCommunicationWithRecipients(id: number): Promise<CommunicationWithRecipients | undefined> {
+  async getCommunicationWithRecipients(id: number): Promise<CommunicationWithRecipientsAndFiles | undefined> {
     const [communication] = await db
       .select()
       .from(communications)
