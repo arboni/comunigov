@@ -3,7 +3,12 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
 import { setupAuth, hashPassword, comparePasswords } from "./auth";
-import { sendNewMemberWelcomeEmail, sendPasswordResetEmail } from "./email-service";
+import { 
+  sendNewMemberWelcomeEmail, 
+  sendPasswordResetEmail,
+  sendMeetingInvitationEmail,
+  sendMeetingInvitationsToAllAttendees
+} from "./email-service";
 import { sendMessage, sendMessageWithFallback, sendMessageToAll, MessageChannel } from "./messaging-service";
 import { 
   isAuthenticated, 

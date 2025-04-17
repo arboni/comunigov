@@ -2,6 +2,8 @@ import { MailService } from '@sendgrid/mail';
 import * as fs from 'fs';
 import * as path from 'path';
 import { storage } from './storage';
+import { Meeting, MeetingAttendee, User } from '@shared/schema';
+import { format } from 'date-fns';
 
 // Interface for communication recipient info
 export interface CommunicationRecipientInfo {
@@ -372,6 +374,299 @@ The ComuniGov Team
  * @param username - Member's username
  * @param tempPassword - Temporary password
  */
+/**
+ * Sends a meeting invitation email to an attendee
+ * @param to - Recipient email
+ * @param attendeeName - Attendee's full name
+ * @param meeting - Meeting information
+ * @param organizerName - Name of the meeting organizer
+ */
+export async function sendMeetingInvitationEmail(
+  to: string,
+  attendeeName: string,
+  meeting: Meeting,
+  organizerName: string
+): Promise<boolean> {
+  const meetingDate = new Date(meeting.date);
+  const formattedDate = format(meetingDate, 'PPPP'); // 'Monday, January 1, 2025'
+  const subject = `Meeting Invitation: ${meeting.name}`;
+  
+  const text = `
+Hello ${attendeeName},
+
+You have been invited to attend a meeting on the ComuniGov platform.
+
+Meeting Details:
+Name: ${meeting.name}
+Date: ${formattedDate}
+Time: ${meeting.startTime} - ${meeting.endTime}
+Location: ${meeting.location || 'To be determined'}
+Organizer: ${organizerName}
+
+Agenda:
+${meeting.agenda || 'No agenda provided'}
+
+Please log in to the ComuniGov platform to confirm your attendance.
+
+Access the platform at: https://comunigov.app
+
+Best regards,
+The ComuniGov Team
+  `;
+  
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Invitation</title>
+  <style>
+    /* Base styles - these work in most email clients */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    .header {
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+      color: #ffffff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      padding: 25px 20px;
+      text-align: center;
+    }
+    .logo {
+      margin-bottom: 15px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .content {
+      padding: 30px;
+      background-color: #ffffff;
+    }
+    .greeting {
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #1f2937;
+    }
+    .info-text {
+      margin-bottom: 25px;
+      color: #4b5563;
+    }
+    .meeting-details {
+      background-color: #f3f4f6;
+      padding: 20px;
+      border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.5);
+      margin: 20px 0;
+      border-left: 4px solid #60a5fa;
+    }
+    .meeting-details p {
+      margin: 10px 0;
+      color: #1f2937;
+    }
+    .meeting-agenda {
+      background-color: #f9fafb;
+      padding: 20px;
+      border-radius: 6px;
+      margin: 20px 0;
+      white-space: pre-line;
+    }
+    .meeting-agenda h3 {
+      margin-top: 0;
+      color: #1f2937;
+    }
+    .meeting-agenda p {
+      margin: 10px 0;
+      color: #4b5563;
+    }
+    .cta {
+      text-align: center;
+      margin: 35px 0 25px;
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+      color: #ffffff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      padding: 12px 25px;
+      text-decoration: none;
+      border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.5);
+      font-weight: 700;
+      transition: transform 0.3s ease;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
+    }
+    .divider {
+      height: 1px;
+      background-color: #e5e7eb;
+      margin: 25px 0;
+    }
+    .footer {
+      padding: 20px;
+      text-align: center;
+      background-color: #f9fafb;
+      color: #6b7280;
+      font-size: 13px;
+    }
+    .footer p {
+      margin: 5px 0;
+    }
+    .social-links {
+      margin: 15px 0;
+    }
+    .social-links a {
+      display: inline-block;
+      margin: 0 8px;
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    /* Responsive adjustments */
+    @media only screen and (max-width: 650px) {
+      .container {
+        width: 100% !important;
+        border-radius: 0;
+      }
+      .content {
+        padding: 20px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <!-- Simple text logo since images might be blocked -->
+        <div style="font-size: 22px; font-weight: bold; letter-spacing: 1px;">ComuniGov</div>
+      </div>
+      <h1>Meeting Invitation</h1>
+    </div>
+    
+    <div class="content">
+      <div class="greeting">Hello ${attendeeName},</div>
+      
+      <div class="info-text">
+        You have been invited to attend a meeting on the ComuniGov institutional communication platform.
+      </div>
+      
+      <div class="meeting-details">
+        <h3 style="margin-top: 0; color: #1f2937; font-size: 16px;">Meeting Details</h3>
+        <p><strong>Name:</strong> ${meeting.name}</p>
+        <p><strong>Date:</strong> ${formattedDate}</p>
+        <p><strong>Time:</strong> ${meeting.startTime} - ${meeting.endTime}</p>
+        <p><strong>Location:</strong> ${meeting.location || 'To be determined'}</p>
+        <p><strong>Organizer:</strong> ${organizerName}</p>
+      </div>
+      
+      <div class="meeting-agenda">
+        <h3>Agenda</h3>
+        <p>${meeting.agenda || 'No agenda provided'}</p>
+      </div>
+      
+      <div class="cta">
+        <a href="https://comunigov.app" class="button">View Meeting Details</a>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <div style="color: #6b7280; font-size: 14px; text-align: center; margin-top: 5px;">
+        Please log in to the ComuniGov platform to confirm your attendance.
+      </div>
+    </div>
+    
+    <div class="footer">
+      <div class="social-links">
+        <a href="#">Facebook</a> • 
+        <a href="#">Twitter</a> • 
+        <a href="#">LinkedIn</a>
+      </div>
+      <p>If you have any questions, please contact the meeting organizer.</p>
+      <p>&copy; 2025 ComuniGov - Institutional Communication Platform</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+  
+  return await sendEmail({
+    to,
+    subject,
+    text,
+    html
+  });
+}
+
+/**
+ * Sends invitation emails to all attendees of a meeting
+ * @param meeting - The meeting object
+ * @param attendees - List of attendees with user information
+ * @param organizerName - Name of the meeting organizer
+ */
+export async function sendMeetingInvitationsToAllAttendees(
+  meeting: Meeting,
+  attendees: Array<MeetingAttendee & { user?: User }>,
+  organizerName: string
+): Promise<{ success: number, failed: number }> {
+  let successCount = 0;
+  let failedCount = 0;
+  
+  console.log(`Sending meeting invitations to ${attendees.length} attendees for meeting: ${meeting.name}`);
+  
+  for (const attendee of attendees) {
+    // If we have the user object directly attached to the attendee
+    if (attendee.user && attendee.user.email) {
+      const result = await sendMeetingInvitationEmail(
+        attendee.user.email,
+        attendee.user.fullName || attendee.user.username,
+        meeting,
+        organizerName
+      );
+      
+      result ? successCount++ : failedCount++;
+      continue;
+    }
+    
+    // If we only have the userId, fetch the user details
+    if (attendee.userId) {
+      try {
+        const user = await storage.getUser(attendee.userId);
+        if (user && user.email) {
+          const result = await sendMeetingInvitationEmail(
+            user.email,
+            user.fullName || user.username,
+            meeting,
+            organizerName
+          );
+          
+          result ? successCount++ : failedCount++;
+        } else {
+          console.warn(`Could not send invitation to user ID ${attendee.userId}: Missing email`);
+          failedCount++;
+        }
+      } catch (error) {
+        console.error(`Error sending invitation to user ID ${attendee.userId}:`, error);
+        failedCount++;
+      }
+    }
+  }
+  
+  console.log(`Meeting invitations sent: ${successCount} successful, ${failedCount} failed`);
+  return { success: successCount, failed: failedCount };
+}
+
 export async function sendPasswordResetEmail(
   to: string,
   fullName: string,
