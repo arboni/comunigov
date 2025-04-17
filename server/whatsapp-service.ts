@@ -164,6 +164,13 @@ For more information, visit comunigov.app
           ? TWILIO_WHATSAPP_NUMBER 
           : `+${TWILIO_WHATSAPP_NUMBER}`;
       
+      // Check if sending to same number as from number (prohibited by Twilio)
+      if (formattedNumber === fromNumber) {
+        console.error('Error: Cannot send WhatsApp message from and to the same Twilio number');
+        console.error(`From: ${fromNumber}, To: ${formattedNumber}`);
+        return false;
+      }
+      
       // Send the message via Twilio WhatsApp
       const message = await twilioClient.messages.create({
         body: formattedMessage,
