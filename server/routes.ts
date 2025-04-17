@@ -841,13 +841,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
             
             // Create the attendee record
-            const attendee = await storage.createMeetingAttendee({
-              meetingId: meeting.id,
-              userId: userId,
-              confirmed: typeof attendeeData === 'object' ? (attendeeData.confirmed || false) : false
-            });
-            
-            return attendee;
+            try {
+              const attendee = await storage.createMeetingAttendee({
+                meetingId: meeting.id,
+                userId: userId,
+                confirmed: typeof attendeeData === 'object' ? (attendeeData.confirmed || false) : false
+              });
+              
+              return attendee;
+            } catch (dbError) {
+              // Handle unique constraint violations
+              if (dbError.code === '23505') { // PostgreSQL unique constraint violation
+                console.log(`Skipping duplicate attendee with userId ${userId} for meeting ${meeting.id}`);
+                
+                // Get the existing attendee record
+                const existingAttendees = await storage.getMeetingAttendeesByMeetingId(meeting.id);
+                const duplicateAttendee = existingAttendees.find(
+                  existing => existing.userId === userId
+                );
+                
+                // Return the existing attendee so we still send them an email
+                return duplicateAttendee || null;
+              }
+              
+              // Re-throw other errors
+              throw dbError;
+            }
           } catch (error) {
             // Log any errors but continue processing other attendees
             console.error(`Error adding attendee to meeting ${meeting.id}:`, error);
