@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
 interface TaskStatusChartProps {
   data: {
@@ -8,13 +8,6 @@ interface TaskStatusChartProps {
   }[];
   isLoading: boolean;
 }
-
-const STATUS_COLORS = {
-  "pending": "#f59e0b", // amber
-  "in_progress": "#3b82f6", // blue
-  "completed": "#10b981", // green
-  "cancelled": "#ef4444", // red
-};
 
 export default function TaskStatusChart({ data, isLoading }: TaskStatusChartProps) {
   if (isLoading) {
@@ -30,11 +23,20 @@ export default function TaskStatusChart({ data, isLoading }: TaskStatusChartProp
     );
   }
 
-  const formattedData = data.map((item) => ({
-    name: item.status.charAt(0).toUpperCase() + item.status.slice(1).replace('_', ' '),
-    value: item.count,
-    status: item.status,
-  }));
+  // Filter out zero values
+  const chartData = data.filter(item => item.count > 0);
+  
+  // Colors for different statuses
+  const COLORS = {
+    'Pending': '#f59e0b',      // amber-500
+    'In Progress': '#3b82f6',  // blue-500
+    'Completed': '#10b981',    // emerald-500
+    'Cancelled': '#ef4444',    // red-500
+  };
+
+  const getColor = (status: string) => {
+    return COLORS[status as keyof typeof COLORS] || '#6b7280'; // gray-500 as fallback
+  };
 
   return (
     <Card>
@@ -42,32 +44,38 @@ export default function TaskStatusChart({ data, isLoading }: TaskStatusChartProp
         <CardTitle className="text-lg">Task Status Distribution</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={formattedData}
-                cx="50%"
-                cy="50%"
-                innerRadius={70}
-                outerRadius={100}
-                fill="#8884d8"
-                paddingAngle={5}
-                dataKey="value"
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-              >
-                {formattedData.map((entry) => (
-                  <Cell 
-                    key={`cell-${entry.status}`} 
-                    fill={STATUS_COLORS[entry.status as keyof typeof STATUS_COLORS]} 
-                  />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => [`${value} tasks`, 'Count']} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        {chartData.length > 0 ? (
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  innerRadius={40}
+                  dataKey="count"
+                  nameKey="status"
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={getColor(entry.status)} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value: number) => [`${value} tasks`, 'Count']} 
+                  labelFormatter={(label) => `Status: ${label}`}
+                />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="h-80 flex items-center justify-center">
+            <p className="text-muted-foreground">No task data available</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
