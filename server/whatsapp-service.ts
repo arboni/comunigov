@@ -160,9 +160,13 @@ For more information, visit comunigov.app
     
     try {
       // Clean and prepare the WhatsApp number formats
-      const fromNumber = TWILIO_WHATSAPP_NUMBER!.startsWith('+') 
-          ? TWILIO_WHATSAPP_NUMBER 
-          : `+${TWILIO_WHATSAPP_NUMBER}`;
+      // Twilio requires a specific format for WhatsApp: whatsapp:+1XXXXXXXXXX
+      let fromNumber = TWILIO_WHATSAPP_NUMBER || '';
+      
+      // Ensure it has a + prefix if needed
+      if (fromNumber && !fromNumber.startsWith('+')) {
+        fromNumber = `+${fromNumber}`;
+      }
       
       // Check if sending to same number as from number (prohibited by Twilio)
       if (formattedNumber === fromNumber) {
@@ -171,11 +175,17 @@ For more information, visit comunigov.app
         return false;
       }
       
+      // Format WhatsApp numbers with proper prefix - exactly as specified in Twilio docs
+      const fromWhatsApp = `whatsapp:${fromNumber}`;
+      const toWhatsApp = `whatsapp:${formattedNumber}`;
+      
+      console.log(`Sending WhatsApp from: ${fromWhatsApp} to: ${toWhatsApp}`);
+      
       // Send the message via Twilio WhatsApp
       const message = await twilioClient.messages.create({
         body: formattedMessage,
-        from: `whatsapp:${fromNumber}`,
-        to: `whatsapp:${formattedNumber}`
+        from: fromWhatsApp,
+        to: toWhatsApp
       });
       
       // Log detailed message info including Twilio's message ID
