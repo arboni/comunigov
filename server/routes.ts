@@ -825,23 +825,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If attendees were provided in the request, add them to the meeting
       if (req.body.attendees && Array.isArray(req.body.attendees) && req.body.attendees.length > 0) {
-        console.log(`Adding ${req.body.attendees.length} attendees to meeting ${meeting.id}`);
+        console.log(`Processing ${req.body.attendees.length} attendees for meeting ${meeting.id}`);
         
-        const attendeePromises = req.body.attendees.map(async (attendeeData) => {
-          // Check if attendeeData is a simple ID or an object with userId
+        // Remove duplicates by creating a Set of unique user IDs
+        const uniqueAttendeeIds = new Set();
+        const processedAttendees = [];
+        
+        // Process each attendee and keep only unique user IDs
+        req.body.attendees.forEach((attendeeData) => {
           const userId = typeof attendeeData === 'number' 
             ? attendeeData 
             : (attendeeData.userId || attendeeData.id);
             
-          if (!userId) {
+          if (userId && !uniqueAttendeeIds.has(userId)) {
+            uniqueAttendeeIds.add(userId);
+            processedAttendees.push({
+              userId,
+              confirmed: typeof attendeeData === 'object' ? (attendeeData.confirmed || false) : false
+            });
+          }
+        });
+        
+        console.log(`Adding ${processedAttendees.length} unique attendees to meeting ${meeting.id}`);
+        
+        const attendeePromises = processedAttendees.map(async (attendeeData) => {
+          if (!attendeeData.userId) {
             console.error('Invalid attendee data, missing userId:', attendeeData);
             return null;
           }
           
           const attendee = await storage.createMeetingAttendee({
             meetingId: meeting.id,
-            userId: userId,
-            confirmed: typeof attendeeData === 'object' ? (attendeeData.confirmed || false) : false
+            userId: attendeeData.userId,
+            confirmed: attendeeData.confirmed
           });
           return attendee;
         });
@@ -920,7 +936,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         meetingId
       });
       
-      // Create the attendee record
+      // Check if this attendee already exists for this meeting
+      const existingAttendees = await storage.getMeetingAttendeesByMeetingId(meetingId);
+      const duplicateAttendee = existingAttendees.find(
+        existing => existing.userId === validatedData.userId
+      );
+      
+      if (duplicateAttendee) {
+        return res.status(400).json({ 
+          message: "This user is already an attendee of this meeting",
+          attendee: duplicateAttendee
+        });
+      }
+      
+      // Create the attendee record if not duplicate
       const attendee = await storage.createMeetingAttendee(validatedData);
       
       // Get the meeting
