@@ -408,14 +408,27 @@ export async function sendMeetingInvitationEmail(
       hasDocuments = true;
       
       // Convert documents to email attachments
-      attachments = documents.map(doc => {
+      attachments = await Promise.all(documents.map(async doc => {
         console.log(`Adding document to email: ${doc.name}, path: ${doc.filePath}`);
-        return {
-          path: doc.filePath, // Use the full file path
-          filename: doc.name,
-          type: doc.type || 'application/octet-stream'
-        };
-      });
+        try {
+          // Read the file content and convert to base64
+          const fs = await import('fs/promises');
+          const content = await fs.readFile(doc.filePath);
+          
+          return {
+            content: content.toString('base64'),
+            filename: doc.name,
+            type: doc.type || 'application/octet-stream',
+            disposition: 'attachment'
+          };
+        } catch (err) {
+          console.error(`Error reading file ${doc.name}:`, err);
+          return null;
+        }
+      }));
+      
+      // Filter out any null attachments (failed to read)
+      attachments = attachments.filter(att => att !== null);
     } else {
       console.log(`No documents found for meeting ${meeting.id}`);
     }
