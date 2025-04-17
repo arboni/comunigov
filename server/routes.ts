@@ -499,6 +499,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
+  
+  // Meeting Reactions routes
+  app.get("/api/meetings/:id/reactions", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid meeting ID" });
+      }
+      
+      const reactions = await storage.getMeetingReactionsByMeetingId(id);
+      res.json(reactions);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.post("/api/meetings/:id/reactions", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid meeting ID" });
+      }
+      
+      const userId = req.user!.id;
+      const { emojiType } = req.body;
+      
+      if (!emojiType) {
+        return res.status(400).json({ message: "emojiType is required" });
+      }
+      
+      // Check if the user already reacted with this emoji
+      const existingReaction = await storage.getMeetingReactionByMeetingAndUser(
+        id,
+        userId,
+        emojiType
+      );
+      
+      if (existingReaction) {
+        // If reaction already exists, delete it (toggle behavior)
+        await storage.deleteMeetingReaction(existingReaction.id);
+        return res.status(200).json({ message: "Reaction removed", removed: true });
+      }
+      
+      // Create new reaction
+      const newReaction = await storage.createMeetingReaction({
+        meetingId: id,
+        userId,
+        emojiType
+      });
+      
+      res.status(201).json(newReaction);
+    } catch (error) {
+      next(error);
+    }
+  });
 
   app.post("/api/meetings", isAuthenticated, async (req, res, next) => {
     try {

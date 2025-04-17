@@ -83,6 +83,15 @@ export interface IStorage {
   getMeetingWithAttendeesAndDocuments(id: number): Promise<MeetingWithAttendeesAndDocuments | undefined>;
   getMeetingWithAll(id: number): Promise<MeetingWithAll | undefined>;
   
+  // Meeting Reactions
+  getMeetingReaction(id: number): Promise<MeetingReaction | undefined>;
+  getMeetingReactionByMeetingAndUser(meetingId: number, userId: number, emojiType: string): Promise<MeetingReaction | undefined>;
+  createMeetingReaction(reaction: InsertMeetingReaction): Promise<MeetingReaction>;
+  deleteMeetingReaction(id: number): Promise<boolean>;
+  getMeetingReactionsByMeetingId(meetingId: number): Promise<MeetingReaction[]>;
+  getMeetingWithReactions(id: number): Promise<MeetingWithReactions | undefined>;
+  getMeetingWithAttendeesAndReactions(id: number): Promise<MeetingWithAttendeesAndReactions | undefined>;
+  
   // Subjects
   getSubject(id: number): Promise<Subject | undefined>;
   createSubject(subject: InsertSubject): Promise<Subject>;
@@ -467,6 +476,7 @@ export class MemStorage implements IStorage {
     
     const attendees = await this.getMeetingAttendeesByMeetingId(id);
     const documents = await this.getMeetingDocumentsByMeetingId(id);
+    const reactions = await this.getMeetingReactionsByMeetingId(id);
     let registeredSubject = undefined;
     
     if (meeting.subjectId) {
@@ -477,7 +487,73 @@ export class MemStorage implements IStorage {
       ...meeting,
       attendees,
       documents,
+      reactions,
       registeredSubject,
+    };
+  }
+  
+  // Meeting Reaction methods
+  async getMeetingReaction(id: number): Promise<MeetingReaction | undefined> {
+    return this.meetingReactions.get(id);
+  }
+
+  async getMeetingReactionByMeetingAndUser(meetingId: number, userId: number, emojiType: string): Promise<MeetingReaction | undefined> {
+    return Array.from(this.meetingReactions.values()).find(
+      (reaction) => 
+        reaction.meetingId === meetingId && 
+        reaction.userId === userId && 
+        reaction.emojiType === emojiType
+    );
+  }
+
+  async createMeetingReaction(insertReaction: InsertMeetingReaction): Promise<MeetingReaction> {
+    const id = this.currentMeetingReactionId++;
+    const now = new Date();
+    const reaction: MeetingReaction = { 
+      ...insertReaction, 
+      id,
+      createdAt: now
+    };
+    this.meetingReactions.set(id, reaction);
+    return reaction;
+  }
+
+  async deleteMeetingReaction(id: number): Promise<boolean> {
+    const exists = this.meetingReactions.has(id);
+    if (!exists) return false;
+    
+    this.meetingReactions.delete(id);
+    return true;
+  }
+
+  async getMeetingReactionsByMeetingId(meetingId: number): Promise<MeetingReaction[]> {
+    return Array.from(this.meetingReactions.values()).filter(
+      (reaction) => reaction.meetingId === meetingId
+    );
+  }
+  
+  async getMeetingWithReactions(id: number): Promise<MeetingWithReactions | undefined> {
+    const meeting = this.meetings.get(id);
+    if (!meeting) return undefined;
+    
+    const reactions = await this.getMeetingReactionsByMeetingId(id);
+    return {
+      ...meeting,
+      reactions,
+    };
+  }
+  
+  async getMeetingWithAttendeesAndReactions(id: number): Promise<MeetingWithAttendeesAndReactions | undefined> {
+    const meeting = this.meetings.get(id);
+    if (!meeting) return undefined;
+    
+    const attendees = await this.getMeetingAttendeesByMeetingId(id);
+    const reactions = await this.getMeetingReactionsByMeetingId(id);
+    
+    return {
+      ...meeting,
+      attendees,
+      reactions,
     };
   }
 
@@ -1094,6 +1170,89 @@ export class DatabaseStorage implements IStorage {
   async getAllEntities(): Promise<Entity[]> {
     return await db.select().from(entities);
   }
+  
+  // Meeting Reaction methods
+  async getMeetingReaction(id: number): Promise<MeetingReaction | undefined> {
+    const [reaction] = await db
+      .select()
+      .from(meetingReactions)
+      .where(eq(meetingReactions.id, id));
+    return reaction || undefined;
+  }
+
+  async getMeetingReactionByMeetingAndUser(meetingId: number, userId: number, emojiType: string): Promise<MeetingReaction | undefined> {
+    const [reaction] = await db
+      .select()
+      .from(meetingReactions)
+      .where(
+        and(
+          eq(meetingReactions.meetingId, meetingId),
+          eq(meetingReactions.userId, userId),
+          eq(meetingReactions.emojiType, emojiType)
+        )
+      );
+    return reaction || undefined;
+  }
+
+  async createMeetingReaction(reaction: InsertMeetingReaction): Promise<MeetingReaction> {
+    const [newReaction] = await db
+      .insert(meetingReactions)
+      .values(reaction)
+      .returning();
+    return newReaction;
+  }
+
+  async deleteMeetingReaction(id: number): Promise<boolean> {
+    const result = await db
+      .delete(meetingReactions)
+      .where(eq(meetingReactions.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getMeetingReactionsByMeetingId(meetingId: number): Promise<MeetingReaction[]> {
+    return await db
+      .select()
+      .from(meetingReactions)
+      .where(eq(meetingReactions.meetingId, meetingId));
+  }
+  
+  async getMeetingWithReactions(id: number): Promise<MeetingWithReactions | undefined> {
+    const [meeting] = await db
+      .select()
+      .from(meetings)
+      .where(eq(meetings.id, id));
+    
+    if (!meeting) return undefined;
+    
+    const reactions = await this.getMeetingReactionsByMeetingId(id);
+    
+    return {
+      ...meeting,
+      reactions
+    };
+  }
+  
+  async getMeetingWithAttendeesAndReactions(id: number): Promise<MeetingWithAttendeesAndReactions | undefined> {
+    const [meeting] = await db
+      .select()
+      .from(meetings)
+      .where(eq(meetings.id, id));
+    
+    if (!meeting) return undefined;
+    
+    const attendees = await db
+      .select()
+      .from(meetingAttendees)
+      .where(eq(meetingAttendees.meetingId, id));
+    
+    const reactions = await this.getMeetingReactionsByMeetingId(id);
+    
+    return {
+      ...meeting,
+      attendees,
+      reactions
+    };
+  }
 
   // Subject methods
   async getSubject(id: number): Promise<Subject | undefined> {
@@ -1371,6 +1530,11 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(meetingDocuments)
       .where(eq(meetingDocuments.meetingId, id));
+      
+    const reactions = await db
+      .select()
+      .from(meetingReactions)
+      .where(eq(meetingReactions.meetingId, id));
     
     let registeredSubject = undefined;
     
@@ -1387,6 +1551,7 @@ export class DatabaseStorage implements IStorage {
       ...meeting,
       attendees,
       documents,
+      reactions,
       registeredSubject
     };
   }
