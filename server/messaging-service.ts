@@ -8,7 +8,7 @@
  */
 
 import { sendCommunicationEmail } from './email-service';
-import { sendWhatsAppMessage } from './whatsapp-service';
+import { sendWhatsAppMessage } from './whatsapp-provider';
 import { sendTelegramMessage } from './telegram-service';
 
 // Message channel types

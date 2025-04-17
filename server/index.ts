@@ -3,6 +3,9 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { seedDefaultAdmin } from "./seed";
 
+// Set the WhatsApp provider to CallMeBot as default
+process.env.WHATSAPP_PROVIDER = process.env.WHATSAPP_PROVIDER || 'callmebot';
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
