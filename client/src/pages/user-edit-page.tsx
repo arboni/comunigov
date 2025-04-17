@@ -24,6 +24,8 @@ const userFormSchema = z.object({
     message: "Please enter a valid email address.",
   }),
   phone: z.string().optional(),
+  whatsapp: z.string().optional(),
+  telegram: z.string().optional(),
   position: z.string().optional(),
   role: z.string(),
   bio: z.string().optional(),
@@ -55,6 +57,8 @@ export default function UserEditPage() {
       fullName: "",
       email: "",
       phone: "",
+      whatsapp: "",
+      telegram: "",
       position: "",
       role: "",
       bio: "",
@@ -69,6 +73,8 @@ export default function UserEditPage() {
         fullName: user.fullName || "",
         email: user.email || "",
         phone: user.phone || "",
+        whatsapp: user.whatsapp || "",
+        telegram: user.telegram || "",
         position: user.position || "",
         role: user.role || "",
         bio: user.bio || "",
@@ -86,6 +92,8 @@ export default function UserEditPage() {
         fullName: data.fullName,
         email: data.email,
         phone: data.phone || '',
+        whatsapp: data.whatsapp || '',
+        telegram: data.telegram || '',
         position: data.position || '',
         role: data.role,
         bio: data.bio || '',
@@ -233,6 +241,42 @@ export default function UserEditPage() {
                         <FormControl>
                           <Input placeholder="Enter phone number (optional)" {...field} />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="whatsapp"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>WhatsApp Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ex: +551199999999" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Enter your WhatsApp number with country code (e.g., +551199999999). 
+                          Before receiving WhatsApp messages, you'll need to join the Twilio sandbox by 
+                          sending a WhatsApp message with the code <strong>join [sandbox-code]</strong> to the platform's WhatsApp number.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="telegram"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Telegram Username</FormLabel>
+                        <FormControl>
+                          <Input placeholder="@username (without @)" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Your Telegram username (without the @ symbol)
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
