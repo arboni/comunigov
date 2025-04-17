@@ -175,32 +175,71 @@ For more information, visit comunigov.app
         return false;
       }
       
-      // Format WhatsApp numbers with proper prefix - exactly as specified in Twilio docs
+      // Try different formats for WhatsApp numbers
+      // Format 1: Most common with whatsapp: prefix
       const fromWhatsApp = `whatsapp:${fromNumber}`;
       const toWhatsApp = `whatsapp:${formattedNumber}`;
       
       console.log(`Sending WhatsApp from: ${fromWhatsApp} to: ${toWhatsApp}`);
       
-      // Send the message via Twilio WhatsApp
-      const message = await twilioClient.messages.create({
-        body: formattedMessage,
-        from: fromWhatsApp,
-        to: toWhatsApp
-      });
+      // Log additional details for debugging
+      console.log(`Original Twilio WhatsApp Number from env: ${TWILIO_WHATSAPP_NUMBER}`);
+      console.log(`Formatted From Number: ${fromNumber}`);
       
-      // Log detailed message info including Twilio's message ID
-      console.log(`WhatsApp message sent to ${formattedNumber}`);
-      console.log(`Message SID: ${message.sid}`);
-      console.log(`Message Status: ${message.status}`);
-      
-      if (message.status === 'failed') {
-        console.error(`WhatsApp message failed with error: ${message.errorMessage}`);
-        return false;
+      // Try to send the message with the standard format
+      try {
+        console.log('Attempting to send with standard WhatsApp format...');
+        const message = await twilioClient.messages.create({
+          body: formattedMessage,
+          from: fromWhatsApp,
+          to: toWhatsApp
+        });
+        
+        // Log detailed message info including Twilio's message ID
+        console.log(`WhatsApp message sent to ${formattedNumber}`);
+        console.log(`Message SID: ${message.sid}`);
+        console.log(`Message Status: ${message.status}`);
+        
+        if (message.status === 'failed') {
+          console.error(`WhatsApp message failed with error: ${message.errorMessage}`);
+          return false;
+        }
+        
+        // If we get here, it worked with the standard format
+        console.log(`WhatsApp message sent successfully using standard format`);
+        return true;
+      } catch (formatError: any) {
+        // If standard format fails, try an alternative format
+        console.log('Standard format failed, trying alternative format...');
+        console.log(`Error was: ${formatError.message}`);
+        
+        try {
+          // Some Twilio accounts might require this format instead
+          const fromSimpleFormat = fromNumber;
+          
+          const message = await twilioClient.messages.create({
+            body: formattedMessage,
+            from: fromSimpleFormat,
+            to: toWhatsApp
+          });
+          
+          // Log detailed message info for alternative format
+          console.log(`WhatsApp message sent to ${formattedNumber} (alternative format)`);
+          console.log(`Message SID: ${message.sid}`);
+          console.log(`Message Status: ${message.status}`);
+          
+          if (message.status === 'failed') {
+            console.error(`WhatsApp message failed with error: ${message.errorMessage}`);
+            return false;
+          }
+          
+          console.log(`WhatsApp message sent successfully using alternative format`);
+          return true;
+        } catch (altFormatError: any) {
+          console.error('Alternative format also failed:', altFormatError.message);
+          throw altFormatError; // Re-throw to be caught by the outer catch block
+        }
       }
-      
-      // Even if message status is "queued" or "sent", we consider it a success
-      // since Twilio handles the delivery asynchronously
-      return true;
     } catch (twilioError: any) {
       console.error('Twilio WhatsApp API error:', twilioError);
       
