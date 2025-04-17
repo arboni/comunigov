@@ -1437,6 +1437,472 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Analytics Routes
+  app.get("/api/analytics", isAuthenticated, async (req, res, next) => {
+    try {
+      const timeRange = req.query.timeRange || '6months';
+      const userId = req.user!.id;
+      const userRole = req.user!.role;
+      
+      // Calculate date range based on the selected time range
+      const now = new Date();
+      let startDate = new Date();
+      
+      if (timeRange === '30days') {
+        startDate.setDate(now.getDate() - 30);
+      } else if (timeRange === '3months') {
+        startDate.setMonth(now.getMonth() - 3);
+      } else if (timeRange === '6months') {
+        startDate.setMonth(now.getMonth() - 6);
+      } else if (timeRange === '12months') {
+        startDate.setMonth(now.getMonth() - 12);
+      }
+      
+      // Fetch all communications for the time period
+      let communicationsQuery = await db.select()
+        .from(storage.tables.communications)
+        .where(sql`created_at >= ${startDate.toISOString()}`);
+        
+      // If not a master implementer, filter by entity access
+      if (userRole !== 'master_implementer') {
+        const entityId = req.user!.entityId;
+        if (entityId) {
+          // Only include communications where the user's entity is a recipient
+          const entityRecipients = await db.select()
+            .from(storage.tables.communicationRecipients)
+            .where(eq(storage.tables.communicationRecipients.entityId, entityId));
+          
+          const entityComIds = entityRecipients.map(r => r.communicationId);
+          communicationsQuery = communicationsQuery.filter(c => entityComIds.includes(c.id));
+        } else {
+          // Only include communications where the user is a sender or recipient
+          const userRecipients = await db.select()
+            .from(storage.tables.communicationRecipients)
+            .where(eq(storage.tables.communicationRecipients.userId, userId));
+          
+          const userComIds = userRecipients.map(r => r.communicationId);
+          communicationsQuery = communicationsQuery.filter(c => 
+            c.sentBy === userId || userComIds.includes(c.id)
+          );
+        }
+      }
+      
+      // Fetch tasks for the time period
+      let tasksQuery = await db.select()
+        .from(storage.tables.tasks)
+        .where(sql`created_at >= ${startDate.toISOString()}`);
+        
+      // If not a master implementer, filter by access
+      if (userRole !== 'master_implementer') {
+        const entityId = req.user!.entityId;
+        if (entityId) {
+          // Only include tasks related to the user's entity
+          tasksQuery = tasksQuery.filter(t => t.entityId === entityId);
+        } else {
+          // Only include tasks owned by the user or created by the user
+          tasksQuery = tasksQuery.filter(t => 
+            t.ownerId === userId || t.createdBy === userId
+          );
+        }
+      }
+      
+      // Fetch meetings for the time period
+      let meetingsQuery = await db.select()
+        .from(storage.tables.meetings)
+        .where(sql`created_at >= ${startDate.toISOString()}`);
+        
+      // If not a master implementer, filter by access
+      if (userRole !== 'master_implementer') {
+        // Get meetings where user is an attendee
+        const userAttendance = await db.select()
+          .from(storage.tables.meetingAttendees)
+          .where(eq(storage.tables.meetingAttendees.userId, userId));
+        
+        const userMeetingIds = userAttendance.map(a => a.meetingId);
+        meetingsQuery = meetingsQuery.filter(m => 
+          m.createdBy === userId || userMeetingIds.includes(m.id)
+        );
+      }
+      
+      // Generate monthly data for trends
+      const months = [];
+      const completionRates = [];
+      
+      // Get last 6 months regardless of the selected time range for the charts
+      for (let i = 5; i >= 0; i--) {
+        const monthDate = new Date();
+        monthDate.setMonth(now.getMonth() - i);
+        const monthName = monthDate.toLocaleString('default', { month: 'long' });
+        months.push(monthName);
+        
+        // Calculate task completion rate for this month
+        const startOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+        const endOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+        
+        const monthTasks = tasksQuery.filter(t => {
+          const taskDate = new Date(t.createdAt);
+          return taskDate >= startOfMonth && taskDate <= endOfMonth;
+        });
+        
+        const completedTasks = monthTasks.filter(t => t.status === 'completed');
+        const completionRate = monthTasks.length > 0 ? completedTasks.length / monthTasks.length : 0;
+        
+        completionRates.push({
+          month: monthName,
+          completionRate
+        });
+      }
+      
+      // Calculate activity trends
+      const activityTrends = months.map((month, index) => {
+        const monthDate = new Date();
+        monthDate.setMonth(now.getMonth() - (5 - index));
+        const startOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+        const endOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+        
+        // Count activities for this month
+        const communications = communicationsQuery.filter(c => {
+          const date = new Date(c.sentAt);
+          return date >= startOfMonth && date <= endOfMonth;
+        }).length;
+        
+        const tasks = tasksQuery.filter(t => {
+          const date = new Date(t.createdAt);
+          return date >= startOfMonth && date <= endOfMonth;
+        }).length;
+        
+        const meetings = meetingsQuery.filter(m => {
+          const date = new Date(m.createdAt);
+          return date >= startOfMonth && date <= endOfMonth;
+        }).length;
+        
+        return {
+          month,
+          communications,
+          tasks,
+          meetings
+        };
+      });
+      
+      // Calculate task status distribution
+      const pendingTasks = tasksQuery.filter(t => t.status === 'pending').length;
+      const inProgressTasks = tasksQuery.filter(t => t.status === 'in_progress').length;
+      const completedTasks = tasksQuery.filter(t => t.status === 'completed').length;
+      const cancelledTasks = tasksQuery.filter(t => t.status === 'cancelled').length;
+      
+      const taskStatusDistribution = [
+        { status: 'Pending', count: pendingTasks },
+        { status: 'In Progress', count: inProgressTasks },
+        { status: 'Completed', count: completedTasks },
+        { status: 'Cancelled', count: cancelledTasks }
+      ];
+      
+      // Calculate channel distribution
+      const emailMessages = communicationsQuery.filter(c => c.channel === 'email').length;
+      const whatsappMessages = communicationsQuery.filter(c => c.channel === 'whatsapp').length;
+      const telegramMessages = communicationsQuery.filter(c => c.channel === 'telegram').length;
+      const systemMessages = communicationsQuery.filter(c => c.channel === 'system_notification').length;
+      
+      const channelDistribution = [
+        { channel: 'Email', count: emailMessages },
+        { channel: 'WhatsApp', count: whatsappMessages },
+        { channel: 'Telegram', count: telegramMessages },
+        { channel: 'System', count: systemMessages }
+      ];
+      
+      // Calculate performance metrics
+      // 1. Average task completion days
+      const completedTasksWithDates = tasksQuery.filter(t => t.status === 'completed' && t.completedAt);
+      let totalCompletionDays = 0;
+      
+      for (const task of completedTasksWithDates) {
+        const createdDate = new Date(task.createdAt);
+        const completedDate = new Date(task.completedAt!);
+        const diffTime = Math.abs(completedDate.getTime() - createdDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        totalCompletionDays += diffDays;
+      }
+      
+      const avgTaskCompletionDays = completedTasksWithDates.length > 0 
+        ? totalCompletionDays / completedTasksWithDates.length 
+        : 0;
+      
+      // 2. Average meeting attendance
+      const meetingAttendees = await db.select()
+        .from(storage.tables.meetingAttendees);
+      
+      const meetingsWithAttendees = meetingsQuery.map(meeting => {
+        const attendees = meetingAttendees.filter(a => a.meetingId === meeting.id);
+        const confirmedAttendees = attendees.filter(a => a.confirmed === true);
+        const attendedAttendees = attendees.filter(a => a.attended === true);
+        
+        return {
+          ...meeting,
+          totalAttendees: attendees.length,
+          confirmedAttendees: confirmedAttendees.length,
+          attendedAttendees: attendedAttendees.length
+        };
+      });
+      
+      let totalAttendanceRate = 0;
+      const meetingsWithAttendance = meetingsWithAttendees.filter(m => m.totalAttendees > 0);
+      
+      for (const meeting of meetingsWithAttendance) {
+        totalAttendanceRate += meeting.attendedAttendees / meeting.totalAttendees;
+      }
+      
+      const avgMeetingAttendance = meetingsWithAttendance.length > 0 
+        ? totalAttendanceRate / meetingsWithAttendance.length 
+        : 0;
+      
+      // 3. Communications per month
+      const totalCommunications = communicationsQuery.length;
+      const communicationsPerMonth = totalCommunications / (timeRange === '30days' ? 1 : 
+                                    timeRange === '3months' ? 3 : 
+                                    timeRange === '6months' ? 6 : 12);
+      
+      // 4. Tasks per month
+      const totalTasks = tasksQuery.length;
+      const tasksPerMonth = totalTasks / (timeRange === '30days' ? 1 : 
+                           timeRange === '3months' ? 3 : 
+                           timeRange === '6months' ? 6 : 12);
+      
+      // 5. Meetings per month
+      const totalMeetings = meetingsQuery.length;
+      const meetingsPerMonth = totalMeetings / (timeRange === '30days' ? 1 : 
+                              timeRange === '3months' ? 3 : 
+                              timeRange === '6months' ? 6 : 12);
+      
+      // Calculate task insights
+      const overdueTasks = tasksQuery.filter(t => {
+        return t.status !== 'completed' && t.status !== 'cancelled' && 
+               new Date(t.deadline) < new Date();
+      }).length;
+      
+      const lastMonthStart = new Date();
+      lastMonthStart.setMonth(now.getMonth() - 1);
+      lastMonthStart.setDate(1);
+      
+      const lastMonthEnd = new Date();
+      lastMonthEnd.setDate(0);
+      
+      const completedLastMonth = tasksQuery.filter(t => {
+        if (t.status !== 'completed' || !t.completedAt) return false;
+        const completedDate = new Date(t.completedAt);
+        return completedDate >= lastMonthStart && completedDate <= lastMonthEnd;
+      }).length;
+      
+      const taskInsights = {
+        totalActive: pendingTasks + inProgressTasks,
+        completedLastMonth,
+        overdue: overdueTasks,
+        avgCompletionDays: avgTaskCompletionDays
+      };
+      
+      // Calculate communication insights
+      // Get all communication recipients
+      const communicationRecipients = await db.select()
+        .from(storage.tables.communicationRecipients);
+      
+      const totalRecipients = communicationRecipients.length;
+      const readRecipients = communicationRecipients.filter(r => r.read === true).length;
+      const readRate = totalRecipients > 0 ? readRecipients / totalRecipients : 0;
+      
+      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const thisMonthMessages = communicationsQuery.filter(c => {
+        const sentDate = new Date(c.sentAt);
+        return sentDate >= thisMonthStart && sentDate <= now;
+      }).length;
+      
+      const communicationInsights = {
+        total: totalCommunications,
+        totalRecipients,
+        thisMonth: thisMonthMessages,
+        readRate
+      };
+      
+      // Compile and send the analytics data
+      const analyticsData = {
+        performanceMetrics: {
+          avgTaskCompletionDays,
+          avgMeetingAttendance,
+          communicationsPerMonth,
+          tasksPerMonth,
+          meetingsPerMonth
+        },
+        activityTrends,
+        completionRates,
+        taskStatusDistribution,
+        channelDistribution,
+        taskInsights,
+        communicationInsights
+      };
+      
+      res.json(analyticsData);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/analytics/entities", isAuthenticated, async (req, res, next) => {
+    try {
+      // Only master implementers can access entity analytics
+      if (req.user!.role !== 'master_implementer') {
+        return res.status(403).json({ message: "Access denied. Only master implementers can access entity analytics." });
+      }
+      
+      const timeRange = req.query.timeRange || '6months';
+      
+      // Calculate date range
+      const now = new Date();
+      let startDate = new Date();
+      
+      if (timeRange === '30days') {
+        startDate.setDate(now.getDate() - 30);
+      } else if (timeRange === '3months') {
+        startDate.setMonth(now.getMonth() - 3);
+      } else if (timeRange === '6months') {
+        startDate.setMonth(now.getMonth() - 6);
+      } else if (timeRange === '12months') {
+        startDate.setMonth(now.getMonth() - 12);
+      }
+      
+      // Get all entities
+      const entities = await db.select().from(storage.tables.entities);
+      
+      // Get all communications
+      const communications = await db.select()
+        .from(storage.tables.communications)
+        .where(sql`sent_at >= ${startDate.toISOString()}`);
+      
+      // Get all communication recipients
+      const communicationRecipients = await db.select()
+        .from(storage.tables.communicationRecipients);
+      
+      // Get all tasks
+      const tasks = await db.select()
+        .from(storage.tables.tasks)
+        .where(sql`created_at >= ${startDate.toISOString()}`);
+      
+      // Calculate entity activity
+      const entityActivity = entities.map(entity => {
+        // Communication count (where this entity is a recipient)
+        const entityComRecipients = communicationRecipients.filter(r => r.entityId === entity.id);
+        const communicationCount = entityComRecipients.length;
+        
+        // Task count (tasks assigned to this entity)
+        const entityTasks = tasks.filter(t => t.entityId === entity.id);
+        const taskCount = entityTasks.length;
+        
+        return {
+          id: entity.id,
+          name: entity.name,
+          type: entity.type,
+          communicationCount,
+          taskCount,
+          totalActivity: communicationCount + taskCount
+        };
+      });
+      
+      // Sort by most active
+      const mostActive = [...entityActivity].sort((a, b) => b.totalActivity - a.totalActivity).slice(0, 5);
+      
+      // Sort by communication count
+      const byCommunication = [...entityActivity].sort((a, b) => b.communicationCount - a.communicationCount).slice(0, 5);
+      
+      // Sort by task count
+      const byTasks = [...entityActivity].sort((a, b) => b.taskCount - a.taskCount).slice(0, 5);
+      
+      res.json({
+        entityActivity,
+        mostActive,
+        byCommunication,
+        byTasks
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/analytics/export", isAuthenticated, async (req, res, next) => {
+    try {
+      const timeRange = req.query.timeRange || '6months';
+      
+      // Only master implementers can export data
+      if (req.user!.role !== 'master_implementer') {
+        return res.status(403).json({ message: "Access denied. Only master implementers can export analytics data." });
+      }
+      
+      // Calculate date range
+      const now = new Date();
+      let startDate = new Date();
+      
+      if (timeRange === '30days') {
+        startDate.setDate(now.getDate() - 30);
+      } else if (timeRange === '3months') {
+        startDate.setMonth(now.getMonth() - 3);
+      } else if (timeRange === '6months') {
+        startDate.setMonth(now.getMonth() - 6);
+      } else if (timeRange === '12months') {
+        startDate.setMonth(now.getMonth() - 12);
+      }
+      
+      // Get all communications for the time period
+      const communications = await db.select()
+        .from(storage.tables.communications)
+        .where(sql`sent_at >= ${startDate.toISOString()}`);
+      
+      // Get all tasks for the time period
+      const tasks = await db.select()
+        .from(storage.tables.tasks)
+        .where(sql`created_at >= ${startDate.toISOString()}`);
+      
+      // Get all meetings for the time period
+      const meetings = await db.select()
+        .from(storage.tables.meetings)
+        .where(sql`created_at >= ${startDate.toISOString()}`);
+      
+      // Generate CSV data
+      let csvData = 'Type,Date,Subject/Title,Status,Channel/Location,Created By\n';
+      
+      // Add communications to CSV
+      for (const comm of communications) {
+        const date = new Date(comm.sentAt).toISOString().split('T')[0];
+        const createdBy = await storage.getUser(comm.sentBy);
+        const creatorName = createdBy ? createdBy.fullName : 'Unknown';
+        
+        csvData += `Communication,${date},"${comm.subject}",Sent,${comm.channel},"${creatorName}"\n`;
+      }
+      
+      // Add tasks to CSV
+      for (const task of tasks) {
+        const date = new Date(task.createdAt).toISOString().split('T')[0];
+        const createdBy = await storage.getUser(task.createdBy);
+        const creatorName = createdBy ? createdBy.fullName : 'Unknown';
+        
+        csvData += `Task,${date},"${task.title}",${task.status},N/A,"${creatorName}"\n`;
+      }
+      
+      // Add meetings to CSV
+      for (const meeting of meetings) {
+        const date = new Date(meeting.date).toISOString().split('T')[0];
+        const createdBy = await storage.getUser(meeting.createdBy);
+        const creatorName = createdBy ? createdBy.fullName : 'Unknown';
+        
+        csvData += `Meeting,${date},"${meeting.name}",Scheduled,${meeting.location || 'Not specified'},"${creatorName}"\n`;
+      }
+      
+      // Set response headers
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=analytics_${timeRange}_${new Date().toISOString().split('T')[0]}.csv`);
+      
+      // Send the CSV data
+      res.send(csvData);
+    } catch (error) {
+      next(error);
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

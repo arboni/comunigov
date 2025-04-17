@@ -11,7 +11,8 @@ import {
   Menu,
   Bell,
   X,
-  FileText
+  FileText,
+  BarChart3
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -63,6 +64,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: "Meetings", href: "/meetings", icon: Calendar },
     { name: "Tasks", href: "/tasks", icon: ListChecks },
     { name: "Subjects", href: "/subjects", icon: FileText },
+    { name: "Analytics", href: "/analytics", icon: BarChart3 },
     { name: "Users", href: "/users", icon: Users },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
