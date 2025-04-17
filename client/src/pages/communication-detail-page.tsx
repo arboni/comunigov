@@ -193,11 +193,23 @@ export default function CommunicationDetailPage() {
               </div>
               
               {/* Attachments, if any */}
+              {/* Debug info */}
+              <Separator className="my-6" />
+              <div className="text-sm">
+                <div className="mb-4">
+                  <strong>Debug Info:</strong><br/>
+                  Has files property: {communication.files ? 'Yes' : 'No'}<br/>
+                  Files array length: {communication.files ? communication.files.length : 'N/A'}<br/>
+                  hasAttachments flag: {communication.hasAttachments ? 'True' : 'False'}
+                </div>
+              </div>
+              
+              {/* Attachments section */}
               {communication.files && communication.files.length > 0 && (
                 <>
                   <Separator className="my-6" />
                   <div>
-                    <h3 className="text-lg font-medium mb-3">Attachments</h3>
+                    <h3 className="text-lg font-medium mb-3">Attachments ({communication.files.length})</h3>
                     <div className="grid grid-cols-1 gap-3">
                       {communication.files.map((file) => (
                         <div 
@@ -211,14 +223,44 @@ export default function CommunicationDetailPage() {
                               {file.type && <span className="ml-2 text-xs px-2 py-1 bg-gray-100 rounded">{file.type}</span>}
                             </div>
                           </div>
-                          <FilePreview
-                            fileId={file.id}
-                            fileName={file.name}
-                            fileType={file.type}
-                          />
+                          <div className="flex gap-2">
+                            <a 
+                              href={`/api/download/${file.id}`} 
+                              className="px-3 py-1.5 bg-primary text-white rounded-md text-sm hover:bg-primary-600"
+                              download
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Download
+                            </a>
+                            {file.type && (file.type.includes('image') || file.type.includes('pdf')) && (
+                              <a 
+                                href={`/api/download/${file.id}`} 
+                                className="px-3 py-1.5 bg-secondary text-secondary-foreground rounded-md text-sm hover:bg-secondary/80"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                View
+                              </a>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
+                  </div>
+                </>
+              )}
+              
+              {/* Show message if hasAttachments is true but files array is empty */}
+              {communication.hasAttachments && (!communication.files || communication.files.length === 0) && (
+                <>
+                  <Separator className="my-6" />
+                  <div className="p-4 border border-amber-200 bg-amber-50 rounded-md">
+                    <h3 className="text-lg font-medium mb-1 text-amber-800">Attachments</h3>
+                    <p className="text-amber-700">
+                      This communication has attachments, but they cannot be displayed. 
+                      This may be due to a server-side issue or missing data.
+                    </p>
                   </div>
                 </>
               )}
