@@ -153,6 +153,7 @@ export interface IStorage {
   getUserBadgesByUserId(userId: number): Promise<(UserBadge & { badge: AchievementBadge })[]>;
   getUserWithBadges(userId: number): Promise<UserWithBadges | undefined>;
   getFeaturedBadgesByUserId(userId: number): Promise<(UserBadge & { badge: AchievementBadge })[]>;
+  markUserBadgesAsSeen(badgeIds: number[]): Promise<void>;
   
   // Session Store
   sessionStore: any; // Fix type issue with SessionStore
