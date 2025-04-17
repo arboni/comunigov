@@ -7,7 +7,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import NoWhatsAppDialog from "@/components/communication/no-whatsapp-dialog";
-import WhatsAppReminder from "@/components/communication/whatsapp-reminder";
+import CallMeBotReminder from "@/components/communication/callmebot-reminder";
 import { reloadPage } from "@/lib/utils";
 
 import {
@@ -302,9 +302,9 @@ export default function SendMessageDialog({
             </DialogDescription>
           </DialogHeader>
           
-          {/* Show WhatsApp reminder when WhatsApp is selected */}
+          {/* Show CallMeBot reminder when WhatsApp is selected */}
           {form.watch("channel") === "whatsapp" && (
-            <WhatsAppReminder />
+            <CallMeBotReminder />
           )}
           
           <Form {...form}>
