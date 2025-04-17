@@ -214,13 +214,18 @@ For more information, visit comunigov.app
         console.log(`Error was: ${formatError.message}`);
         
         try {
-          // Some Twilio accounts might require this format instead
+          // Some Twilio accounts might require this format instead - making sure both are same channel
+          // If from is "whatsapp:" format, to must be "whatsapp:" format
+          // If from is plain number, to must be plain number
           const fromSimpleFormat = fromNumber;
+          const toSimpleFormat = formattedNumber;
+          
+          console.log(`Trying alternative format - from: ${fromSimpleFormat}, to: ${toSimpleFormat}`);
           
           const message = await twilioClient.messages.create({
             body: formattedMessage,
             from: fromSimpleFormat,
-            to: toWhatsApp
+            to: toSimpleFormat
           });
           
           // Log detailed message info for alternative format
