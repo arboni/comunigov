@@ -4,6 +4,7 @@ import {
   Meeting, InsertMeeting,
   MeetingAttendee, InsertMeetingAttendee,
   MeetingDocument, InsertMeetingDocument,
+  MeetingReaction, InsertMeetingReaction,
   Subject, InsertSubject,
   Task, InsertTask,
   TaskComment, InsertTaskComment,
@@ -14,12 +15,19 @@ import {
   UserBadge, InsertUserBadge,
   UserWithEntity,
   MeetingWithAttendees,
+  MeetingWithDocuments,
+  MeetingWithReactions,
   MeetingWithSubject,
   MeetingWithAttendeesAndSubject,
+  MeetingWithAttendeesAndDocuments,
+  MeetingWithAttendeesAndReactions,
+  MeetingWithAll,
   TaskWithAssignee,
   CommunicationWithRecipients,
+  CommunicationWithFiles,
+  CommunicationWithRecipientsAndFiles,
   UserWithBadges,
-  users, entities, meetings, meetingAttendees, meetingDocuments, subjects, tasks, taskComments, 
+  users, entities, meetings, meetingAttendees, meetingDocuments, meetingReactions, subjects, tasks, taskComments, 
   communications, communicationRecipients, communicationFiles, achievementBadges, userBadges
 } from "@shared/schema";
 import session from "express-session";
@@ -145,6 +153,7 @@ export class MemStorage implements IStorage {
   private meetings: Map<number, Meeting>;
   private meetingAttendees: Map<number, MeetingAttendee>;
   private meetingDocuments: Map<number, MeetingDocument>;
+  private meetingReactions: Map<number, MeetingReaction>;
   private subjects: Map<number, Subject>;
   private tasks: Map<number, Task>;
   private taskComments: Map<number, TaskComment>;
@@ -158,6 +167,7 @@ export class MemStorage implements IStorage {
   currentMeetingId: number;
   currentMeetingAttendeeId: number;
   currentMeetingDocumentId: number;
+  currentMeetingReactionId: number;
   currentSubjectId: number;
   currentTaskId: number;
   currentTaskCommentId: number;
@@ -175,6 +185,7 @@ export class MemStorage implements IStorage {
     this.meetings = new Map();
     this.meetingAttendees = new Map();
     this.meetingDocuments = new Map();
+    this.meetingReactions = new Map();
     this.subjects = new Map();
     this.tasks = new Map();
     this.taskComments = new Map();
@@ -190,6 +201,7 @@ export class MemStorage implements IStorage {
     this.currentMeetingId = 1;
     this.currentMeetingAttendeeId = 1;
     this.currentMeetingDocumentId = 1;
+    this.currentMeetingReactionId = 1;
     this.currentSubjectId = 1;
     this.currentTaskId = 1;
     this.currentTaskCommentId = 1;

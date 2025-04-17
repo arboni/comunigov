@@ -186,6 +186,7 @@ export const insertEntitySchema = createInsertSchema(entities).omit({ id: true }
 export const insertMeetingSchema = createInsertSchema(meetings).omit({ id: true, createdAt: true });
 export const insertMeetingAttendeeSchema = createInsertSchema(meetingAttendees).omit({ id: true });
 export const insertMeetingDocumentSchema = createInsertSchema(meetingDocuments).omit({ id: true, uploadedAt: true });
+export const insertMeetingReactionSchema = createInsertSchema(meetingReactions).omit({ id: true, createdAt: true });
 export const insertSubjectSchema = createInsertSchema(subjects).omit({ id: true, createdAt: true });
 export const insertTaskSchema = createInsertSchema(tasks).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertTaskCommentSchema = createInsertSchema(taskComments).omit({ id: true, createdAt: true });
@@ -210,6 +211,9 @@ export type MeetingAttendee = typeof meetingAttendees.$inferSelect;
 
 export type InsertMeetingDocument = z.infer<typeof insertMeetingDocumentSchema>;
 export type MeetingDocument = typeof meetingDocuments.$inferSelect;
+
+export type InsertMeetingReaction = z.infer<typeof insertMeetingReactionSchema>;
+export type MeetingReaction = typeof meetingReactions.$inferSelect;
 
 export type InsertSubject = z.infer<typeof insertSubjectSchema>;
 export type Subject = typeof subjects.$inferSelect;
@@ -410,10 +414,12 @@ export const userBadgesRelations = relations(userBadges, ({ one }) => ({
 export type UserWithEntity = User & { entity?: Entity };
 export type MeetingWithAttendees = Meeting & { attendees: MeetingAttendee[] };
 export type MeetingWithDocuments = Meeting & { documents: MeetingDocument[] };
+export type MeetingWithReactions = Meeting & { reactions: MeetingReaction[] };
 export type MeetingWithSubject = Meeting & { registeredSubject?: Subject };
 export type MeetingWithAttendeesAndSubject = MeetingWithAttendees & { registeredSubject?: Subject };
 export type MeetingWithAttendeesAndDocuments = MeetingWithAttendees & { documents: MeetingDocument[] };
-export type MeetingWithAll = MeetingWithAttendees & { registeredSubject?: Subject, documents: MeetingDocument[] };
+export type MeetingWithAttendeesAndReactions = MeetingWithAttendees & { reactions: MeetingReaction[] };
+export type MeetingWithAll = MeetingWithAttendees & { registeredSubject?: Subject, documents: MeetingDocument[], reactions: MeetingReaction[] };
 export type TaskWithAssignee = Task & { assignee: User };
 export type CommunicationWithRecipients = Communication & { recipients: CommunicationRecipient[] };
 export type CommunicationWithFiles = Communication & { files: CommunicationFile[] };
