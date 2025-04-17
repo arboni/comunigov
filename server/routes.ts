@@ -1779,30 +1779,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get all entities
-      const allEntities = await db.select().from(entities);
+      const allEntities = await db.select().from(entitiesTable);
       
       // Get all communications
       const allCommunications = await db.select()
-        .from(communications)
+        .from(communicationsTable)
         .where(sql`sent_at >= ${startDate.toISOString()}`);
       
       // Get all communication recipients
-      const communicationRecipients = await db.select()
-        .from(communicationRecipients);
+      const allCommunicationRecipients = await db.select()
+        .from(communicationRecipientsTable);
       
       // Get all tasks
       const allTasks = await db.select()
-        .from(tasks)
+        .from(tasksTable)
         .where(sql`created_at >= ${startDate.toISOString()}`);
       
       // Calculate entity activity
       const entityActivity = allEntities.map(entity => {
         // Communication count (where this entity is a recipient)
-        const entityComRecipients = communicationRecipients.filter(r => r.entityId === entity.id);
+        const entityComRecipients = allCommunicationRecipients.filter(r => r.entityId === entity.id);
         const communicationCount = entityComRecipients.length;
         
         // Task count (tasks assigned to this entity)
-        const entityTasks = tasks.filter(t => t.entityId === entity.id);
+        const entityTasks = allTasks.filter(t => t.entityId === entity.id);
         const taskCount = entityTasks.length;
         
         return {
@@ -1860,17 +1860,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get all communications for the time period
       const communications = await db.select()
-        .from(storage.tables.communications)
+        .from(communicationsTable)
         .where(sql`sent_at >= ${startDate.toISOString()}`);
       
       // Get all tasks for the time period
       const tasks = await db.select()
-        .from(storage.tables.tasks)
+        .from(tasksTable)
         .where(sql`created_at >= ${startDate.toISOString()}`);
       
       // Get all meetings for the time period
       const meetings = await db.select()
-        .from(storage.tables.meetings)
+        .from(meetingsTable)
         .where(sql`created_at >= ${startDate.toISOString()}`);
       
       // Generate CSV data
@@ -1909,6 +1909,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Send the CSV data
       res.send(csvData);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Admin endpoint to truncate communications and files
+  app.post("/api/admin/cleanup-database", isMasterImplementer, async (req, res, next) => {
+    try {
+      // Get the user who initiated this action for logging
+      const userId = req.user!.id;
+      const adminUser = await storage.getUser(userId);
+      
+      // Add timestamp to log message
+      const timestamp = new Date().toISOString();
+      console.log(`[${timestamp}] Database cleanup initiated by ${adminUser?.username} (ID: ${userId})`);
+      
+      // Execute the truncation
+      const result = await storage.truncateCommunicationsAndFiles();
+      
+      // Log the result
+      console.log(`[${timestamp}] Database cleanup completed: ${result.message}`);
+      
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Endpoint to get database table statistics
+  app.get("/api/admin/database-stats", isMasterImplementer, async (req, res, next) => {
+    try {
+      // Get counts from all tables
+      const [
+        usersCount,
+        entitiesCount,
+        subjectsCount,
+        tasksCount,
+        meetingsCount,
+        communicationsCount,
+        communicationRecipientsCount,
+        communicationFilesCount
+      ] = await Promise.all([
+        db.select({ count: sql<number>`count(*)` }).from(usersTable).then(result => result[0].count),
+        db.select({ count: sql<number>`count(*)` }).from(entitiesTable).then(result => result[0].count),
+        db.select({ count: sql<number>`count(*)` }).from(subjectsTable).then(result => result[0].count),
+        db.select({ count: sql<number>`count(*)` }).from(tasksTable).then(result => result[0].count),
+        db.select({ count: sql<number>`count(*)` }).from(meetingsTable).then(result => result[0].count),
+        db.select({ count: sql<number>`count(*)` }).from(communicationsTable).then(result => result[0].count),
+        db.select({ count: sql<number>`count(*)` }).from(communicationRecipientsTable).then(result => result[0].count),
+        db.execute(sql`SELECT COUNT(*) AS count FROM communication_files`).then(result => result.rows ? result.rows[0].count : 0)
+      ]);
+      
+      // Return statistics
+      res.json({
+        users: usersCount,
+        entities: entitiesCount,
+        subjects: subjectsCount,
+        tasks: tasksCount,
+        meetings: meetingsCount,
+        communications: communicationsCount,
+        communicationRecipients: communicationRecipientsCount,
+        communicationFiles: communicationFilesCount,
+        timestamp: new Date().toISOString()
+      });
     } catch (error) {
       next(error);
     }
