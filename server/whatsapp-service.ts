@@ -1,15 +1,33 @@
 /**
  * WhatsApp Messaging Service for ComuniGov
  * 
- * This service handles sending messages via WhatsApp
- * Currently integrated as a mock service for development
- * In production, this would be replaced with an actual WhatsApp Business API
- * integration or a third-party service like Twilio or MessageBird.
+ * This service handles sending messages via WhatsApp using Twilio's API
+ * It requires the following environment variables:
+ * - TWILIO_ACCOUNT_SID
+ * - TWILIO_AUTH_TOKEN
+ * - TWILIO_WHATSAPP_NUMBER (in the format: +14155238886)
  */
 
-// WhatsApp API config (would be read from environment variables in production)
-const WHATSAPP_ENABLED = process.env.WHATSAPP_ENABLED === 'true';
+import twilio from 'twilio';
+
+// Check if Twilio credentials are available
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
+const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
+const TWILIO_WHATSAPP_NUMBER = process.env.TWILIO_WHATSAPP_NUMBER;
+
+// WhatsApp API config
+const WHATSAPP_ENABLED = TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_WHATSAPP_NUMBER;
 const WHATSAPP_DEBUG = true; // Set to true to see detailed logs
+
+// Initialize Twilio client if credentials are available
+const twilioClient = WHATSAPP_ENABLED ? twilio(TWILIO_ACCOUNT_SID!, TWILIO_AUTH_TOKEN!) : null;
+
+// Log configuration status on startup
+if (WHATSAPP_ENABLED) {
+  console.log('WhatsApp messaging service is ready with Twilio');
+} else {
+  console.log('WhatsApp messaging is disabled (missing Twilio credentials)');
+}
 
 /**
  * Formats a phone number for WhatsApp
@@ -57,9 +75,9 @@ export async function sendWhatsAppMessage(
   hasAttachments: boolean = false
 ): Promise<boolean> {
   // Skip if WhatsApp is disabled
-  if (!WHATSAPP_ENABLED) {
+  if (!WHATSAPP_ENABLED || !twilioClient) {
     if (WHATSAPP_DEBUG) {
-      console.log('WhatsApp messaging is disabled. Set WHATSAPP_ENABLED=true to enable.');
+      console.log('WhatsApp messaging is disabled. Check that Twilio credentials are set properly.');
     }
     return false;
   }
@@ -97,19 +115,26 @@ For more information, visit comunigov.app
       console.log(formattedMessage);
     }
     
-    // In a real implementation, this would make an API call to WhatsApp Business API
-    // Example with Twilio:
-    /*
-    const twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-    await twilioClient.messages.create({
-      body: formattedMessage,
-      from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
-      to: `whatsapp:${formattedNumber}`
-    });
-    */
+    // Make an API call to Twilio's WhatsApp API
+    if (!twilioClient) {
+      console.error('Twilio client not initialized');
+      return false;
+    }
     
-    // For now, simulate a successful send
-    return true;
+    try {
+      // Send the message via Twilio WhatsApp
+      await twilioClient.messages.create({
+        body: formattedMessage,
+        from: `whatsapp:${TWILIO_WHATSAPP_NUMBER}`,
+        to: `whatsapp:${formattedNumber}`
+      });
+      
+      console.log(`WhatsApp message successfully sent to ${formattedNumber}`);
+      return true;
+    } catch (twilioError) {
+      console.error('Twilio WhatsApp API error:', twilioError);
+      return false;
+    }
   } catch (error) {
     console.error('Error sending WhatsApp message:', error);
     return false;
