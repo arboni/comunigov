@@ -625,9 +625,20 @@ export async function sendMeetingInvitationsToAllAttendees(
   
   console.log(`Sending meeting invitations to ${attendees.length} attendees for meeting: ${meeting.name}`);
   
+  // Debug: print all attendees
+  attendees.forEach((attendee, index) => {
+    console.log(`Attendee ${index + 1}:`, {
+      id: attendee.id,
+      userId: attendee.userId,
+      email: attendee.user?.email || 'No email available',
+      name: attendee.user?.fullName || attendee.user?.username || 'Unknown'
+    });
+  });
+  
   for (const attendee of attendees) {
     // If we have the user object directly attached to the attendee
     if (attendee.user && attendee.user.email) {
+      console.log(`Sending invitation to ${attendee.user.fullName || attendee.user.username} at ${attendee.user.email}`);
       const result = await sendMeetingInvitationEmail(
         attendee.user.email,
         attendee.user.fullName || attendee.user.username,
@@ -635,15 +646,23 @@ export async function sendMeetingInvitationsToAllAttendees(
         organizerName
       );
       
-      result ? successCount++ : failedCount++;
+      if (result) {
+        console.log(`Successfully sent invitation to ${attendee.user.email}`);
+        successCount++;
+      } else {
+        console.error(`Failed to send invitation to ${attendee.user.email}`);
+        failedCount++;
+      }
       continue;
     }
     
     // If we only have the userId, fetch the user details
     if (attendee.userId) {
       try {
+        console.log(`Fetching user details for attendee with userId ${attendee.userId}`);
         const user = await storage.getUser(attendee.userId);
         if (user && user.email) {
+          console.log(`Found user ${user.fullName || user.username} with email ${user.email}`);
           const result = await sendMeetingInvitationEmail(
             user.email,
             user.fullName || user.username,
@@ -651,9 +670,15 @@ export async function sendMeetingInvitationsToAllAttendees(
             organizerName
           );
           
-          result ? successCount++ : failedCount++;
+          if (result) {
+            console.log(`Successfully sent invitation to ${user.email}`);
+            successCount++;
+          } else {
+            console.error(`Failed to send invitation to ${user.email}`);
+            failedCount++;
+          }
         } else {
-          console.warn(`Could not send invitation to user ID ${attendee.userId}: Missing email`);
+          console.warn(`Could not send invitation to user ID ${attendee.userId}: Missing email or user not found`);
           failedCount++;
         }
       } catch (error) {

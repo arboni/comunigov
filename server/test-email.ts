@@ -1,13 +1,17 @@
 import { sendEmail } from './email-service';
 
 async function testEmailService() {
+  // Get recipient email from command line arguments or use default
+  const recipientEmail = process.argv[2] || process.env.SENDGRID_FROM_EMAIL || 'test@example.com';
+  
   console.log('Testing email service...');
   console.log('SENDGRID_API_KEY exists:', !!process.env.SENDGRID_API_KEY);
   console.log('SENDGRID_FROM_EMAIL:', process.env.SENDGRID_FROM_EMAIL);
+  console.log('Sending test email to:', recipientEmail);
   
   try {
     const result = await sendEmail({
-      to: process.env.SENDGRID_FROM_EMAIL || 'test@example.com', // Send to the same email as the from email
+      to: recipientEmail,
       subject: 'ComuniGov Test Email',
       text: 'This is a test email to verify the SendGrid email service is working correctly.',
       html: `
@@ -15,6 +19,7 @@ async function testEmailService() {
           <h2 style="color: #3b82f6;">ComuniGov Test Email</h2>
           <p>This is a test email to verify the SendGrid email service is working correctly.</p>
           <p>If you're seeing this, the email service is working!</p>
+          <p>Target recipient: ${recipientEmail}</p>
           <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; color: #666; font-size: 12px;">
             Sent from ComuniGov at ${new Date().toLocaleString()}
           </p>
