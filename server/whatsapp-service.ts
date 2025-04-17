@@ -214,9 +214,7 @@ For more information, visit comunigov.app
         console.log(`Error was: ${formatError.message}`);
         
         try {
-          // Some Twilio accounts might require this format instead - making sure both are same channel
-          // If from is "whatsapp:" format, to must be "whatsapp:" format
-          // If from is plain number, to must be plain number
+          // Try with plain phone numbers (no WhatsApp: prefix)
           const fromSimpleFormat = fromNumber;
           const toSimpleFormat = formattedNumber;
           
@@ -241,8 +239,50 @@ For more information, visit comunigov.app
           console.log(`WhatsApp message sent successfully using alternative format`);
           return true;
         } catch (altFormatError: any) {
-          console.error('Alternative format also failed:', altFormatError.message);
-          throw altFormatError; // Re-throw to be caught by the outer catch block
+          console.log('Alternative format also failed:', altFormatError.message);
+          
+          try {
+            // Try a third format where we must use WhatsApp prefix but with the proper message service
+            // Ensure the fromNumber starts with whatsapp:+ format
+            const fromServiceFormat = fromNumber.startsWith('whatsapp:') ? fromNumber : `whatsapp:${fromNumber}`;
+            const toServiceFormat = formattedNumber.startsWith('whatsapp:') ? formattedNumber : `whatsapp:${formattedNumber}`;
+            
+            console.log(`Trying service format - from: ${fromServiceFormat}, to: ${toServiceFormat}`);
+            
+            // Some Twilio accounts require using the messaging service SID instead of direct number
+            // Check if we have a messaging service configured
+            if (process.env.TWILIO_MESSAGING_SERVICE_SID) {
+              console.log(`Using Twilio Messaging Service: ${process.env.TWILIO_MESSAGING_SERVICE_SID}`);
+              
+              const message = await twilioClient.messages.create({
+                body: formattedMessage,
+                messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_SID,
+                to: toServiceFormat
+              });
+              
+              console.log(`WhatsApp message sent using messaging service`);
+              console.log(`Message SID: ${message.sid}`);
+              console.log(`Message Status: ${message.status}`);
+              
+              return true;
+            } else {
+              // Last attempt without messaging service
+              const message = await twilioClient.messages.create({
+                body: formattedMessage,
+                from: fromServiceFormat,
+                to: toServiceFormat
+              });
+              
+              console.log(`WhatsApp message sent using service format`);
+              console.log(`Message SID: ${message.sid}`);
+              console.log(`Message Status: ${message.status}`);
+              
+              return true;
+            }
+          } catch (serviceFormatError: any) {
+            console.error('Service format also failed:', serviceFormatError.message);
+            throw serviceFormatError; // Re-throw to be caught by the outer catch block
+          }
         }
       }
     } catch (twilioError: any) {
