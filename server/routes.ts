@@ -5,12 +5,23 @@ import { db } from "./db";
 import { setupAuth, hashPassword, comparePasswords } from "./auth";
 import { sendNewMemberWelcomeEmail, sendPasswordResetEmail } from "./email-service";
 import { sendMessage, sendMessageWithFallback, sendMessageToAll, MessageChannel } from "./messaging-service";
+import { 
+  isAuthenticated, 
+  isMasterImplementer, 
+  isEntityHead, 
+  hasEntityAccess,
+  hasSubjectAccess,
+  hasMeetingAccess,
+  hasTaskAccess,
+  hasAnalyticsAccess
+} from "./auth-middleware";
+import { ActivityLogger } from "./activity-logger";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, desc } from "drizzle-orm";
 import { 
   insertEntitySchema, 
   insertMeetingSchema, 
@@ -21,7 +32,7 @@ import {
   insertCommunicationRecipientSchema,
   insertAchievementBadgeSchema,
   insertUserBadgeSchema,
-  // Add table references for analytics 
+  // Add table references for analytics and logging
   users as usersTable,
   entities as entitiesTable,
   meetings as meetingsTable,
@@ -31,36 +42,98 @@ import {
   communicationRecipients as communicationRecipientsTable,
   meetingAttendees as meetingAttendeesTable,
   meetingDocuments as meetingDocumentsTable,
-  taskComments as taskCommentsTable
+  taskComments as taskCommentsTable,
+  userActivityLogs
 } from "@shared/schema";
 
-// Middleware to check authentication
-function isAuthenticated(req: Request, res: Response, next: NextFunction) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.status(401).json({ message: "Unauthorized" });
-}
-
-// Middleware to check if user is a master implementer
-function isMasterImplementer(req: Request, res: Response, next: NextFunction) {
-  if (req.isAuthenticated() && req.user.role === 'master_implementer') {
-    return next();
-  }
-  res.status(403).json({ message: "Forbidden: Requires master implementer privileges" });
-}
-
-// Middleware to check if user is an entity head
-function isEntityHead(req: Request, res: Response, next: NextFunction) {
-  if (req.isAuthenticated() && req.user.role === 'entity_head') {
-    return next();
-  }
-  res.status(403).json({ message: "Forbidden: Requires entity head privileges" });
-}
+// Import auth middleware from auth-middleware.ts instead of using local definitions
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Sets up /api/register, /api/login, /api/logout, /api/user
   setupAuth(app);
+  
+  // User Activity Logs Endpoints
+  app.get("/api/activity-logs", isMasterImplementer, async (req, res, next) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+      
+      let logs = [];
+      if (req.query.userId) {
+        const userId = parseInt(req.query.userId as string);
+        logs = await db
+          .select()
+          .from(userActivityLogs)
+          .where(eq(userActivityLogs.userId, userId))
+          .orderBy(desc(userActivityLogs.timestamp))
+          .limit(limit)
+          .offset(offset);
+      } else if (req.query.action) {
+        logs = await db
+          .select()
+          .from(userActivityLogs)
+          .where(eq(userActivityLogs.action, req.query.action as string))
+          .orderBy(desc(userActivityLogs.timestamp))
+          .limit(limit)
+          .offset(offset);
+      } else if (req.query.entityType) {
+        logs = await db
+          .select()
+          .from(userActivityLogs)
+          .where(eq(userActivityLogs.entityType, req.query.entityType as string))
+          .orderBy(desc(userActivityLogs.timestamp))
+          .limit(limit)
+          .offset(offset);
+      } else {
+        logs = await db
+          .select()
+          .from(userActivityLogs)
+          .orderBy(desc(userActivityLogs.timestamp))
+          .limit(limit)
+          .offset(offset);
+      }
+      
+      // Get user details for each log
+      const logsWithUserDetails = await Promise.all(
+        logs.map(async (log) => {
+          const user = await storage.getUser(log.userId);
+          return {
+            ...log,
+            userDetails: user ? {
+              username: user.username,
+              fullName: user.fullName,
+              email: user.email,
+              role: user.role
+            } : null
+          };
+        })
+      );
+      
+      res.json(logsWithUserDetails);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Get activity logs for the authenticated user
+  app.get("/api/my-activity-logs", isAuthenticated, async (req, res, next) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+      
+      const logs = await db
+        .select()
+        .from(userActivityLogs)
+        .where(eq(userActivityLogs.userId, req.user!.id))
+        .orderBy(desc(userActivityLogs.timestamp))
+        .limit(limit)
+        .offset(offset);
+      
+      res.json(logs);
+    } catch (error) {
+      next(error);
+    }
+  });
 
   // User notification preferences
   app.put("/api/user/:id/notifications", isAuthenticated, async (req, res, next) => {
