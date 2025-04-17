@@ -393,6 +393,36 @@ export async function sendMeetingInvitationEmail(
   const formattedDate = format(meetingDate, 'PPPP'); // 'Monday, January 1, 2025'
   const subject = `Meeting Invitation: ${meeting.name}`;
   
+  // Fetch meeting documents/attachments
+  let attachments: Array<{content?: string; path?: string; filename: string; type?: string; disposition?: string; contentId?: string}> = [];
+  let hasDocuments = false;
+  
+  try {
+    console.log(`Fetching documents for meeting ID ${meeting.id}`);
+    const documents = await db.query.meetingDocuments.findMany({
+      where: eq(meetingDocuments.meetingId, meeting.id)
+    });
+    
+    if (documents && documents.length > 0) {
+      console.log(`Found ${documents.length} documents for meeting ${meeting.id}`);
+      hasDocuments = true;
+      
+      // Convert documents to email attachments
+      attachments = documents.map(doc => {
+        console.log(`Adding document to email: ${doc.name}, path: ${doc.filePath}`);
+        return {
+          path: doc.filePath, // Use the full file path
+          filename: doc.name,
+          type: doc.type || 'application/octet-stream'
+        };
+      });
+    } else {
+      console.log(`No documents found for meeting ${meeting.id}`);
+    }
+  } catch (error) {
+    console.error(`Error fetching documents for meeting ${meeting.id}:`, error);
+  }
+  
   const text = `
 Hello ${attendeeName},
 
@@ -407,6 +437,8 @@ Organizer: ${organizerName}
 
 Agenda:
 ${meeting.agenda || 'No agenda provided'}
+
+${hasDocuments ? `This meeting has ${attachments.length} document(s) attached to this email.` : ''}
 
 Please log in to the ComuniGov platform to confirm your attendance.
 
@@ -496,6 +528,23 @@ The ComuniGov Team
       margin: 10px 0;
       color: #4b5563;
     }
+    .attachments-note {
+      background-color: #fffbeb;
+      border: 1px solid #fcd34d;
+      padding: 15px;
+      border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.5);
+      margin-top: 25px;
+      display: flex;
+      align-items: center;
+    }
+    .attachments-note svg {
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .attachments-note p {
+      margin: 0;
+      color: #92400e;
+    }
     .cta {
       text-align: center;
       margin: 35px 0 25px;
@@ -578,6 +627,15 @@ The ComuniGov Team
         <p>${meeting.agenda || 'No agenda provided'}</p>
       </div>
       
+      ${hasDocuments ? `
+      <div class="attachments-note">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"></path>
+        </svg>
+        <p><strong>Files attached:</strong> This meeting includes ${attachments.length} document(s). They are attached to this email for your convenience.</p>
+      </div>
+      ` : ''}
+      
       <div class="cta">
         <a href="https://comunigov.app" class="button">View Meeting Details</a>
       </div>
@@ -603,11 +661,13 @@ The ComuniGov Team
 </html>
   `;
   
+  // Send email with attachments if they exist
   return await sendEmail({
     to,
     subject,
     text,
-    html
+    html,
+    attachments: attachments.length > 0 ? attachments : undefined
   });
 }
 
