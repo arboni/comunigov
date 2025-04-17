@@ -68,8 +68,13 @@ export function isValidWhatsAppNumber(phone: string): boolean {
   // Basic validation: should be at least 10 digits plus the + sign
   const isValid = formatted.length >= 11;
   
-  if (WHATSAPP_DEBUG && !isValid) {
-    console.log(`WhatsApp validation failed: "${formatted}" is not a valid format (should be at least 10 digits with + sign)`);
+  // Advanced debugging for all WhatsApp validation attempts
+  if (WHATSAPP_DEBUG) {
+    console.log(`WhatsApp validation for number: "${formatted}"`);
+    console.log(`- Number length: ${formatted.length}`);
+    console.log(`- Valid: ${isValid}`);
+    console.log(`- Starts with +: ${formatted.startsWith('+')}`);
+    console.log(`- Digits only (except +): ${/^\+[0-9]+$/.test(formatted)}`);
   }
   
   return isValid;
