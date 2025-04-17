@@ -1,0 +1,76 @@
+Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+meetings:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meeting/3' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meetings' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meeting/4' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/meeting/4:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/meeting/4:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meetings' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meeting/5' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+stallwart.build.js:1 stallwart: failed ping 1
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/meeting/5:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/meeting/5:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/meeting/5:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meetings' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+Console.js:61 Form data being submitted: Object
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/api/meetings/6/attendees:1 
+            
+            
+           Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this errorAI
+Console.js:61 Error adding attendees: Error: 400: {"message":"This user is already an attendee of this meeting","attendee":{"id":16,"meetingId":6,"userId":4,"confirmed":false,"attended":false}}
+    at throwIfResNotOk (queryClient.ts:6:11)
+    at async apiRequest (queryClient.ts:22:3)
+    at async Promise.all (27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/__replco/index 0)
+    at async Object.onSuccess (schedule-meeting-dialog.tsx:165:11)
+    at async _a6.execute (@tanstack_react-query.js?v=cd7536bb:1233:7)
+Mt.forEach.n.<computed> @ Console.js:61Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/api/meetings/6/attendees:1 
+            
+            
+           Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this errorAI
+857Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.Understand this warningAI
+stallwart.build.js:1 stallwart: failed ping 1

@@ -160,18 +160,39 @@ export default function ScheduleMeetingDialog({
       const attendees = form.getValues().attendees || [];
       
       try {
-        // Use Promise.all to wait for all attendee additions to complete
+        // Use Promise.allSettled to continue with other attendees even if some fail
         if (attendees.length > 0) {
-          await Promise.all(
+          const results = await Promise.allSettled(
             attendees.map(async (userId) => {
-              return apiRequest("POST", `/api/meetings/${meeting.id}/attendees`, {
-                userId,
-                meetingId: meeting.id,
-                confirmed: false,
-                attended: false,
-              });
+              try {
+                const response = await apiRequest("POST", `/api/meetings/${meeting.id}/attendees`, {
+                  userId,
+                  meetingId: meeting.id,
+                  confirmed: false,
+                  attended: false,
+                });
+                return { status: 'success', userId };
+              } catch (err: any) {
+                // Check if this is a duplicate attendee (400 status)
+                if (err.message && err.message.startsWith('400:')) {
+                  console.log(`Attendee ${userId} is already in meeting ${meeting.id}`);
+                  return { status: 'duplicate', userId };
+                }
+                throw err;
+              }
             })
           );
+          
+          // Count successes and duplicates
+          const successes = results.filter(r => r.status === 'fulfilled').length;
+          const duplicates = results.filter(r => 
+            r.status === 'fulfilled' && 
+            (r.value as any).status === 'duplicate'
+          ).length;
+          
+          if (duplicates > 0) {
+            console.log(`${duplicates} duplicate attendees were skipped`);
+          }
         }
         
         // Upload files if any were selected
@@ -206,7 +227,7 @@ export default function ScheduleMeetingDialog({
         console.error("Error adding attendees:", error);
         toast({
           title: "Meeting created, but attendee issue",
-          description: "The meeting was created but there was an issue adding attendees.",
+          description: "The meeting was created but there was an issue adding some attendees.",
           variant: "destructive",
         });
       }

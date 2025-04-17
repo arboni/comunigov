@@ -13,7 +13,14 @@ export function cn(...inputs: ClassValue[]) {
 export function reloadPage(delay: number = 0, path?: string): void {
   setTimeout(() => {
     if (path) {
-      window.location.href = path;
+      // Ensure we don't have double slashes in the URL
+      if (path.startsWith('/')) {
+        // Remove trailing slashes from base URL if present and add single slash to path
+        const baseUrl = window.location.origin.replace(/\/+$/, '');
+        window.location.href = `${baseUrl}${path}`;
+      } else {
+        window.location.href = path;
+      }
     } else {
       window.location.reload();
     }
