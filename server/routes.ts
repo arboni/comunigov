@@ -1460,8 +1460,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Fetch all communications for the time period
       let communicationsQuery = await db.select()
-        .from(storage.tables.communications)
-        .where(sql`created_at >= ${startDate.toISOString()}`);
+        .from(communications)
+        .where(sql`sent_at >= ${startDate.toISOString()}`);
         
       // If not a master implementer, filter by entity access
       if (userRole !== 'master_implementer') {
