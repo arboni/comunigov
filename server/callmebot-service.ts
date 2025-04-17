@@ -15,7 +15,7 @@ const CALLMEBOT_API_URL = 'https://api.callmebot.com/whatsapp.php';
 // CallMeBot API key - this should be stored in an environment variable in production
 // To get a new key, go to https://www.callmebot.com/activate.html
 // Create your own API key by sending a message to +34 644 66 01 95 with "create apikey"
-const CALLMEBOT_API_KEY = process.env.CALLMEBOT_API_KEY || '1234567';
+const CALLMEBOT_API_KEY = process.env.CALLMEBOT_API_KEY || '8339051';
 
 // Debug flag for verbose logging
 const CALLMEBOT_DEBUG = true;
