@@ -20,7 +20,18 @@ import {
   insertCommunicationSchema,
   insertCommunicationRecipientSchema,
   insertAchievementBadgeSchema,
-  insertUserBadgeSchema
+  insertUserBadgeSchema,
+  // Add table references for analytics 
+  users as usersTable,
+  entities as entitiesTable,
+  meetings as meetingsTable,
+  tasks as tasksTable,
+  subjects as subjectsTable,
+  communications as communicationsTable,
+  communicationRecipients as communicationRecipientsTable,
+  meetingAttendees as meetingAttendeesTable,
+  meetingDocuments as meetingDocumentsTable,
+  taskComments as taskCommentsTable
 } from "@shared/schema";
 
 // Middleware to check authentication
@@ -1768,24 +1779,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get all entities
-      const entities = await db.select().from(storage.tables.entities);
+      const allEntities = await db.select().from(entities);
       
       // Get all communications
-      const communications = await db.select()
-        .from(storage.tables.communications)
+      const allCommunications = await db.select()
+        .from(communications)
         .where(sql`sent_at >= ${startDate.toISOString()}`);
       
       // Get all communication recipients
       const communicationRecipients = await db.select()
-        .from(storage.tables.communicationRecipients);
+        .from(communicationRecipients);
       
       // Get all tasks
-      const tasks = await db.select()
-        .from(storage.tables.tasks)
+      const allTasks = await db.select()
+        .from(tasks)
         .where(sql`created_at >= ${startDate.toISOString()}`);
       
       // Calculate entity activity
-      const entityActivity = entities.map(entity => {
+      const entityActivity = allEntities.map(entity => {
         // Communication count (where this entity is a recipient)
         const entityComRecipients = communicationRecipients.filter(r => r.entityId === entity.id);
         const communicationCount = entityComRecipients.length;
