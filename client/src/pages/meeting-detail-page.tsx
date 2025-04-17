@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useMemo } from "react";
+import { MeetingReactions } from "@/components/meetings/meeting-reactions";
 
 export default function MeetingDetailPage() {
   const [, setLocation] = useLocation();
@@ -17,6 +18,11 @@ export default function MeetingDetailPage() {
   // Fetch meeting details
   const { data: meeting, isLoading } = useQuery({
     queryKey: [`/api/meetings/${id}`],
+  });
+  
+  // Fetch the current user
+  const { data: currentUser } = useQuery({
+    queryKey: ['/api/user'],
   });
 
   // Fetch meeting attendees
@@ -38,6 +44,12 @@ export default function MeetingDetailPage() {
   // Fetch meeting documents
   const { data: documents = [], isLoading: loadingDocuments } = useQuery({
     queryKey: [`/api/meetings/${id}/documents`],
+    enabled: !!id
+  });
+  
+  // Fetch meeting reactions
+  const { data: reactions = [], isLoading: loadingReactions } = useQuery({
+    queryKey: [`/api/meetings/${id}/reactions`],
     enabled: !!id
   });
   
@@ -391,6 +403,17 @@ export default function MeetingDetailPage() {
                       
                       {renderAttendees()}
                     </div>
+                    
+                    <Separator />
+                    
+                    {/* Meeting Reactions */}
+                    {currentUser && (
+                      <MeetingReactions 
+                        meetingId={parseInt(id)} 
+                        reactions={reactions || []} 
+                        currentUserId={currentUser.id} 
+                      />
+                    )}
                   </div>
                 </CardContent>
               </Card>
