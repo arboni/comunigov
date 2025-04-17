@@ -210,6 +210,7 @@ export const insertCommunicationRecipientSchema = createInsertSchema(communicati
 export const insertCommunicationFileSchema = createInsertSchema(communicationFiles).omit({ id: true, uploadedAt: true });
 export const insertAchievementBadgeSchema = createInsertSchema(achievementBadges).omit({ id: true, createdAt: true });
 export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({ id: true, earnedAt: true });
+export const insertUserActivityLogSchema = createInsertSchema(userActivityLogs).omit({ id: true, timestamp: true });
 
 // TypeScript types
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -254,6 +255,9 @@ export type AchievementBadge = typeof achievementBadges.$inferSelect;
 export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
 export type UserBadge = typeof userBadges.$inferSelect;
 
+export type InsertUserActivityLog = z.infer<typeof insertUserActivityLogSchema>;
+export type UserActivityLog = typeof userActivityLogs.$inferSelect;
+
 // Auth types
 export type LoginCredentials = {
   username: string;
@@ -277,6 +281,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   sentCommunications: many(communications),
   receivedCommunications: many(communicationRecipients),
   badges: many(userBadges),
+  activityLogs: many(userActivityLogs),
 }));
 
 export const entitiesRelations = relations(entities, ({ many }) => ({
@@ -422,6 +427,13 @@ export const userBadgesRelations = relations(userBadges, ({ one }) => ({
   badge: one(achievementBadges, {
     fields: [userBadges.badgeId],
     references: [achievementBadges.id],
+  }),
+}));
+
+export const userActivityLogsRelations = relations(userActivityLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [userActivityLogs.userId],
+    references: [users.id],
   }),
 }));
 

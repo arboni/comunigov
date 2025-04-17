@@ -155,8 +155,18 @@ export function setupAuth(app: Express) {
       if (err) return next(err);
       if (!user) return res.status(401).json({ message: info?.message || "Authentication failed" });
       
-      req.login(user, (loginErr) => {
+      req.login(user, async (loginErr) => {
         if (loginErr) return next(loginErr);
+        
+        // Log the login activity
+        try {
+          const ActivityLogger = (await import('./activity-logger')).ActivityLogger;
+          await ActivityLogger.logLogin(user.id, req);
+        } catch (logErr) {
+          console.error('Failed to log login activity:', logErr);
+          // Continue even if logging fails
+        }
+        
         // Remove password from response
         const { password, ...userWithoutPassword } = user;
         return res.status(200).json(userWithoutPassword);
@@ -164,11 +174,27 @@ export function setupAuth(app: Express) {
     })(req, res, next);
   });
 
-  app.post("/api/logout", (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      res.sendStatus(200);
-    });
+  app.post("/api/logout", async (req, res, next) => {
+    if (req.isAuthenticated()) {
+      // Store user ID before logging out for activity logging
+      const userId = req.user!.id;
+      
+      // Log the logout activity
+      try {
+        const ActivityLogger = (await import('./activity-logger')).ActivityLogger;
+        await ActivityLogger.logLogout(userId, req);
+      } catch (logErr) {
+        console.error('Failed to log logout activity:', logErr);
+        // Continue even if logging fails
+      }
+      
+      req.logout((err) => {
+        if (err) return next(err);
+        res.sendStatus(200);
+      });
+    } else {
+      res.sendStatus(200); // Already logged out
+    }
   });
 
   app.get("/api/user", (req, res) => {
