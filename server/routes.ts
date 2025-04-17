@@ -26,6 +26,7 @@ import {
   insertEntitySchema, 
   insertMeetingSchema, 
   insertMeetingAttendeeSchema,
+  insertMeetingReactionSchema,
   insertTaskSchema,
   insertSubjectSchema,
   insertCommunicationSchema,

@@ -8,7 +8,7 @@ export const userRoleEnum = pgEnum('user_role', ['master_implementer', 'entity_h
 export const entityTypeEnum = pgEnum('entity_type', ['secretariat', 'administrative_unit', 'external_entity', 'government_agency', 'association', 'council']);
 export const taskStatusEnum = pgEnum('task_status', ['pending', 'in_progress', 'completed', 'cancelled']);
 export const communicationChannelEnum = pgEnum('communication_channel', ['email', 'whatsapp', 'telegram', 'system_notification']);
-export const emojiTypeEnum = pgEnum('emoji_type', ['👍', '👎', '❤️', '🎉', '👀', '🙏', '😂', '🤔', '✅', '❌']);
+export const emojiTypeEnum = pgEnum('emoji_type', ['👍', '👎', '❤️', '🎉', '🤔', '😄', '😢', '👏']);
 export const userActionEnum = pgEnum('user_action', ['login', 'logout', 'view', 'create', 'update', 'delete', 'send', 'download', 'upload']);
 
 // Users table
