@@ -154,17 +154,17 @@ export default function CommunicationDetailPage() {
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
-                  <CardDescription className="flex items-center text-sm">
-                    <div className="flex items-center text-muted-foreground">
+                  <div className="flex items-center text-sm text-muted-foreground mb-2">
+                    <span className="flex items-center">
                       {getChannelIcon(communication.channel)}
                       {formatChannelName(communication.channel)}
-                    </div>
+                    </span>
                     <span className="mx-2">•</span>
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <span className="text-muted-foreground">{formattedDate}</span>
-                    </div>
-                  </CardDescription>
+                    <span className="flex items-center">
+                      <Clock className="h-4 w-4 mr-1" />
+                      {formattedDate}
+                    </span>
+                  </div>
                   <CardTitle className="mt-2 text-2xl font-bold">{communication.subject}</CardTitle>
                 </div>
               </div>
