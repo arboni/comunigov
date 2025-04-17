@@ -58,40 +58,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
       const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
       
-      let logs = [];
+      const filters: {
+        userId?: number;
+        action?: typeof userActionEnum.enumValues[number];
+        entityType?: string;
+        fromDate?: Date;
+        toDate?: Date;
+      } = {};
+      
+      // Parse query parameters
       if (req.query.userId) {
-        const userId = parseInt(req.query.userId as string);
-        logs = await db
-          .select()
-          .from(userActivityLogs)
-          .where(eq(userActivityLogs.userId, userId))
-          .orderBy(desc(userActivityLogs.timestamp))
-          .limit(limit)
-          .offset(offset);
-      } else if (req.query.action) {
-        logs = await db
-          .select()
-          .from(userActivityLogs)
-          .where(eq(userActivityLogs.action, req.query.action as string))
-          .orderBy(desc(userActivityLogs.timestamp))
-          .limit(limit)
-          .offset(offset);
-      } else if (req.query.entityType) {
-        logs = await db
-          .select()
-          .from(userActivityLogs)
-          .where(eq(userActivityLogs.entityType, req.query.entityType as string))
-          .orderBy(desc(userActivityLogs.timestamp))
-          .limit(limit)
-          .offset(offset);
-      } else {
-        logs = await db
-          .select()
-          .from(userActivityLogs)
-          .orderBy(desc(userActivityLogs.timestamp))
-          .limit(limit)
-          .offset(offset);
+        filters.userId = parseInt(req.query.userId as string);
       }
+      
+      if (req.query.action && userActionEnum.enumValues.includes(req.query.action as any)) {
+        filters.action = req.query.action as typeof userActionEnum.enumValues[number];
+      }
+      
+      if (req.query.entityType) {
+        filters.entityType = req.query.entityType as string;
+      }
+      
+      if (req.query.fromDate) {
+        filters.fromDate = new Date(req.query.fromDate as string);
+      }
+      
+      if (req.query.toDate) {
+        filters.toDate = new Date(req.query.toDate as string);
+      }
+      
+      // Use the enhanced ActivityLogger method to get logs with user details
+      const result = await ActivityLogger.getAllActivityLogs(limit, offset, filters);
+      
+      // Log the request for audit purposes
+      ActivityLogger.log(
+        req.user!.id,
+        'view',
+        'Viewed activity logs',
+        'activity_logs',
+        undefined,
+        req,
+        filters
+      );
+      
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Get activity logs for the authenticated user
+  app.get("/api/my-activity-logs", isAuthenticated, async (req, res, next) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+      
+      const filters: {
+        action?: typeof userActionEnum.enumValues[number];
+        entityType?: string;
+        fromDate?: Date;
+        toDate?: Date;
+      } = {};
+      
+      // Parse query parameters
+      if (req.query.action && userActionEnum.enumValues.includes(req.query.action as any)) {
+        filters.action = req.query.action as typeof userActionEnum.enumValues[number];
+      }
+      
+      if (req.query.entityType) {
+        filters.entityType = req.query.entityType as string;
+      }
+      
+      if (req.query.fromDate) {
+        filters.fromDate = new Date(req.query.fromDate as string);
+      }
+      
+      if (req.query.toDate) {
+        filters.toDate = new Date(req.query.toDate as string);
+      }
+      
+      // Use the enhanced ActivityLogger method to get logs for the current user
+      const result = await ActivityLogger.getUserActivityLogs(req.user!.id, limit, offset, filters);
+      
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Get activity logs for a specific entity
+  app.get("/api/entities/:id/activity-logs", isEntityHead, async (req, res, next) => {
+    try {
+      const entityId = parseInt(req.params.id);
+      
+      // Entity heads can only view logs for their own entity
+      if (req.user!.role === 'entity_head' && req.user!.entityId !== entityId) {
+        return res.status(403).json({ message: 'Forbidden: You can only view logs for your own entity' });
+      }
+      
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+      
+      // Get users in the entity
+      const entityUsers = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.entityId, entityId));
+      
+      const userIds = entityUsers.map(user => user.id);
+      
+      // No users found in the entity
+      if (userIds.length === 0) {
+        return res.json({
+          logs: [],
+          pagination: {
+            total: 0,
+            limit,
+            offset,
+            hasMore: false
+          }
+        });
+      }
+      
+      // Get logs for all users in the entity
+      const logs = await db
+        .select()
+        .from(userActivityLogs)
+        .where(sql`user_id IN (${userIds.join(',')})`)
+        .orderBy(desc(userActivityLogs.timestamp))
+        .limit(limit)
+        .offset(offset);
+      
+      // Get total count
+      const countResult = await db
+        .select({ count: sql`count(*)` })
+        .from(userActivityLogs)
+        .where(sql`user_id IN (${userIds.join(',')})`);
+      
+      const total = Number(countResult[0].count);
       
       // Get user details for each log
       const logsWithUserDetails = await Promise.all(
@@ -109,27 +213,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       );
       
-      res.json(logsWithUserDetails);
-    } catch (error) {
-      next(error);
-    }
-  });
-  
-  // Get activity logs for the authenticated user
-  app.get("/api/my-activity-logs", isAuthenticated, async (req, res, next) => {
-    try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
-      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+      // Log the request for audit purposes
+      ActivityLogger.log(
+        req.user!.id,
+        'view',
+        `Viewed activity logs for entity ${entityId}`,
+        'entity_logs',
+        entityId,
+        req
+      );
       
-      const logs = await db
-        .select()
-        .from(userActivityLogs)
-        .where(eq(userActivityLogs.userId, req.user!.id))
-        .orderBy(desc(userActivityLogs.timestamp))
-        .limit(limit)
-        .offset(offset);
-      
-      res.json(logs);
+      res.json({
+        logs: logsWithUserDetails,
+        pagination: {
+          total,
+          limit,
+          offset,
+          hasMore: offset + logs.length < total
+        }
+      });
     } catch (error) {
       next(error);
     }
@@ -2045,6 +2147,181 @@ export async function registerRoutes(app: Express): Promise<Server> {
         communicationRecipients: communicationRecipientsCount,
         communicationFiles: communicationFilesCount,
         timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Analytics endpoints
+  app.get("/api/analytics/activity", hasAnalyticsAccess, async (req, res, next) => {
+    try {
+      // Get activity data for the last 30 days by default
+      const days = req.query.days ? parseInt(req.query.days as string) : 30;
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      
+      // Get overall activity count by day
+      const activityByDay = await db.select({
+        date: sql`date_trunc('day', timestamp)`,
+        count: sql`count(*)`
+      })
+      .from(userActivityLogs)
+      .where(sql`timestamp >= ${startDate.toISOString()}`)
+      .groupBy(sql`date_trunc('day', timestamp)`)
+      .orderBy(sql`date_trunc('day', timestamp)`);
+      
+      // Get activity by type
+      const activityByType = await db.select({
+        action: userActivityLogs.action,
+        count: sql`count(*)`
+      })
+      .from(userActivityLogs)
+      .where(sql`timestamp >= ${startDate.toISOString()}`)
+      .groupBy(userActivityLogs.action)
+      .orderBy(sql`count(*)`, 'desc');
+      
+      // Get activity by user (top 10 most active users)
+      const activityByUser = await db.select({
+        userId: userActivityLogs.userId,
+        count: sql`count(*)`
+      })
+      .from(userActivityLogs)
+      .where(sql`timestamp >= ${startDate.toISOString()}`)
+      .groupBy(userActivityLogs.userId)
+      .orderBy(sql`count(*)`, 'desc')
+      .limit(10);
+      
+      // Get user details for the top users
+      const usersWithDetails = await Promise.all(
+        activityByUser.map(async (item) => {
+          const user = await storage.getUser(item.userId);
+          return {
+            userId: item.userId,
+            count: item.count,
+            username: user?.username,
+            fullName: user?.fullName,
+            role: user?.role
+          };
+        })
+      );
+      
+      // Get activity by entity type
+      const activityByEntityType = await db.select({
+        entityType: userActivityLogs.entityType,
+        count: sql`count(*)`
+      })
+      .from(userActivityLogs)
+      .where(sql`timestamp >= ${startDate.toISOString()}`)
+      .groupBy(userActivityLogs.entityType)
+      .orderBy(sql`count(*)`, 'desc');
+      
+      // Entity-specific analytics for entity heads
+      let entitySpecificData = null;
+      if (req.user?.role === 'entity_head' && req.user?.entityId) {
+        // Get users in the entity
+        const entityUsers = await db
+          .select()
+          .from(usersTable)
+          .where(eq(usersTable.entityId, req.user.entityId));
+        
+        const userIds = entityUsers.map(user => user.id);
+        
+        if (userIds.length > 0) {
+          // Get activity count by user within the entity
+          const entityActivityByUser = await db.select({
+            userId: userActivityLogs.userId,
+            count: sql`count(*)`
+          })
+          .from(userActivityLogs)
+          .where(sql`user_id IN (${userIds.join(',')})`)
+          .andWhere(sql`timestamp >= ${startDate.toISOString()}`)
+          .groupBy(userActivityLogs.userId)
+          .orderBy(sql`count(*)`, 'desc');
+          
+          // Get user details for the entity users
+          const entityUsersWithDetails = await Promise.all(
+            entityActivityByUser.map(async (item) => {
+              const user = await storage.getUser(item.userId);
+              return {
+                userId: item.userId,
+                count: item.count,
+                username: user?.username,
+                fullName: user?.fullName,
+                role: user?.role
+              };
+            })
+          );
+          
+          entitySpecificData = {
+            entityId: req.user.entityId,
+            userActivity: entityUsersWithDetails
+          };
+        }
+      }
+      
+      res.json({
+        activityByDay,
+        activityByType,
+        activityByUser: usersWithDetails,
+        activityByEntityType,
+        entitySpecificData,
+        period: {
+          days,
+          startDate,
+          endDate: new Date()
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/analytics/communication-channels", hasAnalyticsAccess, async (req, res, next) => {
+    try {
+      // Get channel distribution analytics
+      const channelDistribution = await db.select({
+        channel: communicationsTable.channel,
+        count: sql`count(*)`
+      })
+      .from(communicationsTable)
+      .groupBy(communicationsTable.channel)
+      .orderBy(sql`count(*)`, 'desc');
+      
+      // Get success rate by channel
+      const successByChannel = await db.select({
+        channel: communicationsTable.channel,
+        success: sql`SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END)`,
+        total: sql`count(*)`,
+        rate: sql`CAST(SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) AS FLOAT) / count(*)`
+      })
+      .from(communicationsTable)
+      .groupBy(communicationsTable.channel)
+      .orderBy(communicationsTable.channel);
+      
+      // Get communication trends over time
+      const days = req.query.days ? parseInt(req.query.days as string) : 30;
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      
+      const communicationTrends = await db.select({
+        date: sql`date_trunc('day', sent_at)`,
+        count: sql`count(*)`
+      })
+      .from(communicationsTable)
+      .where(sql`sent_at >= ${startDate.toISOString()}`)
+      .groupBy(sql`date_trunc('day', sent_at)`)
+      .orderBy(sql`date_trunc('day', sent_at)`);
+      
+      res.json({
+        channelDistribution,
+        successByChannel,
+        communicationTrends,
+        period: {
+          days,
+          startDate,
+          endDate: new Date()
+        }
       });
     } catch (error) {
       next(error);
