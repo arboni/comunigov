@@ -85,7 +85,7 @@ export interface IStorage {
   
   // Meeting Reactions
   getMeetingReaction(id: number): Promise<MeetingReaction | undefined>;
-  getMeetingReactionByMeetingAndUser(meetingId: number, userId: number, emojiType: string): Promise<MeetingReaction | undefined>;
+  getMeetingReactionByMeetingAndUser(meetingId: number, userId: number, emoji: string): Promise<MeetingReaction | undefined>;
   createMeetingReaction(reaction: InsertMeetingReaction): Promise<MeetingReaction>;
   deleteMeetingReaction(id: number): Promise<boolean>;
   getMeetingReactionsByMeetingId(meetingId: number): Promise<MeetingReaction[]>;
@@ -497,12 +497,12 @@ export class MemStorage implements IStorage {
     return this.meetingReactions.get(id);
   }
 
-  async getMeetingReactionByMeetingAndUser(meetingId: number, userId: number, emojiType: string): Promise<MeetingReaction | undefined> {
+  async getMeetingReactionByMeetingAndUser(meetingId: number, userId: number, emoji: string): Promise<MeetingReaction | undefined> {
     return Array.from(this.meetingReactions.values()).find(
       (reaction) => 
         reaction.meetingId === meetingId && 
         reaction.userId === userId && 
-        reaction.emojiType === emojiType
+        reaction.emoji === emoji
     );
   }
 
@@ -1180,7 +1180,7 @@ export class DatabaseStorage implements IStorage {
     return reaction || undefined;
   }
 
-  async getMeetingReactionByMeetingAndUser(meetingId: number, userId: number, emojiType: string): Promise<MeetingReaction | undefined> {
+  async getMeetingReactionByMeetingAndUser(meetingId: number, userId: number, emoji: string): Promise<MeetingReaction | undefined> {
     const [reaction] = await db
       .select()
       .from(meetingReactions)
@@ -1188,7 +1188,7 @@ export class DatabaseStorage implements IStorage {
         and(
           eq(meetingReactions.meetingId, meetingId),
           eq(meetingReactions.userId, userId),
-          eq(meetingReactions.emojiType, emojiType)
+          eq(meetingReactions.emoji, emoji)
         )
       );
     return reaction || undefined;
