@@ -1519,15 +1519,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Fetch meetings for the time period
       let meetingsQuery = await db.select()
-        .from(storage.tables.meetings)
+        .from(meetingsTable)
         .where(sql`created_at >= ${startDate.toISOString()}`);
         
       // If not a master implementer, filter by access
       if (userRole !== 'master_implementer') {
         // Get meetings where user is an attendee
         const userAttendance = await db.select()
-          .from(storage.tables.meetingAttendees)
-          .where(eq(storage.tables.meetingAttendees.userId, userId));
+          .from(meetingAttendeesTable)
+          .where(eq(meetingAttendeesTable.userId, userId));
         
         const userMeetingIds = userAttendance.map(a => a.meetingId);
         meetingsQuery = meetingsQuery.filter(m => 
@@ -1640,7 +1640,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // 2. Average meeting attendance
       const meetingAttendees = await db.select()
-        .from(storage.tables.meetingAttendees);
+        .from(meetingAttendeesTable);
       
       const meetingsWithAttendees = meetingsQuery.map(meeting => {
         const attendees = meetingAttendees.filter(a => a.meetingId === meeting.id);
@@ -1713,7 +1713,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate communication insights
       // Get all communication recipients
       const communicationRecipients = await db.select()
-        .from(storage.tables.communicationRecipients);
+        .from(communicationRecipientsTable);
       
       const totalRecipients = communicationRecipients.length;
       const readRecipients = communicationRecipients.filter(r => r.read === true).length;
