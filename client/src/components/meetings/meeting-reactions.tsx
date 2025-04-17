@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { Loader2, ThumbsUp, ThumbsDown, Heart, Party, Eye, ThumbsUp as PrayHands, Smile, Frown, HandClap } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface MeetingReaction {
   id: number;
@@ -25,7 +27,20 @@ interface MeetingReactionsProps {
   currentUserId: number;
 }
 
+// Available emojis matched with our schema
 const AVAILABLE_EMOJIS = ['👍', '👎', '❤️', '🎉', '🤔', '😄', '😢', '👏'];
+
+// Emoji descriptions for tooltips
+const EMOJI_DESCRIPTIONS: Record<string, string> = {
+  '👍': 'Thumbs Up',
+  '👎': 'Thumbs Down',
+  '❤️': 'Love',
+  '🎉': 'Celebration',
+  '🤔': 'Thinking',
+  '😄': 'Happy',
+  '😢': 'Sad',
+  '👏': 'Applause'
+};
 
 export function MeetingReactions({ meetingId, reactions, currentUserId }: MeetingReactionsProps) {
   const { toast } = useToast();
@@ -45,17 +60,12 @@ export function MeetingReactions({ meetingId, reactions, currentUserId }: Meetin
   // Mutation to add reaction
   const addReaction = useMutation({
     mutationFn: async (emoji: string) => {
-      const result = await apiRequest('POST', `/api/meetings/${meetingId}/reactions`, {
+      return await apiRequest('POST', `/api/meetings/${meetingId}/reactions`, {
         emoji
       });
-      return await result.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/meetings/${meetingId}`] });
-      toast({
-        title: 'Reaction added',
-        description: 'Your reaction has been added to the meeting',
-      });
+      queryClient.invalidateQueries({ queryKey: [`/api/meetings/${meetingId}/reactions`] });
     },
     onError: (error) => {
       toast({
@@ -69,20 +79,11 @@ export function MeetingReactions({ meetingId, reactions, currentUserId }: Meetin
 
   // Mutation to remove reaction
   const removeReaction = useMutation({
-    mutationFn: async (emoji: string) => {
-      // Find the reaction ID for this user and emoji
-      const reaction = reactions.find(r => r.userId === currentUserId && r.emoji === emoji);
-      if (!reaction) return;
-
-      const result = await apiRequest('DELETE', `/api/meetings/${meetingId}/reactions/${reaction.id}`);
-      return await result.json();
+    mutationFn: async (reactionId: number) => {
+      return await apiRequest('DELETE', `/api/meetings/${meetingId}/reactions/${reactionId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/meetings/${meetingId}`] });
-      toast({
-        title: 'Reaction removed',
-        description: 'Your reaction has been removed from the meeting',
-      });
+      queryClient.invalidateQueries({ queryKey: [`/api/meetings/${meetingId}/reactions`] });
     },
     onError: (error) => {
       toast({
@@ -97,31 +98,53 @@ export function MeetingReactions({ meetingId, reactions, currentUserId }: Meetin
   // Handle reaction click
   const handleReaction = (emoji: string) => {
     if (userReactions.includes(emoji)) {
-      removeReaction.mutate(emoji);
+      const reaction = reactions.find(r => r.userId === currentUserId && r.emoji === emoji);
+      if (reaction) {
+        removeReaction.mutate(reaction.id);
+      }
     } else {
       addReaction.mutate(emoji);
     }
   };
 
+  const isPending = addReaction.isPending || removeReaction.isPending;
+
   return (
     <div className="mt-6 bg-muted/30 rounded-lg p-4">
       <div className="flex flex-col">
-        <h3 className="text-lg font-semibold mb-2">Reactions</h3>
+        <h3 className="text-lg font-semibold mb-2">Meeting Reactions</h3>
         
         <div className="flex flex-wrap gap-2 mb-3">
           {/* Show existing reactions with counts */}
-          {Object.entries(reactionCounts).map(([emoji, count]) => (
-            <Button
-              key={emoji}
-              variant={userReactions.includes(emoji) ? "default" : "outline"}
-              size="sm"
-              className="gap-1"
-              onClick={() => handleReaction(emoji)}
-            >
-              <span>{emoji}</span>
-              <span className="text-xs">{count}</span>
-            </Button>
-          ))}
+          {Object.entries(reactionCounts).length > 0 ? (
+            <TooltipProvider>
+              {Object.entries(reactionCounts).map(([emoji, count]) => (
+                <Tooltip key={emoji}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={userReactions.includes(emoji) ? "default" : "outline"}
+                      size="sm"
+                      className="gap-1"
+                      onClick={() => !isPending && handleReaction(emoji)}
+                      disabled={isPending}
+                    >
+                      {isPending && userReactions.includes(emoji) ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <span>{emoji}</span>
+                      )}
+                      <span className="text-xs ml-1">{count}</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{EMOJI_DESCRIPTIONS[emoji] || emoji}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </TooltipProvider>
+          ) : (
+            <p className="text-sm text-muted-foreground">No reactions yet. Be the first to react!</p>
+          )}
         </div>
         
         {/* Toggle showing all emoji options */}
@@ -137,16 +160,31 @@ export function MeetingReactions({ meetingId, reactions, currentUserId }: Meetin
         {/* Show all available emojis when expanded */}
         {isExpanded && (
           <div className="flex flex-wrap gap-2 mt-2">
-            {AVAILABLE_EMOJIS.map((emoji) => (
-              <Button
-                key={emoji}
-                variant={userReactions.includes(emoji) ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleReaction(emoji)}
-              >
-                {emoji}
-              </Button>
-            ))}
+            <TooltipProvider>
+              {AVAILABLE_EMOJIS.map((emoji) => (
+                <Tooltip key={emoji}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      key={emoji}
+                      variant={userReactions.includes(emoji) ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => !isPending && handleReaction(emoji)}
+                      disabled={isPending}
+                      className={userReactions.includes(emoji) ? "bg-primary/10 hover:bg-primary/20" : ""}
+                    >
+                      {isPending && userReactions.includes(emoji) ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <span>{emoji}</span>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{EMOJI_DESCRIPTIONS[emoji] || emoji}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </TooltipProvider>
           </div>
         )}
       </div>

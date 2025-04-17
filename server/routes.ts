@@ -736,7 +736,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emoji
       });
       
+      // Log user activity
+      ActivityLogger.log(
+        userId,
+        'create',
+        `Added reaction to meeting with ID ${id}`,
+        'meeting_reaction',
+        id,
+        req
+      );
+      
       res.status(201).json(newReaction);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Delete a reaction by ID
+  app.delete("/api/meetings/:meetingId/reactions/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const meetingId = parseInt(req.params.meetingId);
+      const reactionId = parseInt(req.params.id);
+      
+      if (isNaN(meetingId) || isNaN(reactionId)) {
+        return res.status(400).json({ message: "Invalid IDs provided" });
+      }
+      
+      // Check if the reaction exists
+      const reaction = await storage.getMeetingReaction(reactionId);
+      
+      if (!reaction) {
+        return res.status(404).json({ message: "Reaction not found" });
+      }
+      
+      // Verify that the reaction belongs to the specified meeting
+      if (reaction.meetingId !== meetingId) {
+        return res.status(400).json({ message: "Reaction does not belong to the specified meeting" });
+      }
+      
+      // Check if the user owns the reaction or is a master implementer
+      if (reaction.userId !== req.user!.id && req.user!.role !== 'master_implementer') {
+        return res.status(403).json({ message: "You can only delete your own reactions" });
+      }
+      
+      const deleted = await storage.deleteMeetingReaction(reactionId);
+      
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete reaction" });
+      }
+      
+      // Log user activity
+      ActivityLogger.log(
+        req.user!.id,
+        'delete',
+        `Removed reaction from meeting with ID ${meetingId}`,
+        'meeting_reaction',
+        meetingId,
+        req
+      );
+      
+      res.status(200).json({ message: "Reaction deleted successfully" });
     } catch (error) {
       next(error);
     }

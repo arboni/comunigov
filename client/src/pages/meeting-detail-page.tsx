@@ -50,7 +50,8 @@ export default function MeetingDetailPage() {
   // Fetch meeting reactions
   const { data: reactions = [], isLoading: loadingReactions } = useQuery({
     queryKey: [`/api/meetings/${id}/reactions`],
-    enabled: !!id
+    enabled: !!id,
+    refetchInterval: 10000 // Refresh reactions every 10 seconds
   });
   
   // Create a lookup map for user information
