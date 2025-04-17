@@ -1,5 +1,18 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+
+// Helper function to format a phone number for WhatsApp
+function formatWhatsAppNumber(phone: string): string {
+  // Strip any non-digit characters except the + sign
+  let formatted = phone.replace(/[^0-9+]/g, '');
+  
+  // Ensure it starts with a +
+  if (!formatted.startsWith('+')) {
+    formatted = '+' + formatted;
+  }
+  
+  return formatted;
+}
 import { useParams, Link, useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -24,7 +37,11 @@ const userFormSchema = z.object({
     message: "Please enter a valid email address.",
   }),
   phone: z.string().optional(),
-  whatsapp: z.string().optional(),
+  whatsapp: z.string().optional()
+    .refine(
+      (val) => !val || /^\+?[0-9]{10,15}$/.test(val.replace(/[^0-9+]/g, '')),
+      { message: "Please enter a valid WhatsApp number with country code (e.g., +551199999999)" }
+    ),
   telegram: z.string().optional(),
   position: z.string().optional(),
   role: z.string(),
@@ -48,6 +65,11 @@ export default function UserEditPage() {
   // Fetch all entities for the dropdown
   const { data: entities = [] } = useQuery({
     queryKey: ['/api/entities'],
+  });
+  
+  // Fetch Twilio WhatsApp number to show in instructions
+  const { data: twilioData } = useQuery({
+    queryKey: ['/api/twilio-whatsapp-number'],
   });
   
   // Create form
@@ -124,7 +146,12 @@ export default function UserEditPage() {
   });
   
   function onSubmit(data: UserFormValues) {
-    updateUserMutation.mutate(data);
+    // Format WhatsApp number properly before submitting
+    const formattedData = {
+      ...data,
+      whatsapp: data.whatsapp ? formatWhatsAppNumber(data.whatsapp) : data.whatsapp
+    };
+    updateUserMutation.mutate(formattedData);
   }
 
   if (isLoading) {
@@ -258,7 +285,12 @@ export default function UserEditPage() {
                         <FormDescription>
                           Enter your WhatsApp number with country code (e.g., +551199999999). 
                           Before receiving WhatsApp messages, you'll need to join the Twilio sandbox by 
-                          sending a WhatsApp message with the code <strong>join [sandbox-code]</strong> to the platform's WhatsApp number.
+                          sending a WhatsApp message with the code <strong>join <span className="font-mono">forgotten-clock</span></strong> to 
+                          {twilioData?.number ? (
+                            <span className="font-semibold"> {twilioData.number}</span>
+                          ) : (
+                            <span> the platform's WhatsApp number</span>
+                          )}.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

@@ -58,6 +58,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Sets up /api/register, /api/login, /api/logout, /api/user
   setupAuth(app);
   
+  // Return the Twilio WhatsApp number for frontend display (no sensitive info)
+  app.get("/api/twilio-whatsapp-number", (req, res) => {
+    const number = process.env.TWILIO_WHATSAPP_NUMBER || null;
+    res.json({ number });
+  });
+  
   // User Activity Logs Endpoints
   app.get("/api/activity-logs", isMasterImplementer, async (req, res, next) => {
     try {
