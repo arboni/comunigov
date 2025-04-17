@@ -828,11 +828,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Adding ${req.body.attendees.length} attendees to meeting ${meeting.id}`);
         
         const attendeePromises = req.body.attendees.map(async (attendeeData) => {
+          // Check if attendeeData is a simple ID or an object with userId
+          const userId = typeof attendeeData === 'number' 
+            ? attendeeData 
+            : (attendeeData.userId || attendeeData.id);
+            
+          if (!userId) {
+            console.error('Invalid attendee data, missing userId:', attendeeData);
+            return null;
+          }
+          
           const attendee = await storage.createMeetingAttendee({
             meetingId: meeting.id,
-            userId: attendeeData.userId,
-            confirmed: attendeeData.confirmed || false,
-            role: attendeeData.role || 'attendee'
+            userId: userId,
+            confirmed: typeof attendeeData === 'object' ? (attendeeData.confirmed || false) : false
           });
           return attendee;
         });
@@ -847,13 +856,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           // First, fetch the full user details for each attendee
           const attendeesWithUsers = await Promise.all(
-            attendees.map(async (attendee) => {
-              if (attendee.userId) {
-                const user = await storage.getUser(attendee.userId);
-                return { ...attendee, user };
-              }
-              return attendee;
-            })
+            attendees
+              .filter(attendee => attendee !== null) // Filter out null attendees
+              .map(async (attendee) => {
+                if (attendee && attendee.userId) {
+                  const user = await storage.getUser(attendee.userId);
+                  return { ...attendee, user };
+                }
+                return attendee;
+              })
           );
           
           // Send the invitations
