@@ -273,6 +273,14 @@ export default function UserEditPage() {
                     )}
                   />
                   
+                  {/* WhatsApp Setup Guide */}
+                  {twilioData?.number && (
+                    <WhatsAppSetupGuide 
+                      twilioNumber={twilioData.number} 
+                      joinCode="forgotten-clock" 
+                    />
+                  )}
+                  
                   <FormField
                     control={form.control}
                     name="whatsapp"
@@ -283,14 +291,8 @@ export default function UserEditPage() {
                           <Input placeholder="Ex: +551199999999" {...field} />
                         </FormControl>
                         <FormDescription>
-                          Enter your WhatsApp number with country code (e.g., +551199999999). 
-                          Before receiving WhatsApp messages, you'll need to join the Twilio sandbox by 
-                          sending a WhatsApp message with the code <strong>join <span className="font-mono">forgotten-clock</span></strong> to 
-                          {twilioData?.number ? (
-                            <span className="font-semibold"> {twilioData.number}</span>
-                          ) : (
-                            <span> the platform's WhatsApp number</span>
-                          )}.
+                          Enter your WhatsApp number with country code (e.g., +551199999999).
+                          Your number will be automatically formatted to the required international format.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
