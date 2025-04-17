@@ -523,17 +523,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const userId = req.user!.id;
-      const { emojiType } = req.body;
+      const { emoji } = req.body;
       
-      if (!emojiType) {
-        return res.status(400).json({ message: "emojiType is required" });
+      if (!emoji) {
+        return res.status(400).json({ message: "emoji is required" });
       }
       
       // Check if the user already reacted with this emoji
       const existingReaction = await storage.getMeetingReactionByMeetingAndUser(
         id,
         userId,
-        emojiType
+        emoji
       );
       
       if (existingReaction) {
@@ -546,7 +546,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newReaction = await storage.createMeetingReaction({
         meetingId: id,
         userId,
-        emojiType
+        emoji
       });
       
       res.status(201).json(newReaction);
