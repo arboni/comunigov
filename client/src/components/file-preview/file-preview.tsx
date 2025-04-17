@@ -168,6 +168,7 @@ export default function FilePreview({ fileId, fileName, fileType }: FilePreviewP
                   transformOrigin: 'center center',
                   transition: 'transform 0.2s ease',
                 }}
+                sandbox="allow-same-origin allow-scripts"
                 onLoad={() => setIsLoading(false)}
                 onError={() => {
                   setError("Failed to load PDF. The file may be corrupted or not accessible.");
