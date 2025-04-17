@@ -370,3 +370,294 @@ export function hasAnalyticsAccess(req: Request, res: Response, next: NextFuncti
 
   next();
 }
+
+/**
+ * Middleware to check if a user has access to a specific communication
+ */
+export async function hasCommunicationAccess(req: Request, res: Response, next: NextFunction) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  const communicationId = parseInt(req.params.communicationId || req.body.communicationId);
+  
+  if (isNaN(communicationId)) {
+    return res.status(400).json({ message: 'Invalid communication ID' });
+  }
+
+  // Master implementers have access to all communications
+  if (req.user?.role === 'master_implementer') {
+    return next();
+  }
+
+  // Check if user created the communication
+  const communication = await db.query.communications.findFirst({
+    where: (communications, { and, eq }) => 
+      and(
+        eq(communications.id, communicationId),
+        eq(communications.createdBy, req.user!.id)
+      )
+  });
+  
+  if (communication) {
+    return next();
+  }
+
+  // Entity heads can access all communications from their entity
+  if (req.user?.role === 'entity_head' && req.user?.entityId) {
+    const entityCommunication = await db.query.communications.findFirst({
+      where: (communications, { and, eq }) => 
+        and(
+          eq(communications.id, communicationId),
+          eq(users.id, communications.createdBy),
+          eq(users.entityId, req.user!.entityId!)
+        ),
+      with: {
+        creator: true
+      }
+    });
+    
+    if (entityCommunication) {
+      return next();
+    }
+  }
+
+  // Check if user is a recipient of the communication
+  const isRecipient = await db.query.communicationRecipients.findFirst({
+    where: (recipients, { and, eq }) => 
+      and(
+        eq(recipients.communicationId, communicationId),
+        eq(recipients.userId, req.user!.id)
+      )
+  });
+
+  if (isRecipient) {
+    return next();
+  }
+
+  // Check if user's entity is a recipient of the communication
+  if (req.user?.entityId) {
+    const isEntityRecipient = await db.query.communicationRecipients.findFirst({
+      where: (recipients, { and, eq, isNull }) => 
+        and(
+          eq(recipients.communicationId, communicationId),
+          isNull(recipients.userId),
+          eq(recipients.entityId, req.user!.entityId)
+        )
+    });
+
+    if (isEntityRecipient) {
+      return next();
+    }
+  }
+
+  ActivityLogger.log(
+    req.user!.id,
+    'view',
+    `Access denied to communication ${communicationId}`,
+    'communication',
+    communicationId,
+    req
+  );
+  
+  return res.status(403).json({ message: 'You do not have access to this communication' });
+}
+
+/**
+ * Middleware to check if a user has access to communication files
+ * This applies to both viewing and managing files
+ */
+export async function hasCommunicationFileAccess(req: Request, res: Response, next: NextFunction) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  const fileId = parseInt(req.params.fileId);
+  if (isNaN(fileId)) {
+    return res.status(400).json({ message: 'Invalid file ID' });
+  }
+
+  // Master implementers can access any file
+  if (req.user?.role === 'master_implementer') {
+    return next();
+  }
+
+  // Get the file and associated communication
+  const file = await db.query.communicationFiles.findFirst({
+    where: (files, { eq }) => eq(files.id, fileId),
+    with: {
+      communication: {
+        with: {
+          creator: true
+        }
+      }
+    }
+  });
+
+  if (!file) {
+    return res.status(404).json({ message: 'File not found' });
+  }
+
+  // File creator can always access their own files
+  if (file.communication.createdBy === req.user!.id) {
+    return next();
+  }
+
+  // Entity heads can access files created by users in their entity
+  if (req.user?.role === 'entity_head' && 
+      req.user?.entityId === file.communication.creator.entityId) {
+    return next();
+  }
+
+  // Check if user is a recipient of the communication
+  const isRecipient = await db.query.communicationRecipients.findFirst({
+    where: (recipients, { and, eq }) => 
+      and(
+        eq(recipients.communicationId, file.communicationId),
+        eq(recipients.userId, req.user!.id)
+      )
+  });
+
+  if (isRecipient) {
+    return next();
+  }
+
+  // Check if user's entity is a recipient of the communication
+  if (req.user?.entityId) {
+    const isEntityRecipient = await db.query.communicationRecipients.findFirst({
+      where: (recipients, { and, eq, isNull }) => 
+        and(
+          eq(recipients.communicationId, file.communicationId),
+          isNull(recipients.userId),
+          eq(recipients.entityId, req.user!.entityId)
+        )
+    });
+
+    if (isEntityRecipient) {
+      return next();
+    }
+  }
+
+  ActivityLogger.log(
+    req.user!.id,
+    'view',
+    `Access denied to communication file ${fileId}`,
+    'communication_file',
+    fileId,
+    req,
+    { communicationId: file.communicationId }
+  );
+  
+  return res.status(403).json({ message: 'You do not have access to this file' });
+}
+
+export async function hasCommunicationSendPermission(req: Request, res: Response, next: NextFunction) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  // Master implementers and entity heads can send to anyone
+  if (req.user?.role === 'master_implementer' || req.user?.role === 'entity_head') {
+    return next();
+  }
+
+  // Entity members can only send communications to users in their entity or related entities
+  const recipientIds = req.body.recipientIds || [];
+  const entityIds = req.body.entityIds || [];
+
+  // If sending to entities, check if all specified entities are related to user's entity
+  if (entityIds.length > 0 && req.user?.entityId) {
+    const userEntity = await db.query.entities.findFirst({
+      where: (entities, { eq }) => eq(entities.id, req.user!.entityId!)
+    });
+
+    if (!userEntity) {
+      ActivityLogger.log(
+        req.user!.id,
+        'send',
+        'Failed to send communication: user has no entity',
+        'communication',
+        undefined,
+        req
+      );
+      return res.status(403).json({ message: 'You must belong to an entity to send communications' });
+    }
+
+    // Check if any specified entity is not related to user's entity
+    for (const entityId of entityIds) {
+      const entity = await db.query.entities.findFirst({
+        where: (entities, { eq }) => eq(entities.id, entityId)
+      });
+
+      if (!entity) {
+        ActivityLogger.log(
+          req.user!.id,
+          'send',
+          `Failed to send communication: entity ${entityId} not found`,
+          'communication',
+          undefined,
+          req,
+          { entityId }
+        );
+        return res.status(404).json({ message: `Entity with ID ${entityId} not found` });
+      }
+
+      // Check if entity is related to user's entity
+      // For now, considering valid cases: same entity or entity has relationship field
+      // This could be expanded with more complex relationship rules
+      if (entity.id !== req.user.entityId && !entity.relatedEntityIds?.includes(req.user.entityId)) {
+        ActivityLogger.log(
+          req.user!.id,
+          'send',
+          `Access denied to send communication to entity ${entityId}`,
+          'communication',
+          undefined,
+          req,
+          { entityId, userEntityId: req.user.entityId }
+        );
+        return res.status(403).json({ 
+          message: 'You can only send communications to your entity or related entities'
+        });
+      }
+    }
+  }
+
+  // If sending to specific users, check if all recipients are in user's entity
+  if (recipientIds.length > 0 && req.user?.entityId) {
+    for (const recipientId of recipientIds) {
+      const recipient = await db.query.users.findFirst({
+        where: (users, { eq }) => eq(users.id, recipientId)
+      });
+
+      if (!recipient) {
+        ActivityLogger.log(
+          req.user!.id,
+          'send',
+          `Failed to send communication: user ${recipientId} not found`,
+          'communication',
+          undefined,
+          req,
+          { recipientId }
+        );
+        return res.status(404).json({ message: `User with ID ${recipientId} not found` });
+      }
+
+      if (recipient.entityId !== req.user.entityId) {
+        ActivityLogger.log(
+          req.user!.id,
+          'send',
+          `Access denied to send communication to user ${recipientId} in different entity`,
+          'communication',
+          undefined,
+          req,
+          { recipientId, recipientEntityId: recipient.entityId, userEntityId: req.user.entityId }
+        );
+        return res.status(403).json({ 
+          message: 'You can only send communications to users in your entity'
+        });
+      }
+    }
+  }
+
+  next();
+}
