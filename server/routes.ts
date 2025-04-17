@@ -820,7 +820,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: req.user.id
       });
       
+      // Create the meeting
       const meeting = await storage.createMeeting(validatedData);
+      
+      // If attendees were provided in the request, add them to the meeting
+      if (req.body.attendees && Array.isArray(req.body.attendees) && req.body.attendees.length > 0) {
+        console.log(`Adding ${req.body.attendees.length} attendees to meeting ${meeting.id}`);
+        
+        const attendeePromises = req.body.attendees.map(async (attendeeData) => {
+          const attendee = await storage.createMeetingAttendee({
+            meetingId: meeting.id,
+            userId: attendeeData.userId,
+            confirmed: attendeeData.confirmed || false,
+            role: attendeeData.role || 'attendee'
+          });
+          return attendee;
+        });
+        
+        const attendees = await Promise.all(attendeePromises);
+        
+        // Get the organizer name
+        const organizer = await storage.getUser(req.user.id);
+        const organizerName = organizer ? (organizer.fullName || organizer.username) : 'Meeting Organizer';
+        
+        // Send invitation emails to all attendees
+        try {
+          // First, fetch the full user details for each attendee
+          const attendeesWithUsers = await Promise.all(
+            attendees.map(async (attendee) => {
+              if (attendee.userId) {
+                const user = await storage.getUser(attendee.userId);
+                return { ...attendee, user };
+              }
+              return attendee;
+            })
+          );
+          
+          // Send the invitations
+          const emailResult = await sendMeetingInvitationsToAllAttendees(
+            meeting,
+            attendeesWithUsers,
+            organizerName
+          );
+          
+          console.log(`Meeting invitations sent: ${emailResult.success} successful, ${emailResult.failed} failed`);
+          
+          // Log the activity
+          ActivityLogger.log(
+            req.user.id,
+            'create',
+            `Created meeting '${meeting.name}' and sent ${emailResult.success} invitations`,
+            'meeting',
+            meeting.id,
+            req
+          );
+        } catch (emailError) {
+          console.error('Error sending meeting invitations:', emailError);
+          // Continue with the response even if emails fail
+        }
+      } else {
+        // Log meeting creation without attendees
+        ActivityLogger.log(
+          req.user.id,
+          'create',
+          `Created meeting '${meeting.name}' without attendees`,
+          'meeting',
+          meeting.id,
+          req
+        );
+      }
+      
       res.status(201).json(meeting);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -839,7 +908,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         meetingId
       });
+      
+      // Create the attendee record
       const attendee = await storage.createMeetingAttendee(validatedData);
+      
+      // Get the meeting
+      const meeting = await storage.getMeeting(meetingId);
+      
+      if (meeting && attendee.userId) {
+        // Get the user details
+        const user = await storage.getUser(attendee.userId);
+        
+        // Get the meeting organizer's name
+        const organizer = await storage.getUser(meeting.createdBy);
+        const organizerName = organizer ? (organizer.fullName || organizer.username) : 'Meeting Organizer';
+        
+        // Send invitation email if the user has an email
+        if (user && user.email) {
+          try {
+            await sendMeetingInvitationEmail(
+              user.email,
+              user.fullName || user.username,
+              meeting,
+              organizerName
+            );
+            
+            console.log(`Sent meeting invitation to ${user.email} for meeting ${meeting.name}`);
+            
+            // Log the activity
+            ActivityLogger.log(
+              req.user!.id,
+              'create',
+              `Added attendee ${user.fullName || user.username} to meeting '${meeting.name}' and sent invitation`,
+              'meeting_attendee',
+              attendee.id,
+              req
+            );
+          } catch (emailError) {
+            console.error('Error sending meeting invitation:', emailError);
+            // Continue with the response even if email fails
+          }
+        } else {
+          console.log(`No email available for user ID ${attendee.userId}, invitation not sent`);
+        }
+      }
+      
       res.status(201).json(attendee);
     } catch (error) {
       if (error instanceof z.ZodError) {
