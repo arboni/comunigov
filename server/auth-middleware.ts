@@ -405,15 +405,14 @@ export async function hasCommunicationAccess(req: Request, res: Response, next: 
 
   // Entity heads can access all communications from their entity
   if (req.user?.role === 'entity_head' && req.user?.entityId) {
+    // Get communications from users in the same entity
     const entityCommunication = await db.query.communications.findFirst({
       where: (communications, { and, eq }) => 
-        and(
-          eq(communications.id, communicationId),
-          eq(users.id, communications.createdBy),
-          eq(users.entityId, req.user!.entityId!)
-        ),
+        eq(communications.id, communicationId),
       with: {
-        creator: true
+        creator: {
+          where: (creator, { eq }) => eq(creator.entityId, req.user!.entityId!)
+        }
       }
     });
     
