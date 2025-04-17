@@ -1,138 +1,91 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import React, { useState, useEffect } from 'react';
+import { ConfettiOverlay } from './confetti-overlay';
+import { Badge, BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MilestoneConfetti } from './milestone-confetti';
-import { Award, Trophy, CheckCircle2 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader, DialogFooter } from '@/components/ui/dialog';
+import { X } from 'lucide-react';
+import { AchievementBadge, UserBadge } from '@shared/schema';
 
-interface AchievementData {
-  id: number;
-  name: string;
-  description: string;
-  icon: string;
-  category: string;
-  points: number;
-  isNew?: boolean;
+interface AchievementCelebrationProps {
+  badges: (UserBadge & { badge: AchievementBadge, isNew?: boolean })[];
+  onClose: () => void;
 }
 
 /**
- * Component that shows a celebration dialog when a user achieves a milestone
- * This component monitors for new achievements and displays them with confetti
+ * A component that displays a celebration dialog with confetti when the user earns badges
  */
-export function AchievementCelebration() {
+export function AchievementCelebration({ badges, onClose }: AchievementCelebrationProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentAchievement, setCurrentAchievement] = useState<AchievementData | null>(null);
-  
-  // Get user's achievements
-  const { data: userAchievements } = useQuery<{id: number, earnedAt: string, badgeId: number, featured: boolean}[]>({
-    queryKey: ['/api/user/achievements'],
-    refetchInterval: 60000, // Check for new achievements every minute
-  });
-  
-  // Get all available badges
-  const { data: allBadges } = useQuery<AchievementData[]>({
-    queryKey: ['/api/badges'],
-  });
-  
-  // Mark an achievement as seen
-  const markAsSeen = useMutation({
-    mutationFn: async (achievementId: number) => {
-      await apiRequest('POST', `/api/user/achievements/${achievementId}/seen`, {});
-      return achievementId;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/user/achievements'] });
-    }
-  });
-  
-  // Check for new achievements
+  const newBadges = badges.filter(badge => badge.isNew);
+  const hasBadges = newBadges.length > 0;
+
   useEffect(() => {
-    if (!userAchievements || !allBadges) return;
-    
-    // Find the most recent achievement that hasn't been celebrated yet
-    const newAchievements = userAchievements.filter(a => a.isNew === true);
-    
-    if (newAchievements.length > 0) {
-      // Get the achievement details
-      const newAchievement = newAchievements[0]; // Take the first one
-      const achievementDetails = allBadges.find(b => b.id === newAchievement.badgeId);
-      
-      if (achievementDetails) {
-        // Show confetti and dialog
-        setCurrentAchievement(achievementDetails);
-        setShowConfetti(true);
-        setIsDialogOpen(true);
-      }
+    if (hasBadges) {
+      setIsOpen(true);
+      setShowConfetti(true);
     }
-  }, [userAchievements, allBadges]);
-  
-  // Handle dialog close
-  const handleDialogClose = () => {
-    setIsDialogOpen(false);
+  }, [hasBadges]);
+
+  const handleClose = () => {
+    setIsOpen(false);
     setShowConfetti(false);
-    
-    if (currentAchievement) {
-      // Mark achievement as seen
-      markAsSeen.mutate(currentAchievement.id);
-    }
+    onClose();
   };
-  
-  // Icons based on achievement category
-  const getAchievementIcon = () => {
-    if (!currentAchievement) return <Trophy className="h-12 w-12 text-yellow-500" />;
-    
-    switch (currentAchievement.category) {
-      case 'task':
-        return <CheckCircle2 className="h-12 w-12 text-emerald-500" />;
-      case 'communication':
-        return <Award className="h-12 w-12 text-blue-500" />;
-      default:
-        return <Trophy className="h-12 w-12 text-yellow-500" />;
-    }
-  };
-  
+
+  if (!hasBadges) return null;
+
   return (
     <>
-      {/* Confetti effect */}
-      <MilestoneConfetti 
-        show={showConfetti} 
+      <ConfettiOverlay 
+        isActive={showConfetti} 
         duration={6000}
-        onComplete={() => setShowConfetti(false)}
       />
       
-      {/* Achievement dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md text-center">
-          <DialogHeader className="space-y-3">
-            <div className="mx-auto rounded-full bg-primary/10 p-6 w-24 h-24 flex items-center justify-center">
-              {getAchievementIcon()}
-            </div>
-            <DialogTitle className="text-xl font-bold">
-              Conquista Desbloqueada!
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">
+              🎉 Congratulations! 🎉
             </DialogTitle>
-            <DialogDescription className="text-lg font-medium text-primary">
-              {currentAchievement?.name}
+            <DialogDescription className="text-center text-lg">
+              You've earned {newBadges.length > 1 ? 'new badges' : 'a new badge'}!
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
-            <p className="text-muted-foreground">
-              {currentAchievement?.description}
-            </p>
-            
-            <div className="bg-muted p-3 rounded-md">
-              <p className="text-sm font-medium">
-                +{currentAchievement?.points} pontos adicionados ao seu perfil
-              </p>
+          <div className="flex flex-col items-center space-y-6 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+              {newBadges.map((userBadge) => (
+                <div 
+                  key={userBadge.id} 
+                  className="flex flex-col items-center p-4 bg-muted/50 rounded-lg shadow-sm"
+                >
+                  <div className="w-20 h-20 flex items-center justify-center mb-2 bg-primary/20 rounded-full">
+                    <span className="text-4xl">{userBadge.badge.icon || '🏆'}</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-center">{userBadge.badge.name}</h3>
+                  <Badge variant="default" className="mt-1 mb-2">
+                    {userBadge.badge.category}
+                  </Badge>
+                  <p className="text-sm text-center text-muted-foreground">
+                    {userBadge.badge.description}
+                  </p>
+                  <div className="text-xs text-center mt-2 text-muted-foreground">
+                    Earned on {new Date(userBadge.earnedAt).toLocaleDateString()}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
           
-          <Button onClick={handleDialogClose} className="w-full">
-            Continuar
-          </Button>
+          <DialogFooter className="flex justify-center sm:justify-center gap-2">
+            <Button 
+              onClick={handleClose}
+              className="px-8"
+            >
+              Awesome!
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

@@ -179,6 +179,7 @@ export const userBadges = pgTable("user_badges", {
   earnedAt: timestamp("earned_at").defaultNow().notNull(),
   progress: jsonb("progress"), // JSON object tracking progress towards earning the badge
   featured: boolean("featured").default(false), // if the user wants to feature this badge on their profile
+  seen: boolean("seen").default(false), // tracks whether the user has seen this badge notification
 });
 
 // User activity logs

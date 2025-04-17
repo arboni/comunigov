@@ -2100,8 +2100,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const timestamp = new Date().toISOString();
       console.log(`[${timestamp}] Database cleanup initiated by ${adminUser?.username} (ID: ${userId})`);
       
+      // Get counts for all tables before truncation
+      const communicationsCount = await db.select({ count: sql`count(*)` }).from(communicationsTable);
+      const communicationRecipientsCount = await db.select({ count: sql`count(*)` }).from(communicationRecipientsTable);
+      const communicationFilesCount = await db.select({ count: sql`count(*)` }).from(communicationFilesTable);
+      const tasksCount = await db.select({ count: sql`count(*)` }).from(tasksTable);
+      const taskCommentsCount = await db.select({ count: sql`count(*)` }).from(taskCommentsTable);
+      const meetingsCount = await db.select({ count: sql`count(*)` }).from(meetingsTable);
+      const meetingAttendeesCount = await db.select({ count: sql`count(*)` }).from(meetingAttendeesTable);
+      const meetingDocumentsCount = await db.select({ count: sql`count(*)` }).from(meetingDocumentsTable);
+      
       // Execute the truncation
       const result = await storage.truncateCommunicationsAndFiles();
+      
+      // Use ActivityLogger to log this important maintenance action
+      await ActivityLogger.log(
+        req.user!.id,
+        'delete',
+        `Database cleanup performed: ${result.message}`,
+        'database_maintenance',
+        undefined,
+        req,
+        {
+          success: result.success,
+          tablesAffected: result.tablesAffected,
+          timestamp,
+          countsBeforeTruncation: {
+            communications: Number(communicationsCount[0].count),
+            communicationRecipients: Number(communicationRecipientsCount[0].count),
+            communicationFiles: Number(communicationFilesCount[0].count),
+            tasks: Number(tasksCount[0].count),
+            taskComments: Number(taskCommentsCount[0].count),
+            meetings: Number(meetingsCount[0].count),
+            meetingAttendees: Number(meetingAttendeesCount[0].count),
+            meetingDocuments: Number(meetingDocumentsCount[0].count)
+          }
+        }
+      );
       
       // Log the result
       console.log(`[${timestamp}] Database cleanup completed: ${result.message}`);
