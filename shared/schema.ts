@@ -8,6 +8,7 @@ export const userRoleEnum = pgEnum('user_role', ['master_implementer', 'entity_h
 export const entityTypeEnum = pgEnum('entity_type', ['secretariat', 'administrative_unit', 'external_entity', 'government_agency', 'association', 'council']);
 export const taskStatusEnum = pgEnum('task_status', ['pending', 'in_progress', 'completed', 'cancelled']);
 export const communicationChannelEnum = pgEnum('communication_channel', ['email', 'whatsapp', 'telegram', 'system_notification']);
+export const emojiTypeEnum = pgEnum('emoji_type', ['👍', '👎', '❤️', '🎉', '👀', '🙏', '😂', '🤔', '✅', '❌']);
 
 // Users table
 export const users = pgTable("users", {
@@ -73,6 +74,15 @@ export const meetingDocuments = pgTable("meeting_documents", {
   filePath: text("file_path").notNull(),
   uploadedBy: integer("uploaded_by").references(() => users.id).notNull(),
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
+});
+
+// Meeting reactions (quick emoji reactions)
+export const meetingReactions = pgTable("meeting_reactions", {
+  id: serial("id").primaryKey(),
+  meetingId: integer("meeting_id").references(() => meetings.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  emoji: emojiTypeEnum("emoji").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Subjects table
@@ -239,6 +249,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   }),
   createdMeetings: many(meetings),
   meetingAttendees: many(meetingAttendees),
+  meetingReactions: many(meetingReactions),
   uploadedDocuments: many(meetingDocuments),
   assignedTasks: many(tasks, { relationName: "assignedUser" }),
   createdTasks: many(tasks, { relationName: "createdBy" }),
@@ -266,6 +277,7 @@ export const meetingsRelations = relations(meetings, ({ one, many }) => ({
   }),
   attendees: many(meetingAttendees),
   documents: many(meetingDocuments),
+  reactions: many(meetingReactions),
   tasks: many(tasks),
 }));
 
@@ -287,6 +299,17 @@ export const meetingDocumentsRelations = relations(meetingDocuments, ({ one }) =
   }),
   uploader: one(users, {
     fields: [meetingDocuments.uploadedBy],
+    references: [users.id],
+  }),
+}));
+
+export const meetingReactionsRelations = relations(meetingReactions, ({ one }) => ({
+  meeting: one(meetings, {
+    fields: [meetingReactions.meetingId],
+    references: [meetings.id],
+  }),
+  user: one(users, {
+    fields: [meetingReactions.userId],
     references: [users.id],
   }),
 }));
