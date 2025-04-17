@@ -64,6 +64,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ number });
   });
   
+  // Test WhatsApp number formatting and validity
+  app.post("/api/test-whatsapp-number", isAuthenticated, (req, res) => {
+    const { phoneNumber } = req.body;
+    if (!phoneNumber) {
+      return res.status(400).json({ message: "Phone number is required" });
+    }
+    
+    // Import formatPhoneNumber and isValidWhatsAppNumber from whatsapp-service
+    const { formatPhoneNumber, isValidWhatsAppNumber } = require('./whatsapp-service');
+    
+    const formattedNumber = formatPhoneNumber(phoneNumber);
+    const isValid = isValidWhatsAppNumber(formattedNumber);
+    
+    res.json({
+      original: phoneNumber,
+      formatted: formattedNumber,
+      isValid,
+      twilioFormat: isValid ? `whatsapp:${formattedNumber}` : null
+    });
+  });
+  
   // User Activity Logs Endpoints
   app.get("/api/activity-logs", isMasterImplementer, async (req, res, next) => {
     try {

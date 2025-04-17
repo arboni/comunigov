@@ -33,7 +33,9 @@ if (WHATSAPP_ENABLED) {
  * Formats a phone number for WhatsApp
  * Removes any non-digit characters and ensures it starts with a "+"
  */
-function formatPhoneNumber(phone: string): string {
+export function formatPhoneNumber(phone: string): string {
+  if (!phone) return '';
+  
   // Strip any non-digit characters except the + sign
   let formatted = phone.replace(/[^0-9+]/g, '');
   
@@ -50,7 +52,9 @@ function formatPhoneNumber(phone: string): string {
  * Very basic validation - in production this would call the WhatsApp API
  * to check if the number exists on WhatsApp
  */
-function isValidWhatsAppNumber(phone: string): boolean {
+export function isValidWhatsAppNumber(phone: string): boolean {
+  if (!phone) return false;
+  
   const formatted = formatPhoneNumber(phone);
   // Basic validation: should be at least 10 digits plus the + sign
   return formatted.length >= 11;
