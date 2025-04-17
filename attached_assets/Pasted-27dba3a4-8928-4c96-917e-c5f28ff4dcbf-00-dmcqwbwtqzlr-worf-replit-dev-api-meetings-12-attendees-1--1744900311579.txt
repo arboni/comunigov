@@ -1,0 +1,208 @@
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/api/meetings/12/attendees:1 
+            
+            
+           Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/api/meetings/12/attendees:1 
+            
+            
+           Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meeting/12' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//communications' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//communications/25' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3A58c09cc4&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=4ef23c87-dcd5-485b-867e-fbb249268873:1 
+            
+            
+           Failed to load resource: net::ERR_CONNECTION_CLOSEDUnderstand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/communications/25:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/communications/25:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/communications/25:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+meeting-reactions.tsx:115 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+subject-dialog.tsx:182 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+tooltip.tsx:16 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+use-simple-auth.tsx:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+add-user-dialog.tsx:134 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+label.tsx:16 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+switch.tsx:18 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+subject-view-dialog.tsx:59 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+activity-chart.tsx:28 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+channel-distribution-chart.tsx:17 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+subject-edit-dialog.tsx:132 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+entity-activity-chart.tsx:30 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+alert-dialog.tsx:17 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+task-status-chart.tsx:17 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+completion-rate-chart.tsx:17 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+textarea.tsx:11 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+sidebar.tsx:26 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+performance-metrics-card.tsx:27 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+utils.ts:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+sheet.tsx:20 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+avatar-with-initials.tsx:22 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+checkbox.tsx:22 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+dialog.tsx:19 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+schema.ts:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+api.ts:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+popover.tsx:15 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+calendar.tsx:55 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+command.tsx:13 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/communications/25:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/communications/25:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+workspace_iframe.html:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//auth' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//communications' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//users' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//users/2' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/api/users/2/entity:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 (Not Found)Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//analytics' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+Console.js:61 [vite] server connection lost. Polling for restart...
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/analytics:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+Console.js:61 [vite] server connection lost. Polling for restart...
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev/analytics:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this errorAI
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//communications' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+overrideMethod @ hook.js:608Understand this errorAI
+803Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.Understand this warningAI

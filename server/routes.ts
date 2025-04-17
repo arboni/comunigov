@@ -1419,6 +1419,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
         
+        // Check for recipients without WhatsApp numbers when WhatsApp is the primary channel
+        const recipientsWithoutWhatsApp = [];
+        if (channel === 'whatsapp') {
+          for (const recipient of recipientList) {
+            if (!recipient.contactInfo.whatsapp) {
+              recipientsWithoutWhatsApp.push(recipient.name);
+            }
+          }
+          
+          if (recipientsWithoutWhatsApp.length > 0) {
+            console.log(`Warning: ${recipientsWithoutWhatsApp.length} recipients don't have WhatsApp numbers configured:`);
+            recipientsWithoutWhatsApp.forEach(name => console.log(`- ${name}`));
+          }
+        }
+        
         // Only send messages immediately if no file attachments are expected
         // If files will be attached, the message will be sent after file upload
         if (!req.body.expectAttachments) {
@@ -1436,6 +1451,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Log message delivery results
           console.log(`Message delivery results: ${Object.keys(messageResults).length} recipients processed`);
+          
+          // Include information about recipients without WhatsApp in the response
+          communication.recipientsWithoutWhatsApp = recipientsWithoutWhatsApp;
         } else {
           console.log(`Skipping immediate message sending as file attachments are expected for communication ${communication.id}`);
         }
