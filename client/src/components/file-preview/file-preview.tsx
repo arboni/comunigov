@@ -38,8 +38,8 @@ export default function FilePreview({ fileId, fileName, fileType }: FilePreviewP
     fileType.toLowerCase().includes('pdf')
   );
   
-  // Force all files to be previewable for testing
-  const isPreviewable = true; // isImage || isPdf;
+  // Check if the file is of a previewable type (image or PDF)
+  const isPreviewable = isImage || isPdf;
   
   console.log('File preview analysis:', { isImage, isPdf, isPreviewable });
   
