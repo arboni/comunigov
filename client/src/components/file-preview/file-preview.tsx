@@ -137,7 +137,8 @@ export default function FilePreview({ fileId, fileName, fileType }: FilePreviewP
                 </Button>
               </div>
             ) : isLoading ? (
-              <div className="text-center">
+              <div className="text-center py-8 flex flex-col items-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
                 <p>Loading preview...</p>
               </div>
             ) : isImage ? (
