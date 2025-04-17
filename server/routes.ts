@@ -915,20 +915,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
         
-        // Send messages to all recipients using the unified messaging service
-        console.log(`Sending message to ${recipientList.length} recipients via ${channel} with fallback`);
-        const messageResults = await sendMessageToAll(
-          recipientList,
-          channel,
-          senderName,
-          communication.subject,
-          communication.content,
-          communication.id, // Pass the communication ID for file attachments
-          hasAttachments
-        );
-        
-        // Log message delivery results
-        console.log(`Message delivery results: ${Object.keys(messageResults).length} recipients processed`);
+        // Only send messages immediately if no file attachments are expected
+        // If files will be attached, the message will be sent after file upload
+        if (!req.body.expectAttachments) {
+          // Send messages to all recipients using the unified messaging service
+          console.log(`Sending message to ${recipientList.length} recipients via ${channel} with fallback`);
+          const messageResults = await sendMessageToAll(
+            recipientList,
+            channel,
+            senderName,
+            communication.subject,
+            communication.content,
+            communication.id, // Pass the communication ID for file attachments
+            hasAttachments
+          );
+          
+          // Log message delivery results
+          console.log(`Message delivery results: ${Object.keys(messageResults).length} recipients processed`);
+        } else {
+          console.log(`Skipping immediate message sending as file attachments are expected for communication ${communication.id}`);
+        }
       }
       
       res.status(201).json(communication);
