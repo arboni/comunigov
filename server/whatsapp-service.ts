@@ -83,10 +83,18 @@ export async function sendWhatsAppMessage(
   }
 
   try {
+    // Check if to parameter is empty or null
+    if (!to) {
+      console.error('WhatsApp target number is empty or null');
+      return false;
+    }
+
     // Format and validate the phone number
     const formattedNumber = formatPhoneNumber(to);
+    console.log(`WhatsApp: Formatted number from "${to}" to "${formattedNumber}"`);
+    
     if (!isValidWhatsAppNumber(formattedNumber)) {
-      console.error(`Invalid WhatsApp number: ${to}`);
+      console.error(`Invalid WhatsApp number: ${to} (formatted: ${formattedNumber})`);
       return false;
     }
     
@@ -122,10 +130,17 @@ For more information, visit comunigov.app
     }
     
     try {
+      // Clean and prepare the WhatsApp number formats
+      const fromNumber = TWILIO_WHATSAPP_NUMBER!.startsWith('+') 
+          ? TWILIO_WHATSAPP_NUMBER 
+          : `+${TWILIO_WHATSAPP_NUMBER}`;
+          
+      console.log(`Using WhatsApp from number: ${fromNumber}`);
+      
       // Send the message via Twilio WhatsApp
       await twilioClient.messages.create({
         body: formattedMessage,
-        from: `whatsapp:${TWILIO_WHATSAPP_NUMBER}`,
+        from: `whatsapp:${fromNumber}`,
         to: `whatsapp:${formattedNumber}`
       });
       

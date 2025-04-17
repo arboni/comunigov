@@ -147,12 +147,18 @@ export async function sendMessageWithFallback(
     
     // Skip channels without contact info
     if (!contactInfo) {
+      console.log(`Skipping ${channel} channel for ${recipientName}: No contact information available`);
       results.push({
         success: false,
         channel,
         error: `No contact information available for ${channel}`
       });
       continue;
+    }
+    
+    // Extended logging for WhatsApp
+    if (channel === 'whatsapp') {
+      console.log(`Attempting WhatsApp message to: "${contactInfo}" for user ${recipientName}`);
     }
     
     const result = await sendMessage(
