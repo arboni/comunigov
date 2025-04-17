@@ -62,6 +62,7 @@ export async function sendMessage(
         break;
         
       case 'whatsapp':
+        console.log(`Sending WhatsApp message to ${to} for recipient ${recipientName}`);
         success = await sendWhatsAppMessage(
           to,
           recipientName,
@@ -70,6 +71,7 @@ export async function sendMessage(
           content,
           hasAttachments
         );
+        console.log(`WhatsApp message ${success ? 'succeeded' : 'failed'}`);
         break;
         
       case 'telegram':
