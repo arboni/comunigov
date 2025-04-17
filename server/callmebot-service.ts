@@ -13,7 +13,9 @@ import axios from 'axios';
 const CALLMEBOT_API_URL = 'https://api.callmebot.com/whatsapp.php';
 
 // CallMeBot API key - this should be stored in an environment variable in production
-const CALLMEBOT_API_KEY = process.env.CALLMEBOT_API_KEY || '8339051';
+// To get a new key, go to https://www.callmebot.com/activate.html
+// Create your own API key by sending a message to +34 644 66 01 95 with "create apikey"
+const CALLMEBOT_API_KEY = process.env.CALLMEBOT_API_KEY || '1234567';
 
 // Debug flag for verbose logging
 const CALLMEBOT_DEBUG = true;
@@ -163,9 +165,26 @@ For more information, visit comunigov.app
       console.log(`Response: ${response.data}`);
       
       // Check if response contains error message (even if status is 2xx)
-      if (response.data.includes('ERROR') || response.data.includes('error')) {
+      if (response.data.includes('ERROR') || 
+          response.data.includes('error') || 
+          response.data.includes('invalid') || 
+          response.data.includes('APIKey is invalid')) {
         console.error(`CallMeBot API returned an error: ${response.data}`);
-        console.error(setupNote);
+        
+        // Special handling for API key errors
+        if (response.data.includes('APIKey is invalid')) {
+          console.error(`
+===================================================================
+CALLMEBOT API KEY ERROR: The API key is invalid or has expired.
+To get a new API key:
+1. Send "create apikey" to +34 644 66 01 95 on WhatsApp
+2. Add the new API key to your environment variables:
+   CALLMEBOT_API_KEY=your_new_api_key
+===================================================================
+          `);
+        } else {
+          console.error(setupNote);
+        }
         return false;
       }
       
@@ -179,7 +198,10 @@ For more information, visit comunigov.app
       
       // Log the full response for debugging
       console.log(`Full CallMeBot response: ${response.data}`);
-      return true;
+      
+      // If we got this far and there are no errors in the response,
+      // we should consider it a success. CallMeBot responses can vary.
+      return !response.data.includes('invalid');
     } else {
       console.error(`CallMeBot API returned status code: ${response.status}`);
       return false;
