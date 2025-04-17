@@ -44,6 +44,11 @@ export function formatPhoneNumber(phone: string): string {
     formatted = '+' + formatted;
   }
   
+  // Debug log
+  if (WHATSAPP_DEBUG && phone !== formatted) {
+    console.log(`WhatsApp: Formatted number from "${phone}" to "${formatted}"`);
+  }
+  
   return formatted;
 }
 
@@ -53,11 +58,21 @@ export function formatPhoneNumber(phone: string): string {
  * to check if the number exists on WhatsApp
  */
 export function isValidWhatsAppNumber(phone: string): boolean {
-  if (!phone) return false;
+  if (!phone) {
+    if (WHATSAPP_DEBUG) console.log(`WhatsApp validation failed: Phone number is empty`);
+    return false;
+  }
   
   const formatted = formatPhoneNumber(phone);
+  
   // Basic validation: should be at least 10 digits plus the + sign
-  return formatted.length >= 11;
+  const isValid = formatted.length >= 11;
+  
+  if (WHATSAPP_DEBUG && !isValid) {
+    console.log(`WhatsApp validation failed: "${formatted}" is not a valid format (should be at least 10 digits with + sign)`);
+  }
+  
+  return isValid;
 }
 
 /**
@@ -95,12 +110,16 @@ export async function sendWhatsAppMessage(
 
     // Format and validate the phone number
     const formattedNumber = formatPhoneNumber(to);
-    console.log(`WhatsApp: Formatted number from "${to}" to "${formattedNumber}"`);
     
     if (!isValidWhatsAppNumber(formattedNumber)) {
       console.error(`Invalid WhatsApp number: ${to} (formatted: ${formattedNumber})`);
       return false;
     }
+    
+    // Add a note about the Twilio sandbox
+    const sandboxNote = `
+⚠️ IMPORTANT: Recipient must join the Twilio WhatsApp Sandbox before they can receive messages.
+Recipients need to send "join forgotten-clock" to ${TWILIO_WHATSAPP_NUMBER} via WhatsApp.`;
     
     // Format the message content
     const formattedMessage = `
@@ -125,6 +144,7 @@ For more information, visit comunigov.app
       console.log(`Subject: ${subject}`);
       console.log('Content:');
       console.log(formattedMessage);
+      console.log(sandboxNote);
     }
     
     // Make an API call to Twilio's WhatsApp API
@@ -138,20 +158,36 @@ For more information, visit comunigov.app
       const fromNumber = TWILIO_WHATSAPP_NUMBER!.startsWith('+') 
           ? TWILIO_WHATSAPP_NUMBER 
           : `+${TWILIO_WHATSAPP_NUMBER}`;
-          
-      console.log(`Using WhatsApp from number: ${fromNumber}`);
       
       // Send the message via Twilio WhatsApp
-      await twilioClient.messages.create({
+      const message = await twilioClient.messages.create({
         body: formattedMessage,
         from: `whatsapp:${fromNumber}`,
         to: `whatsapp:${formattedNumber}`
       });
       
-      console.log(`WhatsApp message successfully sent to ${formattedNumber}`);
+      // Log detailed message info including Twilio's message ID
+      console.log(`WhatsApp message sent to ${formattedNumber}`);
+      console.log(`Message SID: ${message.sid}`);
+      console.log(`Message Status: ${message.status}`);
+      
+      if (message.status === 'failed') {
+        console.error(`WhatsApp message failed with error: ${message.errorMessage}`);
+        return false;
+      }
+      
+      // Even if message status is "queued" or "sent", we consider it a success
+      // since Twilio handles the delivery asynchronously
       return true;
-    } catch (twilioError) {
+    } catch (twilioError: any) {
       console.error('Twilio WhatsApp API error:', twilioError);
+      
+      // Check for specific error codes that indicate the recipient hasn't joined the sandbox
+      if (twilioError.code === 63001 || (twilioError.message && twilioError.message.includes('not currently opted in'))) {
+        console.error(`Recipient ${recipientName} (${formattedNumber}) has not joined the Twilio WhatsApp Sandbox.`);
+        console.error('They need to send "join forgotten-clock" to your Twilio WhatsApp number.');
+      }
+      
       return false;
     }
   } catch (error) {
