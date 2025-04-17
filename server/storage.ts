@@ -1949,12 +1949,11 @@ export class DatabaseStorage implements IStorage {
    */
   async truncateCommunicationsAndFiles(): Promise<{ success: boolean; message: string; tablesAffected: string[] }> {
     try {
-      // Define tables to be truncated
+      // Define tables to truncate in order (respecting foreign key constraints)
       const tablesToTruncate = [
         'communication_files',
-        'communication_recipients',
+        'communication_recipients', 
         'communications',
-        'meeting_reactions',
         'meeting_documents',
         'meeting_attendees',
         'meetings',
@@ -1962,25 +1961,110 @@ export class DatabaseStorage implements IStorage {
         'tasks'
       ];
       
-      // Begin transaction
-      await db.transaction(async (tx) => {
-        // Temporarily disable foreign key constraints for the truncation
-        await tx.execute(sql`SET CONSTRAINTS ALL DEFERRED`);
-        
-        // Truncate each table
-        for (const table of tablesToTruncate) {
-          await tx.execute(sql`TRUNCATE TABLE ${sql.identifier(table)} CASCADE`);
-          console.log(`Truncated table: ${table}`);
+      // Check which tables exist
+      const tableExistsQuery = await db.execute(sql`
+        SELECT tablename FROM pg_tables 
+        WHERE schemaname = 'public'
+      `);
+      
+      const allExistingTables = tableExistsQuery.rows.map(row => row.tablename);
+      console.log('Existing tables:', allExistingTables);
+      
+      // Process each table individually
+      const truncatedTables: string[] = [];
+      
+      // First truncate communication_files
+      if (allExistingTables.includes('communication_files')) {
+        try {
+          await db.execute(sql`TRUNCATE TABLE communication_files`);
+          console.log(`Truncated table: communication_files`);
+          truncatedTables.push('communication_files');
+        } catch (err) {
+          console.log(`Error truncating table communication_files:`, err);
         }
-        
-        // Re-enable foreign key constraints
-        await tx.execute(sql`SET CONSTRAINTS ALL IMMEDIATE`);
-      });
+      }
+      
+      // Then truncate communication_recipients
+      if (allExistingTables.includes('communication_recipients')) {
+        try {
+          await db.execute(sql`TRUNCATE TABLE communication_recipients`);
+          console.log(`Truncated table: communication_recipients`);
+          truncatedTables.push('communication_recipients');
+        } catch (err) {
+          console.log(`Error truncating table communication_recipients:`, err);
+        }
+      }
+      
+      // Then truncate communications
+      if (allExistingTables.includes('communications')) {
+        try {
+          await db.execute(sql`TRUNCATE TABLE communications`);
+          console.log(`Truncated table: communications`);
+          truncatedTables.push('communications');
+        } catch (err) {
+          console.log(`Error truncating table communications:`, err);
+        }
+      }
+      
+      // Then truncate task_comments
+      if (allExistingTables.includes('task_comments')) {
+        try {
+          await db.execute(sql`TRUNCATE TABLE task_comments`);
+          console.log(`Truncated table: task_comments`);
+          truncatedTables.push('task_comments');
+        } catch (err) {
+          console.log(`Error truncating table task_comments:`, err);
+        }
+      }
+      
+      // Then truncate tasks
+      if (allExistingTables.includes('tasks')) {
+        try {
+          await db.execute(sql`TRUNCATE TABLE tasks`);
+          console.log(`Truncated table: tasks`);
+          truncatedTables.push('tasks');
+        } catch (err) {
+          console.log(`Error truncating table tasks:`, err);
+        }
+      }
+      
+      // Then truncate meeting_documents
+      if (allExistingTables.includes('meeting_documents')) {
+        try {
+          await db.execute(sql`TRUNCATE TABLE meeting_documents`);
+          console.log(`Truncated table: meeting_documents`);
+          truncatedTables.push('meeting_documents');
+        } catch (err) {
+          console.log(`Error truncating table meeting_documents:`, err);
+        }
+      }
+      
+      // Then truncate meeting_attendees
+      if (allExistingTables.includes('meeting_attendees')) {
+        try {
+          await db.execute(sql`TRUNCATE TABLE meeting_attendees`);
+          console.log(`Truncated table: meeting_attendees`);
+          truncatedTables.push('meeting_attendees');
+        } catch (err) {
+          console.log(`Error truncating table meeting_attendees:`, err);
+        }
+      }
+      
+      // Finally truncate meetings
+      if (allExistingTables.includes('meetings')) {
+        try {
+          await db.execute(sql`TRUNCATE TABLE meetings`);
+          console.log(`Truncated table: meetings`);
+          truncatedTables.push('meetings');
+        } catch (err) {
+          console.log(`Error truncating table meetings:`, err);
+        }
+      }
       
       return {
         success: true,
-        message: `Successfully truncated ${tablesToTruncate.length} tables while preserving users, entities, and subjects data.`,
-        tablesAffected: tablesToTruncate
+        message: `Successfully truncated ${truncatedTables.length} tables while preserving users, entities, and subjects data.`,
+        tablesAffected: truncatedTables
       };
     } catch (error) {
       console.error('Error truncating tables:', error);
