@@ -75,6 +75,7 @@ export async function sendMessage(
         break;
         
       case 'telegram':
+        console.log(`Sending Telegram message to ${to} for recipient ${recipientName}`);
         success = await sendTelegramMessage(
           to,
           recipientName,
@@ -83,6 +84,7 @@ export async function sendMessage(
           content,
           hasAttachments
         );
+        console.log(`Telegram message ${success ? 'succeeded' : 'failed'}`);
         break;
         
       case 'system_notification':
