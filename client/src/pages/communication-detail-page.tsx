@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Download, Mail, Clock, UserIcon, Users, MessageSquare, Bell } from "lucide-react";
+import { ArrowLeft, Mail, Clock, UserIcon, Users, MessageSquare, Bell, Download } from "lucide-react";
 import { Link, useParams } from "wouter";
 import { format } from "date-fns";
 import DashboardLayout from "@/components/layouts/dashboard-layout";
@@ -18,6 +18,7 @@ import {
   Avatar,
   AvatarFallback,
 } from "@/components/ui/avatar";
+import FilePreview from "@/components/file-preview/file-preview";
 import NotFound from "./not-found";
 
 // Define interface for communication with files and recipients
@@ -86,7 +87,7 @@ export default function CommunicationDetailPage() {
   });
 
   // Fetch sender data
-  const { data: sender } = useQuery({
+  const { data: sender } = useQuery<{ id: number; username: string; email: string; fullName?: string }>({
     queryKey: [`/api/users/${communication?.sentBy}`],
     enabled: !!communication?.sentBy,
   });
@@ -207,14 +208,14 @@ export default function CommunicationDetailPage() {
                             <div className="font-medium">{file.name}</div>
                             <div className="text-sm text-muted-foreground">
                               {new Date(file.uploadedAt).toLocaleDateString()}
+                              {file.type && <span className="ml-2 text-xs px-2 py-1 bg-gray-100 rounded">{file.type}</span>}
                             </div>
                           </div>
-                          <Button variant="outline" size="sm" asChild>
-                            <a href={`/api/download/${file.id}`} download>
-                              <Download className="h-4 w-4 mr-1" />
-                              Download
-                            </a>
-                          </Button>
+                          <FilePreview
+                            fileId={file.id}
+                            fileName={file.name}
+                            fileType={file.type}
+                          />
                         </div>
                       ))}
                     </div>

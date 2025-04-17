@@ -1205,10 +1205,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "File not found on disk" });
       }
       
-      // Set appropriate headers
-      res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(file.name)}"`);
+      // Check if this is an embed request (for in-browser viewing) or a download
+      const isEmbed = req.query.embed === 'true';
+      
+      // Set appropriate headers based on request type
+      if (!isEmbed) {
+        // For downloads, set content disposition to attachment
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(file.name)}"`);
+      } else {
+        // For embedding/preview, set content disposition to inline
+        res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(file.name)}"`);
+      }
+      
+      // Set the content type header
       if (file.type) {
         res.setHeader('Content-Type', file.type);
+      }
+      
+      // For PDFs being embedded, set additional headers to help with browser viewing
+      if (isEmbed && file.type === 'application/pdf') {
+        res.setHeader('Accept-Ranges', 'bytes');
+        res.setHeader('Cache-Control', 'public, max-age=3600');
       }
       
       // Stream the file
