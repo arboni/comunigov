@@ -655,6 +655,7 @@ export default function ScheduleMeetingDialog({
                   className="hidden"
                   ref={fileInputRef}
                   onChange={handleFileSelect}
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.odt"
                   multiple
                 />
                 <Button

@@ -408,27 +408,62 @@ export async function sendMeetingInvitationEmail(
       hasDocuments = true;
       
       // Convert documents to email attachments
-      attachments = await Promise.all(documents.map(async doc => {
+      const tempAttachments = [];
+      
+      for (const doc of documents) {
         console.log(`Adding document to email: ${doc.name}, path: ${doc.filePath}`);
         try {
-          // Read the file content and convert to base64
-          const fs = await import('fs/promises');
-          const content = await fs.readFile(doc.filePath);
+          // Check if file exists
+          const fs = await import('fs');
+          if (!fs.existsSync(doc.filePath)) {
+            console.error(`File not found: ${doc.filePath}`);
+            continue;
+          }
           
-          return {
-            content: content.toString('base64'),
+          // Read file synchronously as buffer
+          const fileBuffer = fs.readFileSync(doc.filePath);
+          console.log(`File ${doc.name} read successfully, size: ${fileBuffer.length} bytes`);
+          
+          // Convert buffer to base64 string as required by SendGrid
+          const content = fileBuffer.toString('base64');
+          
+          // Get MIME type based on file extension or use the default
+          let mimeType = doc.type || 'application/octet-stream';
+          const fileExtension = doc.name.split('.').pop()?.toLowerCase();
+          
+          // Map common file extensions to MIME types
+          if (fileExtension && !doc.type) {
+            const mimeMap: Record<string, string> = {
+              'pdf': 'application/pdf',
+              'doc': 'application/msword',
+              'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+              'xls': 'application/vnd.ms-excel',
+              'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              'png': 'image/png',
+              'jpg': 'image/jpeg',
+              'jpeg': 'image/jpeg',
+              'gif': 'image/gif',
+              'odt': 'application/vnd.oasis.opendocument.text'
+            };
+            mimeType = mimeMap[fileExtension] || mimeType;
+          }
+          
+          // Create attachment object
+          const attachment = {
+            content: content,
             filename: doc.name,
-            type: doc.type || 'application/octet-stream',
+            type: mimeType,
             disposition: 'attachment'
           };
+          
+          console.log(`Created attachment for ${doc.name} with MIME type: ${mimeType}`);
+          tempAttachments.push(attachment);
         } catch (err) {
-          console.error(`Error reading file ${doc.name}:`, err);
-          return null;
+          console.error(`Error processing file ${doc.name}:`, err);
         }
-      }));
+      }
       
-      // Filter out any null attachments (failed to read)
-      attachments = attachments.filter(att => att !== null);
+      attachments = tempAttachments;
     } else {
       console.log(`No documents found for meeting ${meeting.id}`);
     }
@@ -1294,11 +1329,32 @@ The ComuniGov Team
               // Convert buffer to base64 string as required by SendGrid
               const content = fileBuffer.toString('base64');
               
+              // Get MIME type based on file extension or use the default
+              let mimeType = file.type || 'application/octet-stream';
+              const fileExtension = file.name.split('.').pop()?.toLowerCase();
+              
+              // Map common file extensions to MIME types
+              if (fileExtension && !file.type) {
+                const mimeMap: Record<string, string> = {
+                  'pdf': 'application/pdf',
+                  'doc': 'application/msword',
+                  'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                  'xls': 'application/vnd.ms-excel',
+                  'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                  'png': 'image/png',
+                  'jpg': 'image/jpeg',
+                  'jpeg': 'image/jpeg',
+                  'gif': 'image/gif',
+                  'odt': 'application/vnd.oasis.opendocument.text'
+                };
+                mimeType = mimeMap[fileExtension] || mimeType;
+              }
+              
               // Create metadata for the attachment
               const attachmentData = {
                 filename: file.name,
                 content,
-                type: file.type || 'application/octet-stream', // Default MIME type if not specified
+                type: mimeType,
                 disposition: 'attachment',
                 contentId: `attachment-${file.id}@comunigov`
               };
