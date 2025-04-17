@@ -1,0 +1,30 @@
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meetings' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meeting/2' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meetings' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+27dba3a4-8928-4c96-9….dev/api/meetings:1 
+ Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+stallwart.build.js:1 stallwart: failed ping 1
+27dba3a4-8928-4c96-9….worf.replit.dev/:1 
+ Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+27dba3a4-8928-4c96-9…plit.dev/meetings:1 
+ Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meeting/3' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meetings' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meeting/4' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+27dba3a4-8928-4c96-9….worf.replit.dev/:1 
+ Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+27dba3a4-8928-4c96-9…lit.dev/meeting/4:1 
+ Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+27dba3a4-8928-4c96-9….worf.replit.dev/:1 
+ Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+27dba3a4-8928-4c96-9…lit.dev/meeting/4:1 
+ Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meetings' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+Console.js:61 Form data being submitted: [object Object]
+hook.js:608 Invalid href 'https://27dba3a4-8928-4c96-917e-c5f28ff4dcbf-00-dmcqwbwtqzlr.worf.replit.dev//meeting/5' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+870
+Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.
+stallwart.build.js:1 stallwart: failed ping 1
+﻿
+

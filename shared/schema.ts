@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, pgEnum, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, pgEnum, jsonb, unique } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -64,6 +64,11 @@ export const meetingAttendees = pgTable("meeting_attendees", {
   userId: integer("user_id").references(() => users.id).notNull(),
   confirmed: boolean("confirmed").default(false),
   attended: boolean("attended").default(false),
+}, (table) => {
+  return {
+    // Add a unique constraint to prevent duplicate attendees
+    unq: unique().on(table.meetingId, table.userId),
+  };
 });
 
 // Meeting documents
