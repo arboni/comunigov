@@ -368,6 +368,13 @@ export default function SendMessageDialog({
                     </FormItem>
                   )}
                 />
+                
+                {/* Display CallMeBot reminder when WhatsApp is selected */}
+                {form.watch("channel") === "whatsapp" && (
+                  <div className="mt-3">
+                    <CallMeBotReminder />
+                  </div>
+                )}
               </div>
               
               <FormField
