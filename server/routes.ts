@@ -21,6 +21,7 @@ import {
   hasAnalyticsAccess
 } from "./auth-middleware";
 import { ActivityLogger } from "./activity-logger";
+import { importEntitiesFromCSV } from "./entity-csv-import";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -2710,6 +2711,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       next(error);
+    }
+  });
+  
+  // Configure CSV file upload storage
+  const csvStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = path.join(process.cwd(), 'uploads', 'csv');
+      
+      // Ensure directory exists
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      // Create a unique filename with original extension
+      const uniqueName = `${uuidv4()}-${Date.now()}${path.extname(file.originalname)}`;
+      cb(null, uniqueName);
+    }
+  });
+  
+  // Create CSV upload middleware
+  const csvUpload = multer({
+    storage: csvStorage,
+    fileFilter: (req, file, cb) => {
+      // Check file type
+      if (file.mimetype !== 'text/csv' && !file.originalname.endsWith('.csv')) {
+        return cb(new Error('Only CSV files are allowed'));
+      }
+      cb(null, true);
+    },
+    limits: {
+      fileSize: 5 * 1024 * 1024 // 5MB file size limit
+    }
+  });
+  
+  // Entity CSV import endpoint
+  app.post("/api/entities/import", isMasterImplementer, csvUpload.single('file'), async (req, res, next) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+      
+      // Log the file upload activity
+      await ActivityLogger.logUpload(
+        req.user!.id,
+        'CSV import file',
+        'entity_import',
+        undefined,
+        req
+      );
+      
+      // Process the CSV file
+      const results = await importEntitiesFromCSV(req.file.path, req.user!.id);
+      
+      // Return the results
+      res.status(200).json({
+        message: "Entity import completed",
+        totalProcessed: results.totalProcessed,
+        successful: results.successful,
+        failed: results.failed,
+        errors: results.errors
+      });
+    } catch (error) {
+      console.error("Error importing entities:", error);
+      
+      // Clean up the file if it exists
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      res.status(500).json({
+        message: "Error importing entities",
+        error: (error as Error).message
+      });
     }
   });
 
