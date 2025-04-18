@@ -77,22 +77,22 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
           tags = record.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean);
         }
         
-        // Create entity record
-        const entityData: EntityRecord = {
+        // Create entity record with properly typed fields
+        const dbEntityData = {
           name: record.name,
-          type: entityType as any, // Type assertion, as we've validated it
+          type: entityType as typeof entityTypeEnum.enumValues[number], // Cast to the correct enum type
           headName: record.headName,
           headPosition: record.headPosition,
           headEmail: record.headEmail,
-          address: record.address,
-          phone: record.phone,
-          website: record.website,
-          socialMedia: record.socialMedia,
-          tags: tags
+          address: record.address || null,
+          phone: record.phone || null,
+          website: record.website || null,
+          socialMedia: record.socialMedia || null,
+          tags: tags || []
         };
         
         // Insert the entity into the database
-        const [newEntity] = await db.insert(entities).values([entityData]).returning();
+        const [newEntity] = await db.insert(entities).values([dbEntityData]).returning();
         
         // Log the activity
         await ActivityLogger.logCreate(
