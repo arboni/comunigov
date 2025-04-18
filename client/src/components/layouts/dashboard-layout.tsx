@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AvatarWithInitials from "@/components/ui/avatar-with-initials";
 import { toast } from "@/hooks/use-toast";
+import { UserWithEntity } from "@shared/schema";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -31,8 +32,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Get the current user
-  const { data: user } = useQuery({
-    queryKey: ["/api/user"]
+  const { data: user } = useQuery<Omit<UserWithEntity, "password"> | null>({
+    queryKey: ["/api/user"],
+    // Use default query function which will return null on 401
+    retry: false
   });
 
   // Logout mutation

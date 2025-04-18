@@ -14,7 +14,7 @@ type SidebarItem = {
 
 type SidebarProps = {
   items: SidebarItem[];
-  user: Omit<UserWithEntity, "password"> | null;
+  user: Omit<UserWithEntity, "password"> | null | undefined;
 };
 
 export function Sidebar({ items, user }: SidebarProps) {
