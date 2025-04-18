@@ -121,27 +121,29 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               
               {/* Navigation */}
               <nav className="mt-2 px-2 space-y-1">
-                {navigationItems.map(item => (
-                  <Link 
-                    key={item.name} 
-                    href={item.href}
-                  >
-                    <a 
-                      className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
-                        location === item.href
-                          ? "border-l-4 border-primary bg-primary-50 text-primary"
-                          : "text-neutral-600 hover:bg-neutral-50"
-                      }`}
+                {navigationItems
+                  .filter(item => !item.adminOnly || user?.role === 'master_implementer')
+                  .map(item => (
+                    <Link 
+                      key={item.name} 
+                      href={item.href}
                     >
-                      <item.icon 
-                        className={`mr-3 h-5 w-5 ${
-                          location === item.href ? "text-primary" : "text-neutral-400"
-                        }`} 
-                      />
-                      {item.name}
-                    </a>
-                  </Link>
-                ))}
+                      <a 
+                        className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                          location === item.href
+                            ? "border-l-4 border-primary bg-primary-50 text-primary"
+                            : "text-neutral-600 hover:bg-neutral-50"
+                        }`}
+                      >
+                        <item.icon 
+                          className={`mr-3 h-5 w-5 ${
+                            location === item.href ? "text-primary" : "text-neutral-400"
+                          }`} 
+                        />
+                        {item.name}
+                      </a>
+                    </Link>
+                  ))}
               </nav>
             </div>
             

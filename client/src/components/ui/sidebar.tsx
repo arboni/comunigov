@@ -9,6 +9,7 @@ type SidebarItem = {
   name: string;
   href: string;
   icon: LucideIcon;
+  adminOnly?: boolean;
 };
 
 type SidebarProps = {
@@ -48,27 +49,29 @@ export function Sidebar({ items, user }: SidebarProps) {
           
           {/* Navigation */}
           <nav className="mt-2 px-2 space-y-1">
-            {items.map(item => (
-              <Link 
-                key={item.name} 
-                href={item.href}
-                className={cn(
-                  "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
-                  location === item.href
-                    ? "border-l-4 border-primary bg-primary-50 text-primary"
-                    : "text-neutral-600 hover:bg-neutral-50"
-                )}
-              >
-                <item.icon 
+            {items
+              .filter(item => !item.adminOnly || user?.role === 'master_implementer')
+              .map(item => (
+                <Link 
+                  key={item.name} 
+                  href={item.href}
                   className={cn(
-                    "mr-3 h-5 w-5",
+                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
                     location === item.href
-                      ? "text-primary"
-                      : "text-neutral-400"
-                  )} 
-                />
-                {item.name}
-              </Link>
+                      ? "border-l-4 border-primary bg-primary-50 text-primary"
+                      : "text-neutral-600 hover:bg-neutral-50"
+                  )}
+                >
+                  <item.icon 
+                    className={cn(
+                      "mr-3 h-5 w-5",
+                      location === item.href
+                        ? "text-primary"
+                        : "text-neutral-400"
+                    )} 
+                  />
+                  {item.name}
+                </Link>
             ))}
           </nav>
         </div>
