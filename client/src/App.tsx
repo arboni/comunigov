@@ -12,6 +12,7 @@ import CommunicationDetailPage from "@/pages/communication-detail-page";
 import MeetingsPage from "@/pages/meetings-page";
 import MeetingDetailPage from "@/pages/meeting-detail-page";
 import EntityDetailPage from "@/pages/entity-detail-page";
+import EntityImportPage from "@/pages/entity-import-page";
 import TasksPage from "@/pages/tasks-page";
 import UsersPage from "@/pages/users-page";
 import UserDetailPage from "@/pages/user-detail-page";
@@ -65,6 +66,7 @@ function Router() {
     <Switch>
       <ProtectedRoute path="/" component={DashboardPage} />
       <ProtectedRoute path="/entities" component={EntitiesPage} />
+      <ProtectedRoute path="/entities/import" component={EntityImportPage} />
       <ProtectedRoute path="/communications" component={CommunicationsPage} />
       <ProtectedRoute path="/communications/:id" component={CommunicationDetailPage} />
       <ProtectedRoute path="/meetings" component={MeetingsPage} />

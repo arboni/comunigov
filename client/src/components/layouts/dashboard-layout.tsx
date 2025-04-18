@@ -60,6 +60,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigationItems = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Entity Management", href: "/entities", icon: Building2 },
+    { name: "Import Entities", href: "/entities/import", icon: FileText, adminOnly: true },
     { name: "Communications", href: "/communications", icon: SendHorizonal },
     { name: "Meetings", href: "/meetings", icon: Calendar },
     { name: "Tasks", href: "/tasks", icon: ListChecks },
