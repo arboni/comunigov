@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { apiRequest, queryClient, invalidateEntities, invalidateDashboardStats } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/use-translation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
