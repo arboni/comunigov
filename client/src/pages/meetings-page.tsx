@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MeetingListItem from "@/components/dashboard/meeting-list-item";
 import ScheduleMeetingDialog from "@/components/dialogs/schedule-meeting-dialog";
+import { useTranslation } from "@/hooks/use-translation";
 
 export default function MeetingsPage() {
+  const { t } = useTranslation();
   const [scheduleMeetingOpen, setScheduleMeetingOpen] = useState(false);
   
   // Fetch all meetings
@@ -27,9 +29,9 @@ export default function MeetingsPage() {
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-2xl font-semibold text-neutral-800">Meetings</h1>
+              <h1 className="text-2xl font-semibold text-neutral-800">{t('meetings.title')}</h1>
               <p className="mt-1 text-sm text-neutral-500">
-                Schedule and manage meetings with internal and external participants
+                {t('meetings.description')}
               </p>
             </div>
             
@@ -38,22 +40,22 @@ export default function MeetingsPage() {
               className="flex items-center gap-1"
             >
               <PlusCircle className="h-4 w-4" />
-              <span>Schedule Meeting</span>
+              <span>{t('meetings.form.schedule_meeting')}</span>
             </Button>
           </div>
           
           {/* Meetings Tabs */}
           <Tabs defaultValue="upcoming" className="w-full">
             <TabsList className="w-full max-w-md mb-6">
-              <TabsTrigger value="upcoming" className="flex-1">Upcoming Meetings</TabsTrigger>
-              <TabsTrigger value="all" className="flex-1">All Meetings</TabsTrigger>
+              <TabsTrigger value="upcoming" className="flex-1">{t('meetings.upcoming')}</TabsTrigger>
+              <TabsTrigger value="all" className="flex-1">{t('meetings.all')}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="upcoming">
               <div className="bg-white shadow rounded-lg">
                 <ul className="divide-y divide-neutral-200">
                   {isLoadingUpcoming ? (
-                    <div className="py-8 text-center text-neutral-500">Loading upcoming meetings...</div>
+                    <div className="py-8 text-center text-neutral-500">{t('meetings.loading_upcoming')}</div>
                   ) : upcomingMeetings && upcomingMeetings.length > 0 ? (
                     upcomingMeetings.map((meeting) => (
                       <MeetingListItem 
@@ -64,9 +66,9 @@ export default function MeetingsPage() {
                     ))
                   ) : (
                     <div className="py-8 text-center">
-                      <h3 className="text-lg font-medium text-neutral-700">No upcoming meetings</h3>
+                      <h3 className="text-lg font-medium text-neutral-700">{t('meetings.no_upcoming')}</h3>
                       <p className="mt-2 text-neutral-500">
-                        Click the 'Schedule Meeting' button to create a new meeting.
+                        {t('meetings.create_meeting_prompt')}
                       </p>
                     </div>
                   )}
@@ -78,7 +80,7 @@ export default function MeetingsPage() {
               <div className="bg-white shadow rounded-lg">
                 <ul className="divide-y divide-neutral-200">
                   {isLoadingAll ? (
-                    <div className="py-8 text-center text-neutral-500">Loading all meetings...</div>
+                    <div className="py-8 text-center text-neutral-500">{t('meetings.loading_all')}</div>
                   ) : allMeetings && allMeetings.length > 0 ? (
                     allMeetings.map((meeting) => (
                       <MeetingListItem 
@@ -89,9 +91,9 @@ export default function MeetingsPage() {
                     ))
                   ) : (
                     <div className="py-8 text-center">
-                      <h3 className="text-lg font-medium text-neutral-700">No meetings found</h3>
+                      <h3 className="text-lg font-medium text-neutral-700">{t('meetings.no_meetings')}</h3>
                       <p className="mt-2 text-neutral-500">
-                        Click the 'Schedule Meeting' button to create your first meeting.
+                        {t('meetings.create_first_meeting')}
                       </p>
                     </div>
                   )}

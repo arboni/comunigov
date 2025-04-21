@@ -407,6 +407,7 @@
   },
   "meetings": {
     "title": "Reuniões",
+    "description": "Agende e gerencie reuniões com participantes internos e externos",
     "add_meeting": "Adicionar Reunião",
     "edit_meeting": "Editar Reunião",
     "delete_meeting": "Excluir Reunião",
@@ -420,7 +421,14 @@
     "organizer": "Organizador",
     "attendees": "Participantes",
     "files": "Arquivos",
+    "upcoming": "Próximas Reuniões",
+    "all": "Todas as Reuniões",
+    "loading_upcoming": "Carregando próximas reuniões...",
+    "loading_all": "Carregando todas as reuniões...",
+    "no_upcoming": "Nenhuma reunião futura",
     "no_meetings": "Nenhuma reunião encontrada",
+    "create_meeting_prompt": "Clique no botão 'Agendar Reunião' para criar uma nova reunião.",
+    "create_first_meeting": "Clique no botão 'Agendar Reunião' para criar sua primeira reunião.",
     "select_attendees": "Selecionar Participantes",
     "add_file": "Adicionar Arquivo",
     "upload_file": "Fazer Upload de Arquivo",
@@ -434,17 +442,25 @@
       "attended": "Compareceu",
       "absent": "Ausente"
     },
+    "dialog": {
+      "title": "Agendar Nova Reunião",
+      "description": "Preencha os detalhes da reunião e adicione os participantes."
+    },
     "form": {
       "schedule_meeting": "Agendar Reunião",
       "scheduling": "Agendando...",
       "meeting_name": "Nome da Reunião",
-      "meeting_name_placeholder": "ex: Reunião de Planejamento Orçamentário",
-      "meeting_agenda": "Pauta da Reunião",
-      "meeting_agenda_placeholder": "ex: Discutir alocação de orçamento para o terceiro trimestre",
-      "meeting_date": "Data da Reunião",
+      "name": "Nome da Reunião",
+      "name_placeholder": "ex: Reunião de Planejamento Orçamentário",
+      "agenda": "Pauta",
+      "agenda_placeholder": "ex: Discutir alocação de orçamento para o terceiro trimestre",
+      "date": "Data da Reunião",
+      "pick_a_date": "Selecionar data",
       "select_date": "Selecionar data",
       "start_time": "Hora de Início",
+      "select_start_time": "Selecione uma hora de início",
       "end_time": "Hora de Término",
+      "select_end_time": "Selecione uma hora de término",
       "location": "Local",
       "location_placeholder": "ex: Sala de Conferência A",
       "related_subject": "Assunto Relacionado (opcional)",
@@ -459,7 +475,25 @@
       "no_users_available": "Nenhum usuário disponível para convidar.",
       "meeting_documents": "Documentos da Reunião",
       "meeting_documents_description": "Anexe até 5 documentos para compartilhar com os participantes (opcional).",
-      "upload_documents": "Enviar Documentos"
+      "upload_documents": "Enviar Documentos",
+      "validation": {
+        "name_min_length": "O nome da reunião deve ter pelo menos 3 caracteres",
+        "agenda_min_length": "A pauta da reunião deve ter pelo menos 10 caracteres",
+        "date_required": "A data da reunião é obrigatória",
+        "start_time_required": "Hora de início é obrigatória",
+        "end_time_required": "Hora de término é obrigatória"
+      }
+    },
+    "toast": {
+      "meeting_scheduled": "Reunião agendada",
+      "meeting_scheduled_description": "A reunião foi agendada com sucesso.",
+      "scheduling_failed": "Falha ao agendar reunião",
+      "meeting_files_issue": "Problema com arquivos da reunião",
+      "meeting_files_issue_description": "A reunião foi criada, mas houve um problema ao carregar os arquivos.",
+      "meeting_created_attendee_issue": "Reunião criada, mas problema com participantes",
+      "meeting_created_attendee_issue_description": "A reunião foi criada, mas houve um problema ao adicionar alguns participantes.",
+      "file_limit_exceeded": "Limite de arquivos excedido",
+      "file_limit_exceeded_description": "Você só pode enviar até 5 arquivos por reunião."
     }
   },
   "tasks": {
