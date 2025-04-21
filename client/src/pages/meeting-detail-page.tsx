@@ -10,8 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useMemo } from "react";
 import { MeetingReactions } from "@/components/meetings/meeting-reactions";
+import { useTranslation } from "react-i18next";
 
 export default function MeetingDetailPage() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const { id } = useParams<{ id: string }>();
   
@@ -358,12 +360,12 @@ export default function MeetingDetailPage() {
             <div className="md:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Meeting Details</CardTitle>
+                  <CardTitle>{t('meetings.meeting_details')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-sm font-medium text-neutral-500 mb-2">Agenda</h3>
+                      <h3 className="text-sm font-medium text-neutral-500 mb-2">{t('meetings.agenda')}</h3>
                       <p className="text-neutral-700 whitespace-pre-line">{meeting.agenda}</p>
                     </div>
                     
@@ -371,7 +373,7 @@ export default function MeetingDetailPage() {
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <h3 className="text-sm font-medium text-neutral-500 mb-2">Date & Time</h3>
+                        <h3 className="text-sm font-medium text-neutral-500 mb-2">{t('meetings.date_and_time')}</h3>
                         <div className="flex items-center text-neutral-700 mb-2">
                           <Calendar className="h-4 w-4 mr-2 text-neutral-500" />
                           {formattedDate}
@@ -383,10 +385,10 @@ export default function MeetingDetailPage() {
                       </div>
                       
                       <div>
-                        <h3 className="text-sm font-medium text-neutral-500 mb-2">Location</h3>
+                        <h3 className="text-sm font-medium text-neutral-500 mb-2">{t('meetings.location')}</h3>
                         <div className="flex items-center text-neutral-700">
                           <MapPin className="h-4 w-4 mr-2 text-neutral-500" />
-                          {meeting.location || "No location specified"}
+                          {meeting.location || t('meetings.no_location_specified')}
                         </div>
                       </div>
                     </div>
@@ -423,10 +425,10 @@ export default function MeetingDetailPage() {
             <div>
               <Card>
                 <CardHeader>
-                  <CardTitle>Meeting Files</CardTitle>
+                  <CardTitle>{t('meetings.meeting_files')}</CardTitle>
                   {documents.length > 0 && (
                     <div className="text-sm text-muted-foreground">
-                      {documents.length} {documents.length === 1 ? 'file' : 'files'} attached
+                      {documents.length} {documents.length === 1 ? t('meetings.file_singular') : t('meetings.file_plural')} {t('meetings.attached')}
                     </div>
                   )}
                 </CardHeader>
@@ -437,7 +439,7 @@ export default function MeetingDetailPage() {
               
               <Card className="mt-6">
                 <CardHeader>
-                  <CardTitle>Related Tasks</CardTitle>
+                  <CardTitle>{t('meetings.related_tasks')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {renderTasks()}
