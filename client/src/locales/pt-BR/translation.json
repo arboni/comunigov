@@ -31,7 +31,10 @@
     "reset": "Reiniciar",
     "selected": "Selecionado",
     "info": "Informação",
-    "no_position": "Sem cargo"
+    "no_position": "Sem cargo",
+    "ok": "OK",
+    "continue": "Continuar",
+    "close": "Fechar"
   },
   "auth": {
     "login": "Entrar",
