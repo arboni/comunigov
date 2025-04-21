@@ -203,7 +203,7 @@ export default function EntityMemberImportPage() {
       
       return true;
     } catch (error) {
-      setCsvValidationError('Error reading CSV file');
+      setCsvValidationError(t('entities.import.error_reading_file'));
       console.error('CSV validation error:', error);
       return false;
     }
@@ -219,7 +219,7 @@ export default function EntityMemberImportPage() {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to import entity members');
+        throw new Error(errorData.message || t('entities.import.error_import_failed'));
       }
       
       return await response.json() as ImportResult;
@@ -227,14 +227,18 @@ export default function EntityMemberImportPage() {
     onSuccess: (data) => {
       setImportResult(data);
       toast({
-        title: "Import complete",
-        description: `Processed ${data.totalProcessed} members: ${data.successful} successful, ${data.failed} failed`,
+        title: t("entities.import.toast_success"),
+        description: t("entities.import.toast_success_description", {
+          total: data.totalProcessed,
+          successful: data.successful,
+          failed: data.failed
+        }),
         variant: data.failed > 0 ? "destructive" : "default",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Import failed",
+        title: t("entities.import.toast_error"),
         description: error.message,
         variant: "destructive",
       });
