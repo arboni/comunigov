@@ -9,6 +9,7 @@ import { apiRequest, queryClient, invalidateMeetings, invalidateDashboardStats }
 import { SubjectsApi } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
+import { useTranslation } from "@/hooks/use-translation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -58,16 +59,20 @@ const timeOptions = [
 ];
 
 const formSchema = z.object({
-  name: z.string().min(3, "Meeting name must be at least 3 characters"),
-  agenda: z.string().min(10, "Agenda must be at least 10 characters"),
+  name: z.string().min(3, {
+    message: "meetings.form.validation.name_min_length"
+  }),
+  agenda: z.string().min(10, {
+    message: "meetings.form.validation.agenda_min_length"
+  }),
   date: z.date({
-    required_error: "Meeting date is required",
+    required_error: "meetings.form.validation.date_required",
   }),
   startTime: z.string({
-    required_error: "Start time is required",
+    required_error: "meetings.form.validation.start_time_required",
   }),
   endTime: z.string({
-    required_error: "End time is required",
+    required_error: "meetings.form.validation.end_time_required",
   }),
   location: z.string().optional(),
   subject: z.string().optional(),
@@ -84,6 +89,7 @@ export default function ScheduleMeetingDialog({
 }: ScheduleMeetingDialogProps) {
   const { toast } = useToast();
   const { user } = useSimpleAuth();
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<Array<{name: string; size: number; type: string; file: File}>>([]);
@@ -322,9 +328,9 @@ export default function ScheduleMeetingDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Schedule Meeting</DialogTitle>
+          <DialogTitle>{t('meetings.dialog.title')}</DialogTitle>
           <DialogDescription>
-            Create a new meeting and invite attendees from your organization.
+            {t('meetings.dialog.description')}
           </DialogDescription>
         </DialogHeader>
         
