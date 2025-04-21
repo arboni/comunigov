@@ -56,6 +56,7 @@ export default function RegisterEntityDialog({
   onOpenChange,
 }: RegisterEntityDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isUploading, setIsUploading] = useState(false);
   
   const form = useForm<FormValues>({
@@ -81,15 +82,15 @@ export default function RegisterEntityDialog({
       invalidateDashboardStats();
       
       toast({
-        title: "Entity registered",
-        description: "The entity has been successfully registered.",
+        title: t("entity.registered"),
+        description: t("entity.registered_success"),
       });
       form.reset();
       onOpenChange(false);
     },
     onError: (error: Error) => {
       toast({
-        title: "Registration failed",
+        title: t("entity.registration_failed"),
         description: error.message,
         variant: "destructive",
       });
@@ -109,8 +110,8 @@ export default function RegisterEntityDialog({
     setTimeout(() => {
       setIsUploading(false);
       toast({
-        title: "File processed",
-        description: "The CSV file has been processed. Please review the data before submitting.",
+        title: t("csv.file_processed"),
+        description: t("csv.file_processed_description"),
       });
     }, 1500);
   }
@@ -119,9 +120,9 @@ export default function RegisterEntityDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Register New Entity</DialogTitle>
+          <DialogTitle>{t("entity.register_new")}</DialogTitle>
           <DialogDescription>
-            Fill in the details to register a new entity in the system. The entity head will receive an email to complete the registration.
+            {t("entity.register_description")}
           </DialogDescription>
         </DialogHeader>
         
@@ -132,9 +133,9 @@ export default function RegisterEntityDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Entity Name</FormLabel>
+                  <FormLabel>{t("entity.name")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Finance Department" {...field} />
+                    <Input placeholder={t("entity.name_placeholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -146,23 +147,23 @@ export default function RegisterEntityDialog({
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Entity Type</FormLabel>
+                  <FormLabel>{t("entity.type")}</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select entity type" />
+                        <SelectValue placeholder={t("entity.select_type")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="secretariat">Secretariat</SelectItem>
-                      <SelectItem value="administrative_unit">Administrative Unit</SelectItem>
-                      <SelectItem value="external_entity">External Entity</SelectItem>
-                      <SelectItem value="government_agency">Government Agency</SelectItem>
-                      <SelectItem value="association">Association</SelectItem>
-                      <SelectItem value="council">Council</SelectItem>
+                      <SelectItem value="secretariat">{t("entity.type_secretariat")}</SelectItem>
+                      <SelectItem value="administrative_unit">{t("entity.type_administrative_unit")}</SelectItem>
+                      <SelectItem value="external_entity">{t("entity.type_external_entity")}</SelectItem>
+                      <SelectItem value="government_agency">{t("entity.type_government_agency")}</SelectItem>
+                      <SelectItem value="association">{t("entity.type_association")}</SelectItem>
+                      <SelectItem value="council">{t("entity.type_council")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -176,9 +177,9 @@ export default function RegisterEntityDialog({
                 name="headName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Head Name</FormLabel>
+                    <FormLabel>{t("entity.head_name")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. John Smith" {...field} />
+                      <Input placeholder={t("entity.head_name_placeholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -190,9 +191,9 @@ export default function RegisterEntityDialog({
                 name="headPosition"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Head Position</FormLabel>
+                    <FormLabel>{t("entity.head_position")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Director" {...field} />
+                      <Input placeholder={t("entity.head_position_placeholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -205,11 +206,11 @@ export default function RegisterEntityDialog({
               name="headEmail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Head Email</FormLabel>
+                  <FormLabel>{t("entity.head_email")}</FormLabel>
                   <FormControl>
                     <Input 
                       type="email" 
-                      placeholder="e.g. john.smith@example.com" 
+                      placeholder={t("entity.head_email_placeholder")} 
                       {...field} 
                     />
                   </FormControl>
@@ -223,10 +224,10 @@ export default function RegisterEntityDialog({
               name="tags"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tags (comma separated)</FormLabel>
+                  <FormLabel>{t("entity.tags")}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="e.g. finance, budget, accounting" 
+                      placeholder={t("entity.tags_placeholder")} 
                       {...field} 
                     />
                   </FormControl>
@@ -236,7 +237,7 @@ export default function RegisterEntityDialog({
             />
             
             <div>
-              <FormLabel className="block text-sm font-medium mb-2">Or Import from CSV</FormLabel>
+              <FormLabel className="block text-sm font-medium mb-2">{t("entity.import_csv")}</FormLabel>
               <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 border-dashed rounded-md">
                 <div className="space-y-1 text-center">
                   <svg
@@ -259,7 +260,7 @@ export default function RegisterEntityDialog({
                       htmlFor="file-upload"
                       className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary-600"
                     >
-                      <span>Upload a file</span>
+                      <span>{t("csv.upload_file")}</span>
                       <input
                         id="file-upload"
                         name="file-upload"
@@ -270,10 +271,10 @@ export default function RegisterEntityDialog({
                         disabled={isUploading}
                       />
                     </label>
-                    <p className="pl-1">or drag and drop</p>
+                    <p className="pl-1">{t("csv.or_drag_drop")}</p>
                   </div>
                   <p className="text-xs text-neutral-500">
-                    CSV up to 10MB
+                    {t("csv.file_size_limit")}
                   </p>
                 </div>
               </div>
@@ -285,13 +286,13 @@ export default function RegisterEntityDialog({
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button 
                 type="submit" 
                 disabled={createEntityMutation.isPending || isUploading}
               >
-                {createEntityMutation.isPending ? "Registering..." : "Register Entity"}
+                {createEntityMutation.isPending ? t("entity.registering") : t("entity.register")}
               </Button>
             </DialogFooter>
           </form>
