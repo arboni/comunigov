@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation, Link } from "wouter";
-import { ArrowLeft, Building, User, Mail, Phone, Globe, MapPin, PlusCircle, PenSquare, UserPlus } from "lucide-react";
+import { ArrowLeft, Building, User, Mail, Phone, Globe, MapPin, PlusCircle, PenSquare, UserPlus, FileUp } from "lucide-react";
 import DashboardLayout from "@/components/layouts/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -250,7 +250,7 @@ export default function EntityDetailPage() {
                             variant="outline" 
                             size="sm" 
                             className="flex items-center"
-                            onClick={() => navigate(`/entities/${entityId}/members/import`)}
+                            onClick={() => setLocation(`/entities/${id}/members/import`)}
                           >
                             <FileUp className="h-4 w-4 mr-1" />
                             Import Members
