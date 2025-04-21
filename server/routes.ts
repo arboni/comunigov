@@ -2786,7 +2786,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           username: u.username,
           fullName: u.fullName,
           email: u.email,
-          role: u.role
+          role: u.role,
+          tempPassword: u.tempPassword // Include the temporary password in the response
         }))
       });
     } catch (error) {
