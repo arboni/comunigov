@@ -21,7 +21,7 @@ import {
   hasAnalyticsAccess
 } from "./auth-middleware";
 import { ActivityLogger } from "./activity-logger";
-import { importEntitiesFromCSV } from "./entity-csv-import";
+import { importEntitiesFromCSV, importEntityMembersFromCSV } from "./entity-csv-import";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -2816,7 +2816,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if entity exists
-      const entity = await db.select().from(entities).where(eq(entities.id, entityId)).limit(1);
+      const entity = await db.select().from(entitiesTable).where(eq(entitiesTable.id, entityId)).limit(1);
       if (entity.length === 0) {
         return res.status(404).json({ message: "Entity not found" });
       }
