@@ -296,7 +296,7 @@ export default function SendMessageDialog({
       
       {/* Main message sending dialog */}
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-xl md:max-w-2xl">
+        <DialogContent className="w-[90%] sm:w-[80%] md:w-[70%] max-w-[1000px]">
           <DialogHeader>
             <DialogTitle>{t('communications.send_communication')}</DialogTitle>
             <DialogDescription>
@@ -388,7 +388,7 @@ export default function SendMessageDialog({
                     <FormControl>
                       <Textarea 
                         placeholder={t('communications.write_message')} 
-                        className="min-h-28"
+                        className="min-h-40"
                         {...field} 
                       />
                     </FormControl>
@@ -500,7 +500,7 @@ export default function SendMessageDialog({
                                   </FormDescription>
                                 </div>
                                 
-                                <div className="border rounded-md p-4 max-h-60 overflow-y-auto">
+                                <div className="border rounded-md p-4 max-h-80 overflow-y-auto">
                                   {users && Array.isArray(users) && users.length > 0 ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                       {users.map((user: any) => (
@@ -557,7 +557,7 @@ export default function SendMessageDialog({
                                   </FormDescription>
                                 </div>
                                 
-                                <div className="border rounded-md p-4 max-h-60 overflow-y-auto">
+                                <div className="border rounded-md p-4 max-h-80 overflow-y-auto">
                                   {entities && Array.isArray(entities) && entities.length > 0 ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                       {entities.map((entity: any) => (
