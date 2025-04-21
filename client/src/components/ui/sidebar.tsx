@@ -1,9 +1,11 @@
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, LogOut } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import AvatarWithInitials from "@/components/ui/avatar-with-initials";
+import { Button } from "@/components/ui/button";
 import { UserWithEntity } from "@shared/schema";
+import { useTranslation } from "@/hooks/use-translation";
 
 type SidebarItem = {
   name: string;
@@ -15,10 +17,12 @@ type SidebarItem = {
 type SidebarProps = {
   items: SidebarItem[];
   user: Omit<UserWithEntity, "password"> | null | undefined;
+  onLogout?: () => void;
 };
 
-export function Sidebar({ items, user }: SidebarProps) {
+export function Sidebar({ items, user, onLogout }: SidebarProps) {
   const [location] = useLocation();
+  const { t } = useTranslation();
 
   return (
     <aside className="hidden md:flex md:flex-shrink-0">
@@ -74,6 +78,20 @@ export function Sidebar({ items, user }: SidebarProps) {
                 </Link>
             ))}
           </nav>
+        </div>
+        
+        {/* Logout button at the bottom */}
+        <div className="p-4 mt-auto border-t border-neutral-100">
+          {onLogout && (
+            <Button 
+              variant="outline" 
+              className="w-full justify-start text-neutral-600"
+              onClick={onLogout}
+            >
+              <LogOut className="h-5 w-5 mr-2" />
+              {t('auth.logout')}
+            </Button>
+          )}
         </div>
       </div>
     </aside>

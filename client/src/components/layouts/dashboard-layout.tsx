@@ -12,7 +12,8 @@ import {
   Bell,
   X,
   FileText,
-  BarChart3
+  BarChart3,
+  LogOut
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -22,6 +23,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AvatarWithInitials from "@/components/ui/avatar-with-initials";
 import { toast } from "@/hooks/use-toast";
 import { UserWithEntity } from "@shared/schema";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -30,6 +32,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [location, setLocation] = useLocation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const { t } = useTranslation();
 
   // Get the current user
   const { data: user } = useQuery<Omit<UserWithEntity, "password"> | null>({
@@ -46,14 +49,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
       toast({
-        title: "Logged out",
-        description: "You have been successfully logged out."
+        title: t('auth.logout_success'),
+        description: t('auth.logout_success_message')
       });
       setLocation("/auth");
     },
     onError: (error: Error) => {
       toast({
-        title: "Logout failed",
+        title: t('auth.logout_error'),
         description: error.message,
         variant: "destructive",
       });
@@ -85,7 +88,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Desktop Sidebar */}
-      <Sidebar items={navigationItems} user={user} />
+      <Sidebar items={navigationItems} user={user} onLogout={handleLogout} />
       
       {/* Mobile Sidebar */}
       <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
@@ -156,7 +159,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 className="w-full justify-start text-neutral-600"
                 onClick={handleLogout}
               >
-                Logout
+                <LogOut className="h-5 w-5 mr-2" />
+                {t('auth.logout')}
               </Button>
             </div>
           </div>
