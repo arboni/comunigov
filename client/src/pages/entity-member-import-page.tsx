@@ -326,34 +326,34 @@ export default function EntityMemberImportPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <ol className="list-decimal pl-5 space-y-2">
-              <li>Download the CSV template file</li>
-              <li>Fill in the member data following the template format</li>
-              <li>Upload the completed CSV file</li>
-              <li>Review the validation results and fix any errors</li>
-              <li>Confirm the import to add the members to the entity</li>
+              <li>{t("entities.import.steps.download_template")}</li>
+              <li>{t("entities.import.steps.fill_data")}</li>
+              <li>{t("entities.import.steps.upload_file")}</li>
+              <li>{t("entities.import.steps.review_results")}</li>
+              <li>{t("entities.import.steps.confirm_import")}</li>
             </ol>
             
             <Alert className="bg-muted/50">
               <Info className="h-4 w-4" />
-              <AlertTitle>Required Fields</AlertTitle>
+              <AlertTitle>{t("entities.import.required_fields")}</AlertTitle>
               <AlertDescription>
-                <p>Each member record must include <strong>fullName</strong>, <strong>email</strong>, and <strong>position</strong>.</p>
-                <p className="mt-1">Phone, WhatsApp, and Telegram fields are optional.</p>
+                <p>{t("entities.import.required_fields_description", { fields: "fullName, email, position" })}</p>
+                <p className="mt-1">{t("entities.import.optional_fields")}</p>
               </AlertDescription>
             </Alert>
             
             <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
               <Info className="h-4 w-4 text-blue-500" />
-              <AlertTitle>Communication Channels</AlertTitle>
+              <AlertTitle>{t("entities.import.communication_channels")}</AlertTitle>
               <AlertDescription>
-                <p className="mb-2">For WhatsApp, include the full number with country code (e.g., +12025550123).</p>
-                <p>For Telegram, include only the username without the @ symbol (e.g., username_123).</p>
+                <p className="mb-2">{t("entities.import.whatsapp_format")}</p>
+                <p>{t("entities.import.telegram_format")}</p>
               </AlertDescription>
             </Alert>
             
             <div className="pt-2">
               <Button onClick={downloadTemplate} variant="outline" className="flex items-center gap-2">
-                <Download className="h-4 w-4" /> Download CSV Template
+                <Download className="h-4 w-4" /> {t("entities.import.member_import.csv_template")}
               </Button>
             </div>
           </CardContent>
@@ -362,16 +362,16 @@ export default function EntityMemberImportPage() {
         {/* File Upload Card */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Upload CSV File</CardTitle>
+            <CardTitle>{t("csv.upload_file")}</CardTitle>
             <CardDescription>
-              Select a CSV file with member data to import
+              {t("entities.import.member_import.upload_instructions")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-8 text-center">
               <Upload className="h-10 w-10 text-muted-foreground mb-4" />
               <p className="text-sm text-muted-foreground mb-2">
-                {selectedFile ? `Selected: ${selectedFile.name}` : 'Click to select or drag & drop CSV file'}
+                {selectedFile ? `${t("common.selected")}: ${selectedFile.name}` : t("csv.select_or_drop")}
               </p>
               <Input
                 type="file"
@@ -385,14 +385,14 @@ export default function EntityMemberImportPage() {
                 variant="secondary"
                 disabled={importMutation.isPending}
               >
-                Select File
+                {t("csv.select_file")}
               </Button>
             </div>
             
             {csvValidationError && (
               <Alert variant="destructive" className="mt-4">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Validation Error</AlertTitle>
+                <AlertTitle>{t("csv.validation_error")}</AlertTitle>
                 <AlertDescription>{csvValidationError}</AlertDescription>
               </Alert>
             )}

@@ -208,6 +208,19 @@
       "processing": "Processando importação...",
       "success_count": "Importados com sucesso",
       "failed_count": "Falha na importação",
+      "required_fields": "Campos Obrigatórios",
+      "required_fields_description": "Cada registro de membro deve incluir <strong>{{fields}}</strong>.",
+      "optional_fields": "Os campos Telefone, WhatsApp e Telegram são opcionais.",
+      "communication_channels": "Canais de Comunicação",
+      "whatsapp_format": "Para WhatsApp, inclua o número completo com código do país (ex: +5511987654321).",
+      "telegram_format": "Para Telegram, inclua apenas o nome de usuário sem o símbolo @ (ex: usuario_123).",
+      "steps": {
+        "download_template": "Baixe o arquivo modelo CSV",
+        "fill_data": "Preencha os dados dos membros seguindo o formato do modelo",
+        "upload_file": "Faça upload do arquivo CSV preenchido",
+        "review_results": "Revise os resultados da validação e corrija quaisquer erros",
+        "confirm_import": "Confirme a importação para adicionar os membros à entidade"
+      },
       "member_import": {
         "title": "Importar Membros",
         "description": "Faça upload de um arquivo CSV com dados de membros para",
@@ -218,7 +231,9 @@
         "error": "Erro ao importar membros",
         "processing": "Processando importação...",
         "success_count": "Importados com sucesso",
-        "failed_count": "Falha na importação"
+        "failed_count": "Falha na importação",
+        "instructions_title": "Como Importar Membros da Entidade",
+        "instructions_description": "Siga estas etapas para importar membros em massa para"
       }
     }
   },

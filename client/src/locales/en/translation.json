@@ -191,6 +191,19 @@
       "processing": "Processing import...",
       "success_count": "Successfully imported",
       "failed_count": "Failed to import",
+      "required_fields": "Required Fields",
+      "required_fields_description": "Each member record must include <strong>{{fields}}</strong>.",
+      "optional_fields": "Phone, WhatsApp, and Telegram fields are optional.",
+      "communication_channels": "Communication Channels",
+      "whatsapp_format": "For WhatsApp, include the full number with country code (e.g., +12025550123).",
+      "telegram_format": "For Telegram, include only the username without the @ symbol (e.g., username_123).",
+      "steps": {
+        "download_template": "Download the CSV template file",
+        "fill_data": "Fill in the member data following the template format",
+        "upload_file": "Upload the completed CSV file",
+        "review_results": "Review the validation results and fix any errors",
+        "confirm_import": "Confirm the import to add the members to the entity"
+      },
       "member_import": {
         "title": "Import Members",
         "description": "Upload a CSV file with member data for",
