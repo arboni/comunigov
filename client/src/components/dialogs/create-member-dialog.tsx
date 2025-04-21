@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { apiRequest, invalidateUsers } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +51,7 @@ export default function CreateMemberDialog({
   entityId,
 }: CreateMemberDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [emailSent, setEmailSent] = useState(false);
   
   // Form setup
@@ -120,8 +122,8 @@ export default function CreateMemberDialog({
       
       // Show success message
       toast({
-        title: "Member created",
-        description: "New member has been successfully created.",
+        title: t("entities.members.member_created"),
+        description: t("entities.members.member_created_description"),
       });
       
       // Reset form
@@ -132,7 +134,7 @@ export default function CreateMemberDialog({
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to create member",
+        title: t("entities.members.create_failed"),
         description: error.message,
         variant: "destructive",
       });
@@ -147,9 +149,9 @@ export default function CreateMemberDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create New Member</DialogTitle>
+          <DialogTitle>{t("entities.members.add_member")}</DialogTitle>
           <DialogDescription>
-            Add a new member to this entity. They will receive an email to set up their account.
+            {t("entities.members.add_member_description")}
           </DialogDescription>
         </DialogHeader>
         
@@ -160,9 +162,9 @@ export default function CreateMemberDialog({
               name="fullName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>{t("entities.members.full_name")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder={t("auth.full_name_placeholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -174,9 +176,9 @@ export default function CreateMemberDialog({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("common.email")}</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="john.doe@example.com" {...field} />
+                    <Input type="email" placeholder={t("auth.email_placeholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -188,9 +190,9 @@ export default function CreateMemberDialog({
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>{t("auth.username")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="johndoe" {...field} />
+                    <Input placeholder={t("auth.username_placeholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -203,19 +205,19 @@ export default function CreateMemberDialog({
                 name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Role</FormLabel>
+                    <FormLabel>{t("entities.members.role")}</FormLabel>
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select role" />
+                          <SelectValue placeholder={t("entities.members.select_role")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="entity_member">Member</SelectItem>
-                        <SelectItem value="entity_head">Entity Head</SelectItem>
+                        <SelectItem value="entity_member">{t("entities.members.role_member")}</SelectItem>
+                        <SelectItem value="entity_head">{t("entities.members.role_head")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -228,9 +230,9 @@ export default function CreateMemberDialog({
                 name="position"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Position (Optional)</FormLabel>
+                    <FormLabel>{t("entities.members.position")} ({t("common.optional")})</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Analyst" {...field} value={field.value || ''} />
+                      <Input placeholder={t("entities.members.position_placeholder")} {...field} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -243,9 +245,9 @@ export default function CreateMemberDialog({
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone (Optional)</FormLabel>
+                  <FormLabel>{t("common.phone")} ({t("common.optional")})</FormLabel>
                   <FormControl>
-                    <Input placeholder="+1 234 567 8901" {...field} value={field.value || ''} />
+                    <Input placeholder="+55 11 98765-4321" {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -254,8 +256,8 @@ export default function CreateMemberDialog({
             
             {emailSent && (
               <div className="rounded-md bg-green-50 p-4 text-sm text-green-800">
-                <p>A welcome email has been sent to the member with their temporary password and instructions.</p>
-                <p className="mt-1 font-medium">The member will need to change their password after first login.</p>
+                <p>{t("entities.members.welcome_email_sent")}</p>
+                <p className="mt-1 font-medium">{t("entities.members.password_change_required")}</p>
               </div>
             )}
             
@@ -265,13 +267,13 @@ export default function CreateMemberDialog({
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button 
                 type="submit" 
                 disabled={createMemberMutation.isPending}
               >
-                {createMemberMutation.isPending ? "Creating..." : "Create Member"}
+                {createMemberMutation.isPending ? t("entities.members.creating") : t("entities.members.create_member")}
               </Button>
             </DialogFooter>
           </form>
