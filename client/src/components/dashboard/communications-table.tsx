@@ -75,8 +75,8 @@ export default function CommunicationsTable({
               
               // In a real application, you would calculate this from the recipients data
               const readStatus = Math.random() > 0.5 
-                ? <Badge variant="outline" className="bg-emerald-100 text-emerald-800">{t('communications.status.all_read')}</Badge>
-                : <Badge variant="outline" className="bg-amber-100 text-amber-800">{t('communications.status.partially_read')}</Badge>;
+                ? <Badge variant="outline" className="bg-emerald-100 text-emerald-800">{t('communications.status_types.all_read')}</Badge>
+                : <Badge variant="outline" className="bg-amber-100 text-amber-800">{t('communications.status_types.partially_read')}</Badge>;
               
               return (
                 <TableRow key={comm.id}>
@@ -88,7 +88,7 @@ export default function CommunicationsTable({
                   <TableCell>
                     <div className="flex items-center text-neutral-500">
                       {getChannelIcon(comm.channel)}
-                      {t(`communications.channel_types.${comm.channel}`)}
+                      {t(`communications.channels.${comm.channel}`)}
                     </div>
                   </TableCell>
                   <TableCell className="text-neutral-500">{formattedDate}</TableCell>
