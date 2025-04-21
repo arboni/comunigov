@@ -403,7 +403,7 @@ export default function EntityMemberImportPage() {
               onClick={resetImport}
               disabled={!selectedFile || importMutation.isPending}
             >
-              Reset
+              {t("common.reset")}
             </Button>
             <Button 
               variant="default" 
@@ -412,10 +412,10 @@ export default function EntityMemberImportPage() {
             >
               {importMutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Importing...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("entities.import.processing")}
                 </>
               ) : (
-                'Import Members'
+                t("entities.import.member_import.submit")
               )}
             </Button>
           </CardFooter>
@@ -425,16 +425,16 @@ export default function EntityMemberImportPage() {
         {importResult && (
           <Card>
             <CardHeader>
-              <CardTitle>Import Results</CardTitle>
+              <CardTitle>{t("entities.import.results")}</CardTitle>
               <CardDescription>
-                Summary of the member import operation
+                {t("entities.import.results_description")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-muted/30 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Total Processed</span>
+                    <span className="text-sm font-medium">{t("entities.import.total_processed")}</span>
                     <Info className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <p className="text-2xl font-bold">{importResult.totalProcessed}</p>
@@ -442,7 +442,7 @@ export default function EntityMemberImportPage() {
                 
                 <div className="bg-green-100 dark:bg-green-900/20 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Successful</span>
+                    <span className="text-sm font-medium">{t("entities.import.success_count")}</span>
                     <CheckCircle className="h-4 w-4 text-green-500" />
                   </div>
                   <p className="text-2xl font-bold">{importResult.successful}</p>
@@ -450,7 +450,7 @@ export default function EntityMemberImportPage() {
                 
                 <div className={`${importResult.failed > 0 ? 'bg-red-100 dark:bg-red-900/20' : 'bg-muted/30'} p-4 rounded-lg`}>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Failed</span>
+                    <span className="text-sm font-medium">{t("entities.import.failed_count")}</span>
                     {importResult.failed > 0 ? (
                       <XCircle className="h-4 w-4 text-red-500" />
                     ) : (
@@ -462,7 +462,7 @@ export default function EntityMemberImportPage() {
                 
                 <div className="bg-blue-100 dark:bg-blue-900/20 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Users Created</span>
+                    <span className="text-sm font-medium">{t("entities.import.users_created")}</span>
                     <Info className="h-4 w-4 text-blue-500" />
                   </div>
                   <p className="text-2xl font-bold">{importResult.usersCreated || 0}</p>

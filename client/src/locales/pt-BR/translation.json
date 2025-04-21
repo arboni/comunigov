@@ -28,6 +28,8 @@
     "success": "Sucesso",
     "error": "Erro",
     "warning": "Aviso",
+    "reset": "Reiniciar",
+    "selected": "Selecionado",
     "info": "Informação",
     "no_position": "Sem cargo"
   },
@@ -136,7 +138,10 @@
     "or_drag_drop": "ou arraste e solte",
     "file_size_limit": "CSV até 10MB",
     "file_processed": "Arquivo processado",
-    "file_processed_description": "O arquivo CSV foi processado. Por favor, revise os dados antes de enviar."
+    "file_processed_description": "O arquivo CSV foi processado. Por favor, revise os dados antes de enviar.",
+    "select_or_drop": "Clique para selecionar ou arraste e solte arquivo CSV",
+    "select_file": "Selecionar Arquivo",
+    "validation_error": "Erro de Validação"
   },
   "entities": {
     "title": "Entidades",
