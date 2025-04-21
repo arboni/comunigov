@@ -186,7 +186,15 @@
       "position": "Cargo",
       "whatsapp": "WhatsApp",
       "telegram": "Telegram",
-      "no_members": "Nenhum membro encontrado"
+      "no_members": "Nenhum membro encontrado",
+      "no_position": "Sem cargo",
+      "add_first_member": "Adicionar Primeiro Membro",
+      "table": {
+        "member": "Membro",
+        "role": "Função",
+        "contact": "Contato",
+        "actions": "Ações"
+      }
     },
     "import": {
       "title": "Importar Entidades",

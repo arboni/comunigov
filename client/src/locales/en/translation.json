@@ -169,7 +169,15 @@
       "position": "Position",
       "whatsapp": "WhatsApp",
       "telegram": "Telegram",
-      "no_members": "No members found"
+      "no_members": "No members found",
+      "no_position": "No position",
+      "add_first_member": "Add First Member",
+      "table": {
+        "member": "Member",
+        "role": "Role",
+        "contact": "Contact",
+        "actions": "Actions"
+      }
     },
     "import": {
       "title": "Import Entities",
