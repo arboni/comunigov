@@ -81,15 +81,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navigationItems = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
-    { name: "Entity Management", href: "/entities", icon: Building2 },
-    { name: "Import Entities", href: "/entities/import", icon: FileText, adminOnly: true },
-    { name: "Communications", href: "/communications", icon: SendHorizonal },
-    { name: "Meetings", href: "/meetings", icon: Calendar },
-    { name: "Tasks", href: "/tasks", icon: ListChecks },
-    { name: "Subjects", href: "/subjects", icon: FileText },
-    { name: "Analytics", href: "/analytics", icon: BarChart3 },
-    { name: "Users", href: "/users", icon: Users },
-    { name: "Settings", href: "/settings", icon: Settings },
+    { name: t('navigation.entities'), href: "/entities", icon: Building2 },
+    { name: t('entities.import.title'), href: "/entities/import", icon: FileText, adminOnly: true },
+    { name: t('navigation.communications'), href: "/communications", icon: SendHorizonal },
+    { name: t('navigation.meetings'), href: "/meetings", icon: Calendar },
+    { name: t('navigation.tasks'), href: "/tasks", icon: ListChecks },
+    { name: t('navigation.subjects'), href: "/subjects", icon: FileText },
+    { name: t('navigation.analytics'), href: "/analytics", icon: BarChart3 },
+    { name: t('navigation.users'), href: "/users", icon: Users },
+    { name: t('navigation.settings'), href: "/settings", icon: Settings },
   ];
 
   const handleLogout = () => {
@@ -133,8 +133,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     <div className="ml-3">
                       <p className="text-sm font-medium text-neutral-700">{user.fullName}</p>
                       <p className="text-xs text-neutral-500">
-                        {user.role === 'master_implementer' ? 'Master Implementer' :
-                         user.role === 'entity_head' ? 'Entity Head' : 'Entity Member'}
+                        {user.role === 'master_implementer' ? t('users.roles.master_implementer') :
+                         user.role === 'entity_head' ? t('users.roles.entity_head') : t('users.roles.entity_member')}
                       </p>
                     </div>
                   </div>

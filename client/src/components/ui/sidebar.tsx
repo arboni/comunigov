@@ -43,8 +43,8 @@ export function Sidebar({ items, user, onLogout }: SidebarProps) {
                 <div className="ml-3">
                   <p className="text-sm font-medium text-neutral-700">{user.fullName}</p>
                   <p className="text-xs text-neutral-500">
-                    {user.role === 'master_implementer' ? 'Master Implementer' :
-                     user.role === 'entity_head' ? 'Entity Head' : 'Entity Member'}
+                    {user.role === 'master_implementer' ? t('users.roles.master_implementer') :
+                     user.role === 'entity_head' ? t('users.roles.entity_head') : t('users.roles.entity_member')}
                   </p>
                 </div>
               </div>
