@@ -3,6 +3,7 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
+import { useI18nContext } from "./i18n-provider"
 
 const AlertDialog = AlertDialogPrimitive.Root
 
@@ -112,29 +113,59 @@ AlertDialogDescription.displayName =
 const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Action
-    ref={ref}
-    className={cn(buttonVariants(), className)}
-    {...props}
-  />
-))
+>(({ className, children, ...props }, ref) => {
+  // Use a try-catch to handle the case when the component is used outside I18nProvider
+  let translatedChildren = children;
+  try {
+    const { getLocalizedText } = useI18nContext();
+    if (typeof children === 'string') {
+      translatedChildren = getLocalizedText(children as string);
+    }
+  } catch (error) {
+    // Just use the original children if I18nProvider is not available
+  }
+  
+  return (
+    <AlertDialogPrimitive.Action
+      ref={ref}
+      className={cn(buttonVariants(), className)}
+      {...props}
+    >
+      {translatedChildren}
+    </AlertDialogPrimitive.Action>
+  );
+})
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName
 
 const AlertDialogCancel = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Cancel
-    ref={ref}
-    className={cn(
-      buttonVariants({ variant: "outline" }),
-      "mt-2 sm:mt-0",
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, children, ...props }, ref) => {
+  // Use a try-catch to handle the case when the component is used outside I18nProvider
+  let translatedChildren = children;
+  try {
+    const { getLocalizedText } = useI18nContext();
+    if (typeof children === 'string') {
+      translatedChildren = getLocalizedText(children as string);
+    }
+  } catch (error) {
+    // Just use the original children if I18nProvider is not available
+  }
+  
+  return (
+    <AlertDialogPrimitive.Cancel
+      ref={ref}
+      className={cn(
+        buttonVariants({ variant: "outline" }),
+        "mt-2 sm:mt-0",
+        className
+      )}
+      {...props}
+    >
+      {translatedChildren}
+    </AlertDialogPrimitive.Cancel>
+  );
+})
 AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName
 
 export {

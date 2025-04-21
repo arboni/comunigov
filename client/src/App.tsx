@@ -22,6 +22,7 @@ import SettingsPage from "@/pages/settings-page";
 import SubjectsPage from "@/pages/subjects-page";
 import AnalyticsPage from "@/pages/analytics-page";
 import { useTranslation } from "@/hooks/use-translation";
+import { I18nProvider } from "@/components/ui/i18n-provider";
 
 // This is a simpler implementation that doesn't rely on the auth context
 function ProtectedRoute({ component: Component, path }: { component: () => JSX.Element, path: string }) {
@@ -91,10 +92,10 @@ function Router() {
 
 function App() {
   return (
-    <>
+    <I18nProvider>
       <Router />
       <Toaster />
-    </>
+    </I18nProvider>
   );
 }
 
