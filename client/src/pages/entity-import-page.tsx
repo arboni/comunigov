@@ -67,33 +67,43 @@ export default function EntityImportPage() {
   
   // Download CSV template
   const downloadTemplate = () => {
-    // Header row with column names
-    const headers = ['name', 'type', 'headName', 'headPosition', 'headEmail', 'address', 'phone', 'website', 'socialMedia', 'tags', 'members'];
+    // Create a multi-line comment with detailed instructions
+    const comments = [
+      '# CSV Template for Entity Import',
+      '# ',
+      '# REQUIRED FIELDS (case-sensitive):',
+      '# - name: Entity name',
+      '# - type: Entity type (Must be one of: secretariat, administrative_unit, external_entity, government_agency, association, council)',
+      '# - headName: Full name of the entity head',
+      '# - headPosition: Position/title of the entity head',
+      '# - headEmail: Email address of the entity head',
+      '# ',
+      '# OPTIONAL FIELDS:',
+      '# - address: Physical address',
+      '# - phone: Contact phone number',
+      '# - website: Website URL',
+      '# - socialMedia: Social media handles',
+      '# - tags: Comma-separated tags without spaces between them (e.g., government,health)',
+      '# - members: Entity members in the format below',
+      '# ',
+      '# MEMBERS FORMAT: fullName,email,position,phone,whatsapp,telegram;fullName2,email2,...',
+      '# - Use semicolons (;) to separate different members',
+      '# - Use commas (,) to separate fields within each member entry',
+      '# - The entire members column MUST be wrapped in double quotes',
+      '# - At minimum, each member needs fullName, email, and position',
+      '# '
+    ].join('\n');
     
-    // Create a sample row using proper CSV format with escaping
-    // Note: Double quotes are used for fields that contain commas or special characters
-    // The members field must be wrapped in quotes and use semicolons between members
-    const exampleRow = [
-      'City Hall', 
-      'administrative_unit',
-      'John Smith',
-      'Mayor',
-      'john.smith@example.com',
-      '123 Main Street',
-      '+12345678901',
-      'https://example.com',
-      '"Twitter: @cityhallex"',
-      '"government,local"', // Tags with comma need quotes
-      '"Jane Doe,jane.doe@example.com,Secretary,+12345678902,+12345678902,@janedoe;Bob Johnson,bob.johnson@example.com,Clerk,+12345678903,,"' // Quotes for entire members field
-    ];
+    // Header row with column names - EXACT match with validation
+    const headers = 'name,type,headName,headPosition,headEmail,address,phone,website,socialMedia,tags,members';
     
-    // Add a comment row explaining members format
-    const commentRow = '# The "members" column uses semicolons (;) to separate multiple members and commas (,) to separate fields. Format: "name,email,position,phone,whatsapp,telegram;name2,email2,...". The entire column must be wrapped in quotes.';
+    // Example row with properly formatted data
+    const exampleRow = 'City Hall,administrative_unit,John Smith,Mayor,john.smith@example.com,123 Main Street,+12345678901,https://example.com,@cityhallex,government/local,"Jane Doe,jane.doe@example.com,Secretary,+12345678902,+12345678902,@janedoe;Bob Johnson,bob.johnson@example.com,Clerk,+12345678903,,"';
     
     const csvContent = [
-      commentRow,
-      headers.join(','),
-      exampleRow.join(',')
+      comments,
+      headers,
+      exampleRow
     ].join('\n');
     
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -143,18 +153,29 @@ export default function EntityImportPage() {
     try {
       // Read file content to validate it contains expected headers
       const text = await file.text();
-      const lines = text.split('\n');
+      
+      // Skip any comment line (starting with #)
+      const lines = text.split('\n').filter(line => !line.trim().startsWith('#'));
       
       if (lines.length < 2) {
         setCsvValidationError('The CSV file must contain at least a header row and one data row');
         return false;
       }
       
-      const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
+      // Get the first line with actual content (header row)
+      // Convert to lowercase and trim whitespace for case-insensitive comparison
+      const headerLine = lines[0].toLowerCase();
+      const headers = headerLine.split(',').map(h => h.trim());
+      
+      // Define the required headers 
       const requiredHeaders = ['name', 'type', 'headname', 'headposition', 'heademail'];
       
+      console.log('CSV Headers found:', headers);
+      
       // Check for required headers
-      const missingHeaders = requiredHeaders.filter(rh => !headers.includes(rh));
+      const missingHeaders = requiredHeaders.filter(rh => {
+        return !headers.includes(rh);
+      });
       
       if (missingHeaders.length > 0) {
         setCsvValidationError(`Required headers missing: ${missingHeaders.join(', ')}`);
