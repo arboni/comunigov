@@ -84,21 +84,16 @@ export default function EntityImportPage() {
       '# - website: Website URL',
       '# - socialMedia: Social media handles',
       '# - tags: Comma-separated tags without spaces between them (e.g., government,health)',
-      '# - members: Entity members in the format below',
       '# ',
-      '# MEMBERS FORMAT: fullName,email,position,phone,whatsapp,telegram;fullName2,email2,...',
-      '# - Use semicolons (;) to separate different members',
-      '# - Use commas (,) to separate fields within each member entry',
-      '# - The entire members column MUST be wrapped in double quotes',
-      '# - At minimum, each member needs fullName, email, and position',
+      '# NOTE: To import entity members, use the separate "Import Entity Members" feature after creating the entity',
       '# '
     ].join('\n');
     
     // Header row with column names - EXACT match with validation
-    const headers = 'name,type,headName,headPosition,headEmail,address,phone,website,socialMedia,tags,members';
+    const headers = 'name,type,headName,headPosition,headEmail,address,phone,website,socialMedia,tags';
     
     // Example row with properly formatted data
-    const exampleRow = 'City Hall,administrative_unit,John Smith,Mayor,john.smith@example.com,123 Main Street,+12345678901,https://example.com,@cityhallex,government/local,"Jane Doe,jane.doe@example.com,Secretary,+12345678902,+12345678902,@janedoe;Bob Johnson,bob.johnson@example.com,Clerk,+12345678903,,"';
+    const exampleRow = 'City Hall,administrative_unit,John Smith,Mayor,john.smith@example.com,123 Main Street,+12345678901,https://example.com,@cityhallex,government/local';
     
     const csvContent = [
       comments,
@@ -282,22 +277,13 @@ export default function EntityImportPage() {
               </AlertDescription>
             </Alert>
             
-            <Alert className="bg-muted/50">
-              <Info className="h-4 w-4" />
-              <AlertTitle>Including Entity Members</AlertTitle>
+            <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+              <Info className="h-4 w-4 text-blue-500" />
+              <AlertTitle>Entity Members Import</AlertTitle>
               <AlertDescription>
-                <p className="mb-2">You can include entity members in the CSV file using the "members" column. Format:</p>
-                <p className="font-mono text-xs">fullName,email,position,phone,whatsapp,telegram;fullName2,email2,position2,...</p>
-                <p className="mt-2">Members will be created as entity_member users automatically. Only name, email, and position are required for each member.</p>
-                <div className="mt-3 p-2 bg-muted rounded-md">
-                  <p className="text-xs font-medium text-muted-foreground mb-1">CSV Format Requirements:</p>
-                  <ul className="list-disc text-xs pl-4 space-y-1 text-muted-foreground">
-                    <li>The <strong>entire members column</strong> must be wrapped in double quotes</li>
-                    <li>Use <strong>semicolons (;)</strong> to separate different members</li>
-                    <li>Use <strong>commas (,)</strong> to separate fields within each member</li>
-                    <li>If you're using Excel, save as CSV and verify quotes are preserved</li>
-                  </ul>
-                </div>
+                <p className="mb-2">Entity members are now imported separately through a dedicated import process.</p>
+                <p className="mb-2">First create the entity using this import, then go to the entity detail page to import its members.</p>
+                <p>This separation makes it easier to manage entities and their members without formatting issues.</p>
               </AlertDescription>
             </Alert>
             
@@ -500,14 +486,14 @@ export default function EntityImportPage() {
               <AlertDialogTitle>Confirm Entity Import</AlertDialogTitle>
               <AlertDialogDescription className="space-y-2">
                 <p>Are you sure you want to import the entities from <strong>{selectedFile?.name}</strong>?</p>
-                <p>This will add new entities to the system along with their members as users with the following actions:</p>
+                <p>This will add new entities to the system with the following actions:</p>
                 <ul className="list-disc pl-5 text-sm">
                   <li>Create entities based on CSV data</li>
                   <li>Create entity heads as users with 'entity_head' role</li>
-                  <li>Create entity members as users with 'entity_member' role (if included)</li>
                   <li>Generate usernames based on email addresses</li>
                   <li>Generate temporary passwords for all created users</li>
                 </ul>
+                <p className="mt-2 text-sm font-medium">Note: Entity members can be imported separately after creating the entity.</p>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
