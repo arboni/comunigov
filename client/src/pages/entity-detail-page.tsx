@@ -245,15 +245,26 @@ export default function EntityDetailPage() {
                     <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle>Entity Members</CardTitle>
                       {(user?.role === 'master_implementer' || user?.role === 'entity_head') && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex items-center gap-1"
-                          onClick={() => setCreateMemberOpen(true)}
-                        >
-                          <UserPlus className="h-4 w-4 mr-1" />
-                          Add Member
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center"
+                            onClick={() => navigate(`/entities/${entityId}/members/import`)}
+                          >
+                            <FileUp className="h-4 w-4 mr-1" />
+                            Import Members
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center"
+                            onClick={() => setCreateMemberOpen(true)}
+                          >
+                            <UserPlus className="h-4 w-4 mr-1" />
+                            Add Member
+                          </Button>
+                        </div>
                       )}
                     </CardHeader>
                     <CardContent>

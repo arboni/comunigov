@@ -1,4 +1,6 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { 
   Card,
@@ -32,11 +34,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Upload, AlertTriangle, CheckCircle, XCircle, Info, Download } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { Loader2, Upload, AlertTriangle, CheckCircle, XCircle, Info, Download, Building, ArrowLeft } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { useToast } from "@/hooks/use-toast";
+import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 
 interface UserCreated {
   id: number;
@@ -45,6 +46,20 @@ interface UserCreated {
   email: string;
   role: string;
   tempPassword?: string;
+}
+
+interface Entity {
+  id: number;
+  name: string;
+  type: string;
+  headName: string;
+  headPosition: string;
+  headEmail: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  socialMedia?: string;
+  tags?: string[];
 }
 
 interface ImportResult {
@@ -57,7 +72,10 @@ interface ImportResult {
   userDetails?: UserCreated[];
 }
 
-export default function EntityImportPage() {
+export default function EntityMemberImportPage() {
+  const [, setLocation] = useLocation();
+  const { entityId } = useParams<{ entityId: string }>();
+  
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -65,40 +83,44 @@ export default function EntityImportPage() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   
+  // Fetch entity details
+  const { data: entity, isLoading: entityLoading, error: entityError } = useQuery<Entity>({
+    queryKey: [`/api/entities/${entityId}`],
+    enabled: !!entityId,
+  });
+  
   // Download CSV template
   const downloadTemplate = () => {
     // Create a multi-line comment with detailed instructions
     const comments = [
-      '# CSV Template for Entity Import',
+      '# CSV Template for Entity Member Import',
       '# ',
       '# REQUIRED FIELDS (case-sensitive):',
-      '# - name: Entity name',
-      '# - type: Entity type (Must be one of: secretariat, administrative_unit, external_entity, government_agency, association, council)',
-      '# - headName: Full name of the entity head',
-      '# - headPosition: Position/title of the entity head',
-      '# - headEmail: Email address of the entity head',
+      '# - fullName: Member\'s full name',
+      '# - email: Member\'s email address',
+      '# - position: Member\'s position or role in the entity',
       '# ',
       '# OPTIONAL FIELDS:',
-      '# - address: Physical address',
       '# - phone: Contact phone number',
-      '# - website: Website URL',
-      '# - socialMedia: Social media handles',
-      '# - tags: Comma-separated tags without spaces between them (e.g., government,health)',
-      '# ',
-      '# NOTE: To import entity members, use the separate "Import Entity Members" feature after creating the entity',
+      '# - whatsapp: WhatsApp number (must include country code)',
+      '# - telegram: Telegram username (without @ symbol)',
       '# '
     ].join('\n');
     
     // Header row with column names - EXACT match with validation
-    const headers = 'name,type,headName,headPosition,headEmail,address,phone,website,socialMedia,tags';
+    const headers = 'fullName,email,position,phone,whatsapp,telegram';
     
-    // Example row with properly formatted data
-    const exampleRow = 'City Hall,administrative_unit,John Smith,Mayor,john.smith@example.com,123 Main Street,+12345678901,https://example.com,@cityhallex,government/local';
+    // Example rows with properly formatted data
+    const exampleRow1 = 'Jane Doe,jane.doe@example.com,Secretary,+12345678902,+12345678902,janedoe';
+    const exampleRow2 = 'Bob Johnson,bob.johnson@example.com,IT Manager,+12345678903,,';
+    const exampleRow3 = 'Susan Smith,susan.smith@example.com,Accountant,,,susansmith';
     
     const csvContent = [
       comments,
       headers,
-      exampleRow
+      exampleRow1,
+      exampleRow2,
+      exampleRow3
     ].join('\n');
     
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -106,7 +128,7 @@ export default function EntityImportPage() {
     const url = URL.createObjectURL(blob);
     
     link.setAttribute('href', url);
-    link.setAttribute('download', 'entity_template.csv');
+    link.setAttribute('download', `${entity?.name || 'entity'}_members_template.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -163,7 +185,7 @@ export default function EntityImportPage() {
       const headers = headerLine.split(',').map(h => h.trim());
       
       // Define the required headers 
-      const requiredHeaders = ['name', 'type', 'headname', 'headposition', 'heademail'];
+      const requiredHeaders = ['fullname', 'email', 'position'];
       
       console.log('CSV Headers found:', headers);
       
@@ -191,11 +213,11 @@ export default function EntityImportPage() {
       const formData = new FormData();
       formData.append('file', file);
       
-      const response = await apiRequest('POST', '/api/entities/import', formData, true);
+      const response = await apiRequest('POST', `/api/entities/${entityId}/members/import`, formData, true);
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to import entities');
+        throw new Error(errorData.message || 'Failed to import entity members');
       }
       
       return await response.json() as ImportResult;
@@ -204,7 +226,7 @@ export default function EntityImportPage() {
       setImportResult(data);
       toast({
         title: "Import complete",
-        description: `Processed ${data.totalProcessed} entities: ${data.successful} successful, ${data.failed} failed`,
+        description: `Processed ${data.totalProcessed} members: ${data.successful} successful, ${data.failed} failed`,
         variant: data.failed > 0 ? "destructive" : "default",
       });
     },
@@ -242,48 +264,88 @@ export default function EntityImportPage() {
     }
   };
   
+  // Go back to entity details
+  const goBackToEntityDetail = () => {
+    setLocation(`/entities/${entityId}`);
+  };
+
+  if (entityLoading) {
+    return (
+      <DashboardLayout>
+        <div className="container px-4 py-6 max-w-5xl flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (entityError) {
+    return (
+      <DashboardLayout>
+        <div className="container px-4 py-6 max-w-5xl">
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              Could not load entity details. Please try again or contact support.
+            </AlertDescription>
+          </Alert>
+          <Button onClick={goBackToEntityDetail} variant="outline" className="mt-4">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Entities
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+  
   return (
     <DashboardLayout>
       <div className="container px-4 py-6 max-w-5xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Import Entities</h1>
-          <p className="text-muted-foreground mt-2">
-            Bulk import entities from a CSV file
-          </p>
+        <div className="flex items-center gap-2 mb-2">
+          <Button onClick={goBackToEntityDetail} variant="ghost" size="icon">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Import Members</h1>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Building className="h-4 w-4" />
+              <p>{entity?.name}</p>
+            </div>
+          </div>
         </div>
         
         {/* Instructions Card */}
-        <Card className="mb-8">
+        <Card className="mb-8 mt-6">
           <CardHeader>
-            <CardTitle>How to Import Entities</CardTitle>
+            <CardTitle>How to Import Entity Members</CardTitle>
             <CardDescription>
-              Follow these steps to bulk import entities into the system
+              Follow these steps to bulk import members for {entity?.name}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <ol className="list-decimal pl-5 space-y-2">
               <li>Download the CSV template file</li>
-              <li>Fill in the entity data following the template format</li>
+              <li>Fill in the member data following the template format</li>
               <li>Upload the completed CSV file</li>
               <li>Review the validation results and fix any errors</li>
-              <li>Confirm the import to add the entities to the system</li>
+              <li>Confirm the import to add the members to the entity</li>
             </ol>
             
             <Alert className="bg-muted/50">
               <Info className="h-4 w-4" />
-              <AlertTitle>Note about entity types</AlertTitle>
+              <AlertTitle>Required Fields</AlertTitle>
               <AlertDescription>
-                Valid entity types are: secretariat, administrative_unit, external_entity, government_agency, association, council
+                <p>Each member record must include <strong>fullName</strong>, <strong>email</strong>, and <strong>position</strong>.</p>
+                <p className="mt-1">Phone, WhatsApp, and Telegram fields are optional.</p>
               </AlertDescription>
             </Alert>
             
             <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
               <Info className="h-4 w-4 text-blue-500" />
-              <AlertTitle>Entity Members Import</AlertTitle>
+              <AlertTitle>Communication Channels</AlertTitle>
               <AlertDescription>
-                <p className="mb-2">Entity members are now imported separately through a dedicated import process.</p>
-                <p className="mb-2">First create the entity using this import, then go to the entity detail page to import its members.</p>
-                <p>This separation makes it easier to manage entities and their members without formatting issues.</p>
+                <p className="mb-2">For WhatsApp, include the full number with country code (e.g., +12025550123).</p>
+                <p>For Telegram, include only the username without the @ symbol (e.g., username_123).</p>
               </AlertDescription>
             </Alert>
             
@@ -300,7 +362,7 @@ export default function EntityImportPage() {
           <CardHeader>
             <CardTitle>Upload CSV File</CardTitle>
             <CardDescription>
-              Select a CSV file with entity data to import
+              Select a CSV file with member data to import
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -351,7 +413,7 @@ export default function EntityImportPage() {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Importing...
                 </>
               ) : (
-                'Import Entities'
+                'Import Members'
               )}
             </Button>
           </CardFooter>
@@ -363,7 +425,7 @@ export default function EntityImportPage() {
             <CardHeader>
               <CardTitle>Import Results</CardTitle>
               <CardDescription>
-                Summary of the entity import operation
+                Summary of the member import operation
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -426,12 +488,8 @@ export default function EntityImportPage() {
                             <TableCell className="font-medium">{user.fullName}</TableCell>
                             <TableCell>{user.username}</TableCell>
                             <TableCell>
-                              <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                                user.role === 'entity_head' 
-                                  ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' 
-                                  : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
-                              }`}>
-                                {user.role === 'entity_head' ? 'Entity Head' : 'Entity Member'}
+                              <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+                                Entity Member
                               </span>
                             </TableCell>
                             <TableCell>{user.email}</TableCell>
@@ -483,18 +541,17 @@ export default function EntityImportPage() {
         <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Confirm Entity Import</AlertDialogTitle>
+              <AlertDialogTitle>Confirm Member Import</AlertDialogTitle>
               <AlertDialogDescription>
                 <div className="space-y-2">
-                  <div>Are you sure you want to import the entities from <strong>{selectedFile?.name}</strong>?</div>
-                  <div>This will add new entities to the system with the following actions:</div>
+                  <div>Are you sure you want to import members for <strong>{entity?.name}</strong> from <strong>{selectedFile?.name}</strong>?</div>
+                  <div>This will add new members to the entity with the following actions:</div>
                   <ul className="list-disc pl-5 text-sm">
-                    <li>Create entities based on CSV data</li>
-                    <li>Create entity heads as users with 'entity_head' role</li>
+                    <li>Create entity members as users with 'entity_member' role</li>
                     <li>Generate usernames based on email addresses</li>
                     <li>Generate temporary passwords for all created users</li>
+                    <li>Associate the members with {entity?.name}</li>
                   </ul>
-                  <div className="mt-2 text-sm font-medium">Note: Entity members can be imported separately after creating the entity.</div>
                 </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
