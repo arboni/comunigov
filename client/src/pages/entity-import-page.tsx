@@ -37,6 +37,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface UserCreated {
   id: number;
@@ -59,6 +60,7 @@ interface ImportResult {
 
 export default function EntityImportPage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [csvValidationError, setCsvValidationError] = useState<string | null>(null);
@@ -246,50 +248,50 @@ export default function EntityImportPage() {
     <DashboardLayout>
       <div className="container px-4 py-6 max-w-5xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Import Entities</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("entities.import.title")}</h1>
           <p className="text-muted-foreground mt-2">
-            Bulk import entities from a CSV file
+            {t("entities.import.description")}
           </p>
         </div>
         
         {/* Instructions Card */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>How to Import Entities</CardTitle>
+            <CardTitle>{t("entities.import.how_to.title")}</CardTitle>
             <CardDescription>
-              Follow these steps to bulk import entities into the system
+              {t("entities.import.how_to.description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <ol className="list-decimal pl-5 space-y-2">
-              <li>Download the CSV template file</li>
-              <li>Fill in the entity data following the template format</li>
-              <li>Upload the completed CSV file</li>
-              <li>Review the validation results and fix any errors</li>
-              <li>Confirm the import to add the entities to the system</li>
+              <li>{t("entities.import.steps.download")}</li>
+              <li>{t("entities.import.steps.fill")}</li>
+              <li>{t("entities.import.steps.upload")}</li>
+              <li>{t("entities.import.steps.review")}</li>
+              <li>{t("entities.import.steps.confirm")}</li>
             </ol>
             
             <Alert className="bg-muted/50">
               <Info className="h-4 w-4" />
-              <AlertTitle>Note about entity types</AlertTitle>
+              <AlertTitle>{t("entities.types.note_title")}</AlertTitle>
               <AlertDescription>
-                Valid entity types are: secretariat, administrative_unit, external_entity, government_agency, association, council
+                {t("entities.types.valid_types")}
               </AlertDescription>
             </Alert>
             
             <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
               <Info className="h-4 w-4 text-blue-500" />
-              <AlertTitle>Entity Members Import</AlertTitle>
+              <AlertTitle>{t("entities.members.import_title")}</AlertTitle>
               <AlertDescription>
-                <p className="mb-2">Entity members are now imported separately through a dedicated import process.</p>
-                <p className="mb-2">First create the entity using this import, then go to the entity detail page to import its members.</p>
-                <p>This separation makes it easier to manage entities and their members without formatting issues.</p>
+                <p className="mb-2">{t("entities.members.import_description_1")}</p>
+                <p className="mb-2">{t("entities.members.import_description_2")}</p>
+                <p>{t("entities.members.import_description_3")}</p>
               </AlertDescription>
             </Alert>
             
             <div className="pt-2">
               <Button onClick={downloadTemplate} variant="outline" className="flex items-center gap-2">
-                <Download className="h-4 w-4" /> Download CSV Template
+                <Download className="h-4 w-4" /> {t("entities.import.download_template")}
               </Button>
             </div>
           </CardContent>
@@ -298,16 +300,19 @@ export default function EntityImportPage() {
         {/* File Upload Card */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Upload CSV File</CardTitle>
+            <CardTitle>{t("entities.import.upload.title")}</CardTitle>
             <CardDescription>
-              Select a CSV file with entity data to import
+              {t("entities.import.upload.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-8 text-center">
               <Upload className="h-10 w-10 text-muted-foreground mb-4" />
               <p className="text-sm text-muted-foreground mb-2">
-                {selectedFile ? `Selected: ${selectedFile.name}` : 'Click to select or drag & drop CSV file'}
+                {selectedFile 
+                  ? t("entities.import.upload.file_selected", { filename: selectedFile.name }) 
+                  : t("entities.import.upload.dropzone_text")
+                }
               </p>
               <Input
                 type="file"
@@ -321,14 +326,14 @@ export default function EntityImportPage() {
                 variant="secondary"
                 disabled={importMutation.isPending}
               >
-                Select File
+                {t("entities.import.upload.select_button")}
               </Button>
             </div>
             
             {csvValidationError && (
               <Alert variant="destructive" className="mt-4">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Validation Error</AlertTitle>
+                <AlertTitle>{t("entities.import.validation.error_title")}</AlertTitle>
                 <AlertDescription>{csvValidationError}</AlertDescription>
               </Alert>
             )}
@@ -339,7 +344,7 @@ export default function EntityImportPage() {
               onClick={resetImport}
               disabled={!selectedFile || importMutation.isPending}
             >
-              Reset
+              {t("entities.import.buttons.reset")}
             </Button>
             <Button 
               variant="default" 
@@ -348,10 +353,10 @@ export default function EntityImportPage() {
             >
               {importMutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Importing...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("entities.import.buttons.importing")}
                 </>
               ) : (
-                'Import Entities'
+                t("entities.import.buttons.import")
               )}
             </Button>
           </CardFooter>
@@ -361,16 +366,16 @@ export default function EntityImportPage() {
         {importResult && (
           <Card>
             <CardHeader>
-              <CardTitle>Import Results</CardTitle>
+              <CardTitle>{t("entities.import.results.title")}</CardTitle>
               <CardDescription>
-                Summary of the entity import operation
+                {t("entities.import.results.description")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-muted/30 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Total Processed</span>
+                    <span className="text-sm font-medium">{t("entities.import.results.total_processed")}</span>
                     <Info className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <p className="text-2xl font-bold">{importResult.totalProcessed}</p>
@@ -378,7 +383,7 @@ export default function EntityImportPage() {
                 
                 <div className="bg-green-100 dark:bg-green-900/20 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Successful</span>
+                    <span className="text-sm font-medium">{t("entities.import.results.successful")}</span>
                     <CheckCircle className="h-4 w-4 text-green-500" />
                   </div>
                   <p className="text-2xl font-bold">{importResult.successful}</p>
@@ -386,7 +391,7 @@ export default function EntityImportPage() {
                 
                 <div className={`${importResult.failed > 0 ? 'bg-red-100 dark:bg-red-900/20' : 'bg-muted/30'} p-4 rounded-lg`}>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Failed</span>
+                    <span className="text-sm font-medium">{t("entities.import.results.failed")}</span>
                     {importResult.failed > 0 ? (
                       <XCircle className="h-4 w-4 text-red-500" />
                     ) : (
@@ -398,7 +403,7 @@ export default function EntityImportPage() {
                 
                 <div className="bg-blue-100 dark:bg-blue-900/20 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Users Created</span>
+                    <span className="text-sm font-medium">{t("entities.import.results.users_created")}</span>
                     <Info className="h-4 w-4 text-blue-500" />
                   </div>
                   <p className="text-2xl font-bold">{importResult.usersCreated || 0}</p>
@@ -408,16 +413,16 @@ export default function EntityImportPage() {
               {/* Display created users */}
               {importResult.userDetails && importResult.userDetails.length > 0 && (
                 <div className="mt-6 mb-2">
-                  <h3 className="text-lg font-medium mb-2">Created Users</h3>
+                  <h3 className="text-lg font-medium mb-2">{t("entities.import.results.created_users")}</h3>
                   <div className="border rounded-lg max-h-96 overflow-y-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Full Name</TableHead>
-                          <TableHead>Username</TableHead>
-                          <TableHead>Role</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Temporary Password</TableHead>
+                          <TableHead>{t("entities.members.fullName")}</TableHead>
+                          <TableHead>{t("entities.members.username")}</TableHead>
+                          <TableHead>{t("entities.members.role")}</TableHead>
+                          <TableHead>{t("entities.members.email")}</TableHead>
+                          <TableHead>{t("entities.members.temp_password")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -431,7 +436,10 @@ export default function EntityImportPage() {
                                   ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' 
                                   : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
                               }`}>
-                                {user.role === 'entity_head' ? 'Entity Head' : 'Entity Member'}
+                                {user.role === 'entity_head' 
+                                  ? t("entities.members.roles.entity_head") 
+                                  : t("entities.members.roles.entity_member")
+                                }
                               </span>
                             </TableCell>
                             <TableCell>{user.email}</TableCell>
@@ -442,8 +450,7 @@ export default function EntityImportPage() {
                     </Table>
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Make sure to save these credentials or communicate them to the users securely. 
-                    These temporary passwords will only be shown once.
+                    {t("entities.import.results.save_credentials_notice")}
                   </p>
                 </div>
               )}
@@ -451,12 +458,12 @@ export default function EntityImportPage() {
               {/* Display errors */}
               {importResult.errors.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-lg font-medium mb-2">Error Details</h3>
+                  <h3 className="text-lg font-medium mb-2">{t("entities.import.results.error_details")}</h3>
                   <div className="border rounded-lg max-h-60 overflow-y-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Error</TableHead>
+                          <TableHead>{t("entities.import.results.error")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -473,7 +480,7 @@ export default function EntityImportPage() {
             </CardContent>
             <CardFooter className="border-t px-6 py-4">
               <Button onClick={resetImport} variant="outline">
-                Import Another File
+                {t("entities.import.buttons.import_another")}
               </Button>
             </CardFooter>
           </Card>
