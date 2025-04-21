@@ -115,7 +115,34 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
     
     // Parse the CSV file with advanced options to handle complex fields
     const records = parse(fileContent, {
-      columns: true,
+      columns: (header) => {
+        // Convert all header column names to the exact case we expect
+        // This solves case-sensitivity issues with column names
+        return header.map((column: string) => {
+          // Clean up column name and standardize
+          const cleaned = column.trim();
+          
+          // Map to our expected case-sensitive field names
+          const columnMap: Record<string, string> = {
+            'name': 'name',
+            'type': 'type',
+            'headname': 'headName',
+            'headposition': 'headPosition',
+            'heademail': 'headEmail',
+            'address': 'address',
+            'phone': 'phone',
+            'website': 'website',
+            'socialmedia': 'socialMedia',
+            'tags': 'tags',
+            'members': 'members'
+          };
+          
+          // Get the standardized column name or keep original if not found
+          const standardized = columnMap[cleaned.toLowerCase()] || cleaned;
+          console.log(`Column mapping: "${cleaned}" -> "${standardized}"`);
+          return standardized;
+        });
+      },
       skip_empty_lines: true,
       trim: true,
       relax_column_count: true, // Don't error on inconsistent columns
@@ -150,9 +177,20 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
       const rowIndex = i + 2; // +2 because 1-indexed + header row
       
       try {
-        // Validate required fields
-        if (!record.name || !record.type || !record.headName || !record.headPosition || !record.headEmail) {
-          throw new Error(`Missing required field(s) in row ${rowIndex}`);
+        // Check the record for debugging
+        console.log(`Processing row ${rowIndex}, data: `, JSON.stringify(record));
+        
+        // Validate each required field separately for better error reporting
+        const missingFields = [];
+        
+        if (!record.name) missingFields.push("name");
+        if (!record.type) missingFields.push("type");
+        if (!record.headName) missingFields.push("headName");
+        if (!record.headPosition) missingFields.push("headPosition");
+        if (!record.headEmail) missingFields.push("headEmail");
+        
+        if (missingFields.length > 0) {
+          throw new Error(`Missing required field(s) in row ${rowIndex}: ${missingFields.join(', ')}. Check if column headers are exactly: name,type,headName,headPosition,headEmail,...`);
         }
         
         // Clean and validate entity type
