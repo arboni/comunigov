@@ -3,8 +3,17 @@ import { parse } from 'csv-parse/sync';
 import { entities, entityTypeEnum, users, userRoleEnum } from '../shared/schema';
 import { db } from './db';
 import { ActivityLogger } from './activity-logger';
-import { SQL } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { hashPassword } from './auth';
+
+interface EntityMember {
+  fullName: string;
+  email: string;
+  position: string;
+  phone?: string;
+  whatsapp?: string;
+  telegram?: string;
+}
 
 interface EntityRecord {
   name: string;
@@ -17,14 +26,70 @@ interface EntityRecord {
   website?: string;
   socialMedia?: string;
   tags?: string[];
+  members?: string; // CSV string with member details in format: fullName,email,position,phone,whatsapp,telegram;fullName2,email2,...
 }
 
 /**
- * Process a CSV file and import entities
- * @param filePath Path to the uploaded CSV file
- * @param userId ID of the user performing the import
- * @returns Result of the import operation
+ * Helper function to parse the entity members string
+ * @param membersString Members data in format: fullName,email,position,phone,whatsapp,telegram;fullName2,...
+ * @returns Array of parsed member objects
  */
+function parseMembersString(membersString: string): EntityMember[] {
+  if (!membersString || membersString.trim() === '') {
+    return [];
+  }
+  
+  // Split by semicolon to get individual member entries
+  const memberEntries = membersString.split(';').filter(entry => entry.trim() !== '');
+  
+  return memberEntries.map(entry => {
+    // Split by comma to get member fields
+    const fields = entry.split(',').map(f => f.trim());
+    
+    // Basic validation - need at least name, email, position
+    if (fields.length < 3) {
+      throw new Error(`Invalid member entry: ${entry}. Must contain at least fullName, email, and position`);
+    }
+    
+    return {
+      fullName: fields[0],
+      email: fields[1],
+      position: fields[2],
+      phone: fields[3] || undefined,
+      whatsapp: fields[4] || undefined,
+      telegram: fields[5] || undefined
+    };
+  });
+}
+
+/**
+ * Generate a username from email address
+ * Converts email to lowercase, removes special chars and uses the part before @ symbol
+ */
+function generateUsernameFromEmail(email: string, index: number): string {
+  // Take the part before @ and remove special characters
+  const usernameBase = email.toLowerCase().split('@')[0].replace(/[^a-z0-9]/g, '');
+  
+  // If this is the first attempt, return as is, otherwise append a number
+  return index === 0 ? usernameBase : `${usernameBase}${index}`;
+}
+
+/**
+ * Generate a temporary password
+ * Creates a 10-character alphanumeric password
+ */
+function generateTemporaryPassword(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let password = '';
+  
+  for (let i = 0; i < 10; i++) {
+    const randomIndex = Math.floor(Math.random() * chars.length);
+    password += chars.charAt(randomIndex);
+  }
+  
+  return password;
+}
+
 export async function importEntitiesFromCSV(filePath: string, userId: number) {
   try {
     // Read the CSV file
@@ -42,7 +107,8 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
       successful: 0,
       failed: 0,
       errors: [] as string[],
-      newEntities: [] as any[]
+      newEntities: [] as any[],
+      newUsers: [] as any[]
     };
     
     // Valid entity types
@@ -95,13 +161,119 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
         // Insert the entity into the database
         const [newEntity] = await db.insert(entities).values([dbEntityData]).returning();
         
-        // Log the activity
+        // Log the entity creation activity
         await ActivityLogger.logCreate(
           userId,
           'entity',
           newEntity.id,
           `Imported entity "${newEntity.name}" from CSV`
         );
+        
+        // Create the entity head user automatically
+        try {
+          const headUsername = generateUsernameFromEmail(record.headEmail, 0);
+          const tempPassword = generateTemporaryPassword();
+          const hashedPassword = await hashPassword(tempPassword);
+          
+          // Create the entity head user
+          const [headUser] = await db.insert(users).values({
+            username: headUsername,
+            password: hashedPassword,
+            email: record.headEmail,
+            fullName: record.headName,
+            role: 'entity_head' as typeof userRoleEnum.enumValues[number],
+            position: record.headPosition,
+            phone: record.phone || null,
+            entityId: newEntity.id
+          }).returning();
+          
+          console.log(`Created entity head user: ${headUser.username} with temporary password`);
+          
+          // Add to new users list
+          results.newUsers.push({
+            ...headUser,
+            tempPassword // Include the plain temporary password for potential email sending
+          });
+          
+          // Log user creation
+          await ActivityLogger.logCreate(
+            userId,
+            'user',
+            headUser.id,
+            `Created entity head user "${headUser.username}" for entity "${newEntity.name}"`
+          );
+        } catch (userError) {
+          console.error(`Error creating entity head user:`, userError);
+          // Continue with entity processing even if head user creation fails
+          results.errors.push(`Row ${rowIndex}: Warning - Entity created but head user creation failed: ${(userError as Error).message}`);
+        }
+        
+        // Process entity members if present
+        if (record.members) {
+          try {
+            const members = parseMembersString(record.members);
+            
+            for (const member of members) {
+              let memberUsername = '';
+              let usernameIndex = 0;
+              let isUsernameTaken = true;
+              
+              // Find an available username based on the email
+              while (isUsernameTaken && usernameIndex < 10) {
+                memberUsername = generateUsernameFromEmail(member.email, usernameIndex);
+                
+                // Check if username already exists
+                const existingUsers = await db.select().from(users).where(sql`username = ${memberUsername}`);
+                
+                if (existingUsers.length === 0) {
+                  isUsernameTaken = false;
+                } else {
+                  usernameIndex++;
+                }
+              }
+              
+              if (isUsernameTaken) {
+                throw new Error(`Could not generate a unique username for member ${member.fullName}`);
+              }
+              
+              const tempPassword = generateTemporaryPassword();
+              const hashedPassword = await hashPassword(tempPassword);
+              
+              // Create the entity member user
+              const [memberUser] = await db.insert(users).values({
+                username: memberUsername,
+                password: hashedPassword,
+                email: member.email,
+                fullName: member.fullName,
+                role: 'entity_member' as typeof userRoleEnum.enumValues[number],
+                position: member.position,
+                phone: member.phone || null,
+                whatsapp: member.whatsapp || null,
+                telegram: member.telegram || null,
+                entityId: newEntity.id
+              }).returning();
+              
+              console.log(`Created entity member user: ${memberUser.username} with temporary password`);
+              
+              // Add to new users list
+              results.newUsers.push({
+                ...memberUser,
+                tempPassword // Include the plain temporary password for potential email sending
+              });
+              
+              // Log user creation
+              await ActivityLogger.logCreate(
+                userId,
+                'user',
+                memberUser.id,
+                `Created entity member user "${memberUser.username}" for entity "${newEntity.name}"`
+              );
+            }
+          } catch (membersError) {
+            console.error(`Error processing entity members:`, membersError);
+            results.errors.push(`Row ${rowIndex}: Warning - Entity created but member processing failed: ${(membersError as Error).message}`);
+          }
+        }
         
         // Add to successful entities list
         results.newEntities.push(newEntity);

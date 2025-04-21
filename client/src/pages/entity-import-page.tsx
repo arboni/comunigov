@@ -56,7 +56,7 @@ export default function EntityImportPage() {
   
   // Download CSV template
   const downloadTemplate = () => {
-    const headers = ['name', 'type', 'headName', 'headPosition', 'headEmail', 'address', 'phone', 'website', 'socialMedia', 'tags'];
+    const headers = ['name', 'type', 'headName', 'headPosition', 'headEmail', 'address', 'phone', 'website', 'socialMedia', 'tags', 'members'];
     const exampleRow = [
       'City Hall',
       'administrative_unit',
@@ -67,7 +67,8 @@ export default function EntityImportPage() {
       '+12345678901',
       'https://example.com',
       'Twitter: @cityhallex',
-      'government,local'
+      'government,local',
+      'Jane Doe,jane.doe@example.com,Secretary,+12345678902,+12345678902,@janedoe;Bob Johnson,bob.johnson@example.com,Clerk,+12345678903,,'
     ];
     
     const csvContent = [
@@ -240,6 +241,16 @@ export default function EntityImportPage() {
               </AlertDescription>
             </Alert>
             
+            <Alert className="bg-muted/50">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Including Entity Members</AlertTitle>
+              <AlertDescription>
+                <p className="mb-2">You can include entity members in the CSV file using the "members" column. Format:</p>
+                <p className="font-mono text-xs">fullName,email,position,phone,whatsapp,telegram;fullName2,email2,position2,...</p>
+                <p className="mt-2">Members will be created as entity_member users automatically. Only name, email, and position are required for each member.</p>
+              </AlertDescription>
+            </Alert>
+            
             <div className="pt-2">
               <Button onClick={downloadTemplate} variant="outline" className="flex items-center gap-2">
                 <Download className="h-4 w-4" /> Download CSV Template
@@ -385,9 +396,16 @@ export default function EntityImportPage() {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Confirm Entity Import</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to import the entities from {selectedFile?.name}? 
-                This will add new entities to the system.
+              <AlertDialogDescription className="space-y-2">
+                <p>Are you sure you want to import the entities from <strong>{selectedFile?.name}</strong>?</p>
+                <p>This will add new entities to the system along with their members as users with the following actions:</p>
+                <ul className="list-disc pl-5 text-sm">
+                  <li>Create entities based on CSV data</li>
+                  <li>Create entity heads as users with 'entity_head' role</li>
+                  <li>Create entity members as users with 'entity_member' role (if included)</li>
+                  <li>Generate usernames based on email addresses</li>
+                  <li>Generate temporary passwords for all created users</li>
+                </ul>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
