@@ -9,6 +9,7 @@ import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import NoWhatsAppDialog from "@/components/communication/no-whatsapp-dialog";
 import CallMeBotReminder from "@/components/communication/callmebot-reminder";
 import { reloadPage } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 import {
   Dialog,
@@ -59,10 +60,10 @@ import {
 
 const formSchema = z.object({
   subject: z.string().min(2, {
-    message: "Subject must be at least 2 characters.",
+    message: "O assunto deve ter pelo menos 2 caracteres.",
   }),
   content: z.string().min(10, {
-    message: "Message content must be at least 10 characters.",
+    message: "O conteúdo da mensagem deve ter pelo menos 10 caracteres.",
   }),
   channel: z.enum(["email", "whatsapp", "telegram", "system_notification"]),
   recipientType: z.enum(["users", "entities"]),
@@ -84,6 +85,7 @@ export default function SendMessageDialog({
 }: SendMessageDialogProps) {
   const { toast } = useToast();
   const { user } = useSimpleAuth();
+  const { t } = useTranslation();
   
   // State to manage the no-whatsapp dialog
   const [noWhatsAppDialogOpen, setNoWhatsAppDialogOpen] = useState(false);
@@ -163,8 +165,8 @@ export default function SendMessageDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/communications"] });
       toast({
-        title: "Message sent",
-        description: "Your message has been sent successfully.",
+        title: t('communications.send_success'),
+        description: t('notifications.success.sent', { item: t('communications.subject').toLowerCase() }),
       });
       form.reset();
       onOpenChange(false);
@@ -174,7 +176,7 @@ export default function SendMessageDialog({
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to send message",
+        title: t('communications.send_error'),
         description: error.message,
         variant: "destructive",
       });
@@ -296,9 +298,9 @@ export default function SendMessageDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Send Message</DialogTitle>
+            <DialogTitle>{t('communications.send_communication')}</DialogTitle>
             <DialogDescription>
-              Compose and send a message to users or entities in your organization.
+              {t('dashboard.send_message')}
             </DialogDescription>
           </DialogHeader>
           
@@ -316,9 +318,9 @@ export default function SendMessageDialog({
                   name="subject"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Subject</FormLabel>
+                      <FormLabel>{t('communications.subject')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Important Meeting Reminder" {...field} />
+                        <Input placeholder={t('entities.head_name_placeholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -330,36 +332,36 @@ export default function SendMessageDialog({
                   name="channel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Communication Channel</FormLabel>
+                      <FormLabel>{t('communications.channel')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select channel" />
+                            <SelectValue placeholder={t('communications.select_channel')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="email">
                             <div className="flex items-center">
                               <Mail className="h-4 w-4 mr-2" />
-                              Email
+                              {t('communications.channel_types.email')}
                             </div>
                           </SelectItem>
                           <SelectItem value="whatsapp">
                             <div className="flex items-center">
                               <MessageSquare className="h-4 w-4 mr-2" />
-                              WhatsApp
+                              {t('communications.channel_types.whatsapp')}
                             </div>
                           </SelectItem>
                           <SelectItem value="telegram">
                             <div className="flex items-center">
                               <MessageSquare className="h-4 w-4 mr-2" />
-                              Telegram
+                              {t('communications.channel_types.telegram')}
                             </div>
                           </SelectItem>
                           <SelectItem value="system_notification">
                             <div className="flex items-center">
                               <Bell className="h-4 w-4 mr-2" />
-                              System Notification
+                              {t('communications.channel_types.system_notification')}
                             </div>
                           </SelectItem>
                         </SelectContent>
@@ -382,10 +384,10 @@ export default function SendMessageDialog({
                 name="content"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Message Content</FormLabel>
+                    <FormLabel>{t('communications.content')}</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Write your message here..." 
+                        placeholder={t('communications.write_message')} 
                         className="min-h-28"
                         {...field} 
                       />
@@ -402,9 +404,9 @@ export default function SendMessageDialog({
                   <FormItem>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2">
                       <div>
-                        <FormLabel>Attachments</FormLabel>
+                        <FormLabel>{t('communications.attachments')}</FormLabel>
                         <FormDescription>
-                          Add files to be attached to the message
+                          {t('communications.add_attachments')}
                         </FormDescription>
                       </div>
                       
@@ -423,7 +425,7 @@ export default function SendMessageDialog({
                           onClick={() => fileInputRef.current?.click()}
                         >
                           <Upload className="h-4 w-4" />
-                          Add Files
+                          {t('communications.add_files')}
                         </Button>
                       </div>
                     </div>
@@ -464,9 +466,9 @@ export default function SendMessageDialog({
                 name="recipientType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Recipient Type</FormLabel>
+                    <FormLabel>{t('communications.recipient_type')}</FormLabel>
                     <FormDescription>
-                      Choose to send to individual users or entire entities
+                      {t('communications.choose_recipients')}
                     </FormDescription>
                     <FormControl>
                       <Tabs
@@ -477,11 +479,11 @@ export default function SendMessageDialog({
                         <TabsList className="grid w-full grid-cols-2">
                           <TabsTrigger value="users" className="flex items-center">
                             <User className="h-4 w-4 mr-2" />
-                            Users
+                            {t('common.users')}
                           </TabsTrigger>
                           <TabsTrigger value="entities" className="flex items-center">
                             <Building className="h-4 w-4 mr-2" />
-                            Entities
+                            {t('common.entities')}
                           </TabsTrigger>
                         </TabsList>
                         
@@ -492,9 +494,9 @@ export default function SendMessageDialog({
                             render={({ field }) => (
                               <FormItem>
                                 <div className="mb-4">
-                                  <FormLabel className="text-base">Select Users</FormLabel>
+                                  <FormLabel className="text-base">{t('communications.select_users')}</FormLabel>
                                   <FormDescription>
-                                    Select the users you want to send this message to.
+                                    {t('communications.select_users_description')}
                                   </FormDescription>
                                 </div>
                                 
