@@ -25,7 +25,7 @@ i18n
   .init({
     resources,
     fallbackLng: 'en',
-    debug: true,
+    debug: false, // desativa o debug para evitar muitos logs
 
     interpolation: {
       escapeValue: false, // não escapa HTML em componentes React

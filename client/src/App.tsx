@@ -21,10 +21,12 @@ import UserEditPage from "@/pages/user-edit-page";
 import SettingsPage from "@/pages/settings-page";
 import SubjectsPage from "@/pages/subjects-page";
 import AnalyticsPage from "@/pages/analytics-page";
+import { useTranslation } from "@/hooks/use-translation";
 
 // This is a simpler implementation that doesn't rely on the auth context
 function ProtectedRoute({ component: Component, path }: { component: () => JSX.Element, path: string }) {
   const [, setLocation] = useLocation();
+  const { t } = useTranslation();
   
   const { data: user, isLoading } = useQuery({
     queryKey: ["/api/user"],
@@ -53,7 +55,7 @@ function ProtectedRoute({ component: Component, path }: { component: () => JSX.E
     return (
       <Route path={path}>
         <div className="flex items-center justify-center min-h-screen">
-          <p>Redirecting to login...</p>
+          <p>{t('common.redirecting')}</p>
         </div>
       </Route>
     );

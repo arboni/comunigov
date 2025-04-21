@@ -11,10 +11,13 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { useState, useRef } from "react";
+import { useTranslation } from "@/hooks/use-translation";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function SettingsPage() {
   const { user } = useSimpleAuth();
   const { toast } = useToast();
+  const { t, changeLanguage, currentLanguage } = useTranslation();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -144,9 +147,46 @@ export default function SettingsPage() {
           <TabsContent value="profile" className="mt-6 space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
+                <CardTitle>{t('settings.app_settings')}</CardTitle>
                 <CardDescription>
-                  Update your personal profile information.
+                  {t('settings.title')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between space-y-0">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="language-select">{t('settings.language')}</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {t('settings.language')}
+                    </p>
+                  </div>
+                  <Select
+                    value={currentLanguage}
+                    onValueChange={(value) => {
+                      changeLanguage(value);
+                      toast({
+                        title: t('notifications.success.updated', { item: t('settings.language') }),
+                        description: t('settings.language')
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Selecione o idioma" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="pt-BR">Português (Brasil)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('users.user_details')}</CardTitle>
+                <CardDescription>
+                  {t('settings.user_settings')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
