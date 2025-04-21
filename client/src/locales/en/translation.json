@@ -201,7 +201,9 @@
         "error": "Error importing members",
         "processing": "Processing import...",
         "success_count": "Successfully imported",
-        "failed_count": "Failed to import"
+        "failed_count": "Failed to import",
+        "instructions_title": "How to Import Entity Members",
+        "instructions_description": "Follow these steps to bulk import members for"
       }
     }
   },

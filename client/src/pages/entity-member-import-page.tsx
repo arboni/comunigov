@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { 
   Card,
@@ -75,6 +76,7 @@ interface ImportResult {
 export default function EntityMemberImportPage() {
   const [, setLocation] = useLocation();
   const { entityId } = useParams<{ entityId: string }>();
+  const { t } = useTranslation();
   
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -285,13 +287,13 @@ export default function EntityMemberImportPage() {
         <div className="container px-4 py-6 max-w-5xl">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{t("errors.error")}</AlertTitle>
             <AlertDescription>
-              Could not load entity details. Please try again or contact support.
+              {t("entities.could_not_load_entity")}
             </AlertDescription>
           </Alert>
           <Button onClick={goBackToEntityDetail} variant="outline" className="mt-4">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Entities
+            <ArrowLeft className="mr-2 h-4 w-4" /> {t("entities.back_to_entities")}
           </Button>
         </div>
       </DashboardLayout>
@@ -306,7 +308,7 @@ export default function EntityMemberImportPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Import Members</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t("entities.members.import_members")}</h1>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Building className="h-4 w-4" />
               <p>{entity?.name}</p>
@@ -317,9 +319,9 @@ export default function EntityMemberImportPage() {
         {/* Instructions Card */}
         <Card className="mb-8 mt-6">
           <CardHeader>
-            <CardTitle>How to Import Entity Members</CardTitle>
+            <CardTitle>{t("entities.import.member_import.instructions_title")}</CardTitle>
             <CardDescription>
-              Follow these steps to bulk import members for {entity?.name}
+              {t("entities.import.member_import.instructions_description")} {entity?.name}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
