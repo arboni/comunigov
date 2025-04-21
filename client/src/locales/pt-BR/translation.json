@@ -492,6 +492,26 @@
     "no_tasks_associated": "Nenhuma tarefa associada",
     "no_attendees_yet": "Nenhum participante adicionado ainda",
     "uploaded": "Enviado em",
+    "reactions": {
+      "title": "Reações da Reunião",
+      "no_reactions": "Nenhuma reação ainda. Seja o primeiro a reagir!",
+      "add_reaction": "Adicionar reação...",
+      "hide_options": "Ocultar opções de emoji",
+      "emoji_descriptions": {
+        "thumbs_up": "Aprovação",
+        "thumbs_down": "Não aprovação",
+        "love": "Adorei",
+        "celebration": "Celebração",
+        "thinking": "Pensativo",
+        "happy": "Feliz",
+        "sad": "Triste",
+        "applause": "Aplausos"
+      },
+      "error": {
+        "add_failed": "Falha ao adicionar reação",
+        "remove_failed": "Falha ao remover reação"
+      }
+    },
     "upcoming": "Próximas Reuniões",
     "all": "Todas as Reuniões",
     "loading_upcoming": "Carregando próximas reuniões...",

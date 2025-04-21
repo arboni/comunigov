@@ -3,8 +3,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { Loader2, ThumbsUp, ThumbsDown, Heart, Party, Eye, ThumbsUp as PrayHands, Smile, Frown, HandClap } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useTranslation } from 'react-i18next';
 
 interface MeetingReaction {
   id: number;
@@ -30,22 +31,23 @@ interface MeetingReactionsProps {
 // Available emojis matched with our schema
 const AVAILABLE_EMOJIS = ['👍', '👎', '❤️', '🎉', '🤔', '😄', '😢', '👏'];
 
-// Emoji descriptions for tooltips
-const EMOJI_DESCRIPTIONS: Record<string, string> = {
-  '👍': 'Thumbs Up',
-  '👎': 'Thumbs Down',
-  '❤️': 'Love',
-  '🎉': 'Celebration',
-  '🤔': 'Thinking',
-  '😄': 'Happy',
-  '😢': 'Sad',
-  '👏': 'Applause'
+// Define emoji mapping to translation keys
+const EMOJI_TRANSLATION_KEYS: Record<string, string> = {
+  '👍': 'thumbs_up',
+  '👎': 'thumbs_down',
+  '❤️': 'love',
+  '🎉': 'celebration',
+  '🤔': 'thinking',
+  '😄': 'happy',
+  '😢': 'sad',
+  '👏': 'applause'
 };
 
 export function MeetingReactions({ meetingId, reactions, currentUserId }: MeetingReactionsProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isExpanded, setIsExpanded] = useState(false);
+  const { t } = useTranslation();
 
   // Group reactions by emoji
   const reactionCounts: Record<string, number> = {};
@@ -70,7 +72,7 @@ export function MeetingReactions({ meetingId, reactions, currentUserId }: Meetin
     onError: (error) => {
       toast({
         title: 'Error',
-        description: 'Failed to add reaction',
+        description: t('meetings.reactions.error.add_failed'),
         variant: 'destructive',
       });
       console.error('Failed to add reaction:', error);
@@ -88,7 +90,7 @@ export function MeetingReactions({ meetingId, reactions, currentUserId }: Meetin
     onError: (error) => {
       toast({
         title: 'Error',
-        description: 'Failed to remove reaction',
+        description: t('meetings.reactions.error.remove_failed'),
         variant: 'destructive',
       });
       console.error('Failed to remove reaction:', error);
@@ -109,10 +111,16 @@ export function MeetingReactions({ meetingId, reactions, currentUserId }: Meetin
 
   const isPending = addReaction.isPending || removeReaction.isPending;
 
+  // Get translated emoji description
+  const getEmojiDescription = (emoji: string) => {
+    const key = EMOJI_TRANSLATION_KEYS[emoji];
+    return key ? t(`meetings.reactions.emoji_descriptions.${key}`) : emoji;
+  };
+
   return (
     <div className="mt-6 bg-muted/30 rounded-lg p-4">
       <div className="flex flex-col">
-        <h3 className="text-lg font-semibold mb-2">Meeting Reactions</h3>
+        <h3 className="text-lg font-semibold mb-2">{t('meetings.reactions.title')}</h3>
         
         <div className="flex flex-wrap gap-2 mb-3">
           {/* Show existing reactions with counts */}
@@ -137,13 +145,13 @@ export function MeetingReactions({ meetingId, reactions, currentUserId }: Meetin
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{EMOJI_DESCRIPTIONS[emoji] || emoji}</p>
+                    <p>{getEmojiDescription(emoji)}</p>
                   </TooltipContent>
                 </Tooltip>
               ))}
             </TooltipProvider>
           ) : (
-            <p className="text-sm text-muted-foreground">No reactions yet. Be the first to react!</p>
+            <p className="text-sm text-muted-foreground">{t('meetings.reactions.no_reactions')}</p>
           )}
         </div>
         
@@ -154,7 +162,7 @@ export function MeetingReactions({ meetingId, reactions, currentUserId }: Meetin
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-auto self-start text-muted-foreground"
         >
-          {isExpanded ? "Hide emoji options" : "Add reaction..."}
+          {isExpanded ? t('meetings.reactions.hide_options') : t('meetings.reactions.add_reaction')}
         </Button>
         
         {/* Show all available emojis when expanded */}
@@ -180,7 +188,7 @@ export function MeetingReactions({ meetingId, reactions, currentUserId }: Meetin
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{EMOJI_DESCRIPTIONS[emoji] || emoji}</p>
+                    <p>{getEmojiDescription(emoji)}</p>
                   </TooltipContent>
                 </Tooltip>
               ))}
