@@ -343,25 +343,25 @@ export default function SendMessageDialog({
                           <SelectItem value="email">
                             <div className="flex items-center">
                               <Mail className="h-4 w-4 mr-2" />
-                              {t('communications.channel_types.email')}
+                              {t('communications.channels.email')}
                             </div>
                           </SelectItem>
                           <SelectItem value="whatsapp">
                             <div className="flex items-center">
                               <MessageSquare className="h-4 w-4 mr-2" />
-                              {t('communications.channel_types.whatsapp')}
+                              {t('communications.channels.whatsapp')}
                             </div>
                           </SelectItem>
                           <SelectItem value="telegram">
                             <div className="flex items-center">
                               <MessageSquare className="h-4 w-4 mr-2" />
-                              {t('communications.channel_types.telegram')}
+                              {t('communications.channels.telegram')}
                             </div>
                           </SelectItem>
                           <SelectItem value="system_notification">
                             <div className="flex items-center">
                               <Bell className="h-4 w-4 mr-2" />
-                              {t('communications.channel_types.system_notification')}
+                              {t('communications.channels.system_notification')}
                             </div>
                           </SelectItem>
                         </SelectContent>
