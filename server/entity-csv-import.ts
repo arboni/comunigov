@@ -325,10 +325,16 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
     
     // Parse the CSV file with advanced options to handle complex fields
     const records = parse(fileContent, {
-      columns: (header) => {
+      columns: (header: string[]) => {
         // Convert all header column names to the exact case we expect
         console.log("CSV Headers found:", header);
-        return header.map((column: string) => {
+        
+        // Filter out any comment rows or empty columns
+        const filteredHeader = header.filter((col: string) => 
+          col && !col.trim().startsWith('#') && col.trim() !== ''
+        );
+        
+        return filteredHeader.map((column: string) => {
           // Clean up column name and standardize
           const cleaned = column.trim();
           
@@ -354,7 +360,8 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
       quote: '"', // Use double quotes for field enclosure
       escape: '"', // Use double quotes as escape character
       relax_quotes: true, // Handle inconsistent use of quotes
-      delimiter: ',' // Explicitly set comma as delimiter
+      delimiter: ',', // Explicitly set comma as delimiter
+      comment: '#' // Skip lines that start with #
     });
     
     const results = {
@@ -380,6 +387,42 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
       try {
         // Check the record for debugging
         console.log(`Processing member row ${rowIndex}, data: `, JSON.stringify(member));
+        
+        // Skip rows that look like comment rows or headers
+        if (Object.keys(member).some(key => 
+          key.includes('CSV Template') || 
+          key.startsWith('#') || 
+          key.toLowerCase() === 'fullname'
+        )) {
+          console.log(`Skipping row ${rowIndex} - appears to be a header or comment row`);
+          continue;
+        }
+        
+        // Handle case where the CSV might be incorrectly parsed
+        // Sometimes CSV parsing results in unexpected object structures
+        let fullName = member.fullName;
+        let email = member.email;
+        let position = member.position;
+        
+        // Try to find values in case of incorrect parsing - check all object keys
+        if (!fullName || !email || !position) {
+          // Look for fields in case-insensitive way
+          Object.entries(member).forEach(([key, value]) => {
+            const lowerKey = key.toLowerCase();
+            if (lowerKey.includes('fullname') || lowerKey.includes('full name') || lowerKey.includes('name')) {
+              fullName = String(value);
+            } else if (lowerKey.includes('email')) {
+              email = String(value);
+            } else if (lowerKey.includes('position') || lowerKey.includes('role') || lowerKey.includes('title')) {
+              position = String(value);
+            }
+          });
+          
+          // Update the member object with the found values
+          member.fullName = fullName;
+          member.email = email;
+          member.position = position;
+        }
         
         // Validate each required field separately for better error reporting
         const missingFields = [];

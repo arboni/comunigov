@@ -1,0 +1,15 @@
+Row 2: Missing required field(s) in row 2: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 3: Missing required field(s) in row 3: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 4: Missing required field(s) in row 4: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 5: Missing required field(s) in row 5: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 6: Missing required field(s) in row 6: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 7: Missing required field(s) in row 7: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 8: Missing required field(s) in row 8: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 9: Missing required field(s) in row 9: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 10: Missing required field(s) in row 10: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 11: Missing required field(s) in row 11: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 12: Missing required field(s) in row 12: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 13: Missing required field(s) in row 13: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 14: Missing required field(s) in row 14: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 15: Missing required field(s) in row 15: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
+Row 16: Missing required field(s) in row 16: fullName, email, position. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram
