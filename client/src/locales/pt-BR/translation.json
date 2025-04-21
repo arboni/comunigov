@@ -140,6 +140,11 @@
   },
   "entities": {
     "title": "Entidades",
+    "management_title": "Gerenciamento de Entidades",
+    "management_description": "Gerencie e visualize todas as entidades registradas no sistema",
+    "view_details": "Ver Detalhes",
+    "empty_state_admin": "Clique no botão 'Registrar Entidade' para criar sua primeira entidade.",
+    "empty_state_user": "Nenhuma entidade foi registrada no sistema ainda.",
     "add_entity": "Adicionar Entidade",
     "edit_entity": "Editar Entidade",
     "delete_entity": "Excluir Entidade",

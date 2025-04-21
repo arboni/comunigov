@@ -123,6 +123,11 @@
   },
   "entities": {
     "title": "Entities",
+    "management_title": "Entity Management",
+    "management_description": "Manage and view all registered entities in the system",
+    "view_details": "View Details",
+    "empty_state_admin": "Click the 'Register Entity' button to create your first entity.",
+    "empty_state_user": "No entities have been registered in the system yet.",
     "add_entity": "Add Entity",
     "edit_entity": "Edit Entity",
     "delete_entity": "Delete Entity",

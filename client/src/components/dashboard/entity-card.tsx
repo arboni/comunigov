@@ -4,20 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useState } from "react";
 import EditEntityDialog from "@/components/dialogs/edit-entity-dialog";
+import { useTranslation } from "react-i18next";
 
 interface EntityCardProps {
   entity: Entity;
 }
 
 export default function EntityCard({ entity }: EntityCardProps) {
+  const { t } = useTranslation();
   const [editEntityOpen, setEditEntityOpen] = useState(false);
 
-  // Function to format the entity type for display
-  const formatEntityType = (type: string) => {
-    return type
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+  // Function to get the translated entity type
+  const getTranslatedEntityType = (type: string) => {
+    return t(`entities.types.${type}`);
   };
 
   // Mock member count since we don't have that data immediately available
@@ -35,7 +34,7 @@ export default function EntityCard({ entity }: EntityCardProps) {
           </div>
           <div>
             <h3 className="text-base font-medium text-neutral-900">{entity.name}</h3>
-            <p className="text-sm text-neutral-500">{formatEntityType(entity.type)}</p>
+            <p className="text-sm text-neutral-500">{getTranslatedEntityType(entity.type)}</p>
           </div>
         </div>
         
@@ -50,7 +49,7 @@ export default function EntityCard({ entity }: EntityCardProps) {
           </div>
           <div className="flex items-center text-sm text-neutral-500">
             <Users className="mr-2 h-4 w-4 text-neutral-400" />
-            <span>{memberCount} members</span>
+            <span>{memberCount} {t("entities.members.title").toLowerCase()}</span>
           </div>
         </div>
       </div>
@@ -62,7 +61,7 @@ export default function EntityCard({ entity }: EntityCardProps) {
             className="text-primary hover:text-primary-600 mr-4 flex items-center"
           >
             <Eye className="h-4 w-4 mr-1" />
-            View Details
+            {t("entities.view_details")}
           </Button>
         </Link>
         <Button 
