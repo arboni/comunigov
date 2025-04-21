@@ -28,7 +28,8 @@
     "success": "Sucesso",
     "error": "Erro",
     "warning": "Aviso",
-    "info": "Informação"
+    "info": "Informação",
+    "no_position": "Sem cargo"
   },
   "auth": {
     "login": "Entrar",
@@ -253,6 +254,33 @@
       "declined": "Recusado",
       "attended": "Compareceu",
       "absent": "Ausente"
+    },
+    "form": {
+      "schedule_meeting": "Agendar Reunião",
+      "scheduling": "Agendando...",
+      "meeting_name": "Nome da Reunião",
+      "meeting_name_placeholder": "ex: Reunião de Planejamento Orçamentário",
+      "meeting_agenda": "Pauta da Reunião",
+      "meeting_agenda_placeholder": "ex: Discutir alocação de orçamento para o terceiro trimestre",
+      "meeting_date": "Data da Reunião",
+      "select_date": "Selecionar data",
+      "start_time": "Hora de Início",
+      "end_time": "Hora de Término",
+      "location": "Local",
+      "location_placeholder": "ex: Sala de Conferência A",
+      "related_subject": "Assunto Relacionado (opcional)",
+      "select_subject": "Selecione um assunto",
+      "no_subjects_available": "Nenhum assunto disponível",
+      "auto_select_participants": "Incluir automaticamente todos os responsáveis por tarefas deste assunto como participantes",
+      "subject_topic_optional": "Assunto/Tópico (opcional)",
+      "subject_topic_placeholder": "ex: Revisão do Orçamento do Terceiro Trimestre",
+      "select_attendees": "Selecionar Participantes",
+      "select_attendees_description": "Escolha os usuários que devem participar desta reunião.",
+      "users": "Usuários",
+      "no_users_available": "Nenhum usuário disponível para convidar.",
+      "meeting_documents": "Documentos da Reunião",
+      "meeting_documents_description": "Anexe até 5 documentos para compartilhar com os participantes (opcional).",
+      "upload_documents": "Enviar Documentos"
     }
   },
   "tasks": {

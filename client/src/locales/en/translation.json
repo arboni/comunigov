@@ -28,7 +28,8 @@
     "success": "Success",
     "error": "Error",
     "warning": "Warning",
-    "info": "Information"
+    "info": "Information",
+    "no_position": "No position"
   },
   "auth": {
     "login": "Login",
@@ -236,6 +237,33 @@
       "declined": "Declined",
       "attended": "Attended",
       "absent": "Absent"
+    },
+    "form": {
+      "schedule_meeting": "Schedule Meeting",
+      "scheduling": "Scheduling...",
+      "meeting_name": "Meeting Name",
+      "meeting_name_placeholder": "e.g. Budget Planning Meeting",
+      "meeting_agenda": "Meeting Agenda",
+      "meeting_agenda_placeholder": "e.g. Discuss budget allocation for Q3",
+      "meeting_date": "Meeting Date",
+      "select_date": "Select date",
+      "start_time": "Start Time",
+      "end_time": "End Time",
+      "location": "Location",
+      "location_placeholder": "e.g. Conference Room A",
+      "related_subject": "Related Subject (optional)",
+      "select_subject": "Select a subject",
+      "no_subjects_available": "No subjects available",
+      "auto_select_participants": "Automatically include all task owners from this subject as attendees",
+      "subject_topic_optional": "Subject/Topic (optional)",
+      "subject_topic_placeholder": "e.g. Q3 Budget Review",
+      "select_attendees": "Select Attendees",
+      "select_attendees_description": "Choose the users who should attend this meeting.",
+      "users": "Users",
+      "no_users_available": "No users available to invite.",
+      "meeting_documents": "Meeting Documents",
+      "meeting_documents_description": "Attach up to 5 documents to share with the attendees (optional).",
+      "upload_documents": "Upload Documents"
     }
   },
   "tasks": {
