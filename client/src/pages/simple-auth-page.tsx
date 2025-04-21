@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useTranslation } from "@/hooks/use-translation";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -45,6 +46,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function SimpleAuthPage() {
   const [, setLocation] = useLocation();
+  const { t } = useTranslation();
   
   // Get user data using direct React Query
   const { data: user, isLoading } = useQuery({
@@ -88,14 +90,14 @@ export default function SimpleAuthPage() {
     onSuccess: (userData) => {
       queryClient.setQueryData(["/api/user"], userData);
       toast({
-        title: "Login successful",
-        description: `Welcome back, ${userData.fullName}!`,
+        title: t('auth.login_successful'),
+        description: t('auth.welcome_back', { name: userData.fullName }),
       });
       setLocation("/");
     },
     onError: (error: Error) => {
       toast({
-        title: "Login failed",
+        title: t('auth.login_failed'),
         description: error.message,
         variant: "destructive",
       });
@@ -110,14 +112,14 @@ export default function SimpleAuthPage() {
     onSuccess: (userData) => {
       queryClient.setQueryData(["/api/user"], userData);
       toast({
-        title: "Registration successful",
-        description: `Welcome, ${userData.fullName}!`,
+        title: t('auth.registration_successful'),
+        description: t('auth.welcome', { name: userData.fullName }),
       });
       setLocation("/");
     },
     onError: (error: Error) => {
       toast({
-        title: "Registration failed",
+        title: t('auth.registration_failed'),
         description: error.message,
         variant: "destructive",
       });
@@ -180,21 +182,21 @@ export default function SimpleAuthPage() {
         <div className="flex flex-col justify-center">
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold">Welcome to ComuniGov</CardTitle>
+              <CardTitle className="text-2xl font-bold">{t('auth.welcome_to_app')}</CardTitle>
               <CardDescription>
-                Please login to your account or register as a new user
+                {t('auth.login_or_register')}
               </CardDescription>
               <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md text-blue-800 text-sm">
-                <p className="font-medium">Default Admin Credentials:</p>
-                <p>Username: <span className="font-mono">admin</span></p>
-                <p>Password: <span className="font-mono">admin123</span></p>
+                <p className="font-medium">{t('auth.default_credentials')}:</p>
+                <p>{t('auth.username')}: <span className="font-mono">admin</span></p>
+                <p>{t('auth.password')}: <span className="font-mono">admin123</span></p>
               </div>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="login" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="login">Login</TabsTrigger>
-                  <TabsTrigger value="register">Register</TabsTrigger>
+                  <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
+                  <TabsTrigger value="register">{t('auth.register')}</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login">
