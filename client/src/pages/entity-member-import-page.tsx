@@ -159,13 +159,13 @@ export default function EntityMemberImportPage() {
   const validateCSV = async (file: File): Promise<boolean> => {
     // Check file extension
     if (!file.name.toLowerCase().endsWith('.csv')) {
-      setCsvValidationError('Please select a CSV file');
+      setCsvValidationError(t('entities.import.error_select_csv'));
       return false;
     }
     
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setCsvValidationError('File size exceeds 5MB limit');
+      setCsvValidationError(t('entities.import.error_file_size'));
       return false;
     }
     
@@ -177,7 +177,7 @@ export default function EntityMemberImportPage() {
       const lines = text.split('\n').filter(line => !line.trim().startsWith('#'));
       
       if (lines.length < 2) {
-        setCsvValidationError('The CSV file must contain at least a header row and one data row');
+        setCsvValidationError(t('entities.import.error_file_rows'));
         return false;
       }
       
@@ -197,7 +197,7 @@ export default function EntityMemberImportPage() {
       });
       
       if (missingHeaders.length > 0) {
-        setCsvValidationError(`Required headers missing: ${missingHeaders.join(', ')}`);
+        setCsvValidationError(t('entities.import.error_missing_headers', { headers: missingHeaders.join(', ') }));
         return false;
       }
       
@@ -472,16 +472,16 @@ export default function EntityMemberImportPage() {
               {/* Display created users */}
               {importResult.userDetails && importResult.userDetails.length > 0 && (
                 <div className="mt-6 mb-2">
-                  <h3 className="text-lg font-medium mb-2">Created Users</h3>
+                  <h3 className="text-lg font-medium mb-2">{t("entities.import.created_users")}</h3>
                   <div className="border rounded-lg max-h-96 overflow-y-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Full Name</TableHead>
-                          <TableHead>Username</TableHead>
-                          <TableHead>Role</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Temporary Password</TableHead>
+                          <TableHead>{t("users.full_name")}</TableHead>
+                          <TableHead>{t("users.username")}</TableHead>
+                          <TableHead>{t("users.role")}</TableHead>
+                          <TableHead>{t("users.email")}</TableHead>
+                          <TableHead>{t("entities.import.temporary_password")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -491,7 +491,7 @@ export default function EntityMemberImportPage() {
                             <TableCell>{user.username}</TableCell>
                             <TableCell>
                               <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
-                                Entity Member
+                                {t("users.roles.entity_member")}
                               </span>
                             </TableCell>
                             <TableCell>{user.email}</TableCell>
@@ -502,8 +502,7 @@ export default function EntityMemberImportPage() {
                     </Table>
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Make sure to save these credentials or communicate them to the users securely. 
-                    These temporary passwords will only be shown once.
+                    {t("entities.import.credentials_warning")}
                   </p>
                 </div>
               )}
@@ -511,12 +510,12 @@ export default function EntityMemberImportPage() {
               {/* Display errors */}
               {importResult.errors.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-lg font-medium mb-2">Error Details</h3>
+                  <h3 className="text-lg font-medium mb-2">{t("entities.import.error_details")}</h3>
                   <div className="border rounded-lg max-h-60 overflow-y-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Error</TableHead>
+                          <TableHead>{t("common.error")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -533,7 +532,7 @@ export default function EntityMemberImportPage() {
             </CardContent>
             <CardFooter className="border-t px-6 py-4">
               <Button onClick={resetImport} variant="outline">
-                Import Another File
+                {t("entities.import.import_another")}
               </Button>
             </CardFooter>
           </Card>
@@ -543,24 +542,24 @@ export default function EntityMemberImportPage() {
         <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Confirm Member Import</AlertDialogTitle>
+              <AlertDialogTitle>{t("entities.import.confirm_import")}</AlertDialogTitle>
               <AlertDialogDescriptionCustom>
                 <div className="space-y-2">
-                  <div>Are you sure you want to import members for <strong>{entity?.name}</strong> from <strong>{selectedFile?.name}</strong>?</div>
-                  <div>This will add new members to the entity with the following actions:</div>
+                  <div>{t("entities.import.confirm_question", { entity: entity?.name, file: selectedFile?.name })}</div>
+                  <div>{t("entities.import.confirm_description")}</div>
                   <ul className="list-disc pl-5 text-sm">
-                    <li>Create entity members as users with 'entity_member' role</li>
-                    <li>Generate usernames based on email addresses</li>
-                    <li>Generate temporary passwords for all created users</li>
-                    <li>Associate the members with {entity?.name}</li>
+                    <li>{t("entities.import.action_create_members")}</li>
+                    <li>{t("entities.import.action_generate_usernames")}</li>
+                    <li>{t("entities.import.action_generate_passwords")}</li>
+                    <li>{t("entities.import.action_associate_entity", { entity: entity?.name })}</li>
                   </ul>
                 </div>
               </AlertDialogDescriptionCustom>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
               <AlertDialogAction onClick={startImport}>
-                Proceed with Import
+                {t("entities.import.proceed_import")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
