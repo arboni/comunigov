@@ -583,7 +583,7 @@ export default function SendMessageDialog({
                                           <FormLabel className="text-sm font-normal flex items-center justify-between w-full overflow-hidden">
                                             <span className="truncate">{entity.name}</span>
                                             <Badge variant="outline" className="ml-2 flex-shrink-0">
-                                              {t(`entity.types.${entity.type}`)}
+                                              {t(`entities.types.${entity.type}`)}
                                             </Badge>
                                           </FormLabel>
                                         </FormItem>
