@@ -153,7 +153,7 @@ export default function MeetingDetailPage() {
     if (!relatedTasks || relatedTasks.length === 0) {
       return (
         <p className="text-neutral-500 text-sm text-center py-4">
-          No tasks associated with this meeting
+          {t('meetings.no_tasks_associated')}
         </p>
       );
     }
@@ -181,10 +181,10 @@ export default function MeetingDetailPage() {
               }
             >
               {task.status === 'completed' 
-                ? 'Completed' 
+                ? t('tasks.status_types.completed') 
                 : task.status === 'in_progress'
-                  ? 'In Progress'
-                  : 'Pending'
+                  ? t('tasks.status_types.in_progress')
+                  : t('tasks.status_types.pending')
               }
             </Badge>
           </li>
@@ -248,7 +248,7 @@ export default function MeetingDetailPage() {
     if (documents.length === 0) {
       return (
         <p className="text-neutral-500 text-sm text-center py-4">
-          No files available for this meeting
+          {t('meetings.no_files_available')}
         </p>
       );
     }
@@ -294,7 +294,7 @@ export default function MeetingDetailPage() {
     }
     
     if (attendees.length === 0) {
-      return <p className="text-neutral-500 text-sm">No attendees added yet</p>;
+      return <p className="text-neutral-500 text-sm">{t('meetings.no_attendees_yet')}</p>;
     }
     
     return (
@@ -319,14 +319,14 @@ export default function MeetingDetailPage() {
               <p className="text-xs text-neutral-500">
                 {attendee.user?.position || 
                  userMap.get(attendee.userId)?.position || 
-                 'No position'}
+                 t('meetings.no_position')}
               </p>
             </div>
             <Badge
               variant={attendee.confirmed ? "default" : "outline"}
               className={attendee.confirmed ? "bg-emerald-100 text-emerald-800" : ""}
             >
-              {attendee.confirmed ? "Confirmed" : "Pending"}
+              {attendee.confirmed ? t('meetings.confirmed') : t('meetings.pending')}
             </Badge>
           </li>
         ))}
@@ -346,13 +346,13 @@ export default function MeetingDetailPage() {
                 className="mr-4"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Meetings
+                {t('meetings.back_to_meetings')}
               </Button>
             </Link>
             
             <div>
               <h1 className="text-2xl font-semibold text-neutral-800">{meeting.name}</h1>
-              <p className="text-neutral-500">{meeting.subject || "No subject"}</p>
+              <p className="text-neutral-500">{meeting.subject || t('meetings.no_subject')}</p>
             </div>
           </div>
           
@@ -397,10 +397,10 @@ export default function MeetingDetailPage() {
                     
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-sm font-medium text-neutral-500">Attendees</h3>
+                        <h3 className="text-sm font-medium text-neutral-500">{t('meetings.attendees')}</h3>
                         <Badge variant="outline" className="text-primary">
                           <Users className="h-3 w-3 mr-1" />
-                          {attendees.length} Attendees
+                          {attendees.length} {t('meetings.attendees_count')}
                         </Badge>
                       </div>
                       
