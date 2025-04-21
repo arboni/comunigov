@@ -12,12 +12,14 @@ import SendMessageDialog from "@/components/dialogs/send-message-dialog";
 import ScheduleMeetingDialog from "@/components/dialogs/schedule-meeting-dialog";
 import CreateTaskDialog from "@/components/dialogs/create-task-dialog";
 import { Building2, Send, CalendarPlus, ListTodo } from "lucide-react";
+import { useTranslation } from "@/hooks/use-translation";
 
 export default function DashboardPage() {
   const [registerEntityOpen, setRegisterEntityOpen] = useState(false);
   const [sendMessageOpen, setSendMessageOpen] = useState(false);
   const [scheduleMeetingOpen, setScheduleMeetingOpen] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const { t } = useTranslation();
 
   // Fetch dashboard stats
   const { data: stats, isLoading: isLoadingStats } = useQuery({
@@ -53,76 +55,76 @@ export default function DashboardPage() {
           <div className="mb-6">
             <h1 className="text-2xl font-semibold text-neutral-800">Dashboard</h1>
             <p className="mt-1 text-sm text-neutral-500">
-              Welcome back! Here's an overview of your institutional communication system.
+              {t('dashboard.welcome_message')}
             </p>
           </div>
           
           {/* Stat Cards */}
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             <StatsCard
-              title="Total Entities"
+              title={t('dashboard.total_entities')}
               value={isLoadingStats ? "-" : stats?.entityCount.toString() || "0"}
               icon={<Building2 />}
               color="primary"
-              linkText="View all"
+              linkText={t('dashboard.view_all')}
               linkHref="/entities"
             />
             
             <StatsCard
-              title="Registered Users"
+              title={t('dashboard.registered_users')}
               value={isLoadingStats ? "-" : stats?.userCount.toString() || "0"}
               icon={<Building2 />}
               color="secondary"
-              linkText="View all"
+              linkText={t('dashboard.view_all')}
               linkHref="/users"
             />
             
             <StatsCard
-              title="Upcoming Meetings"
+              title={t('dashboard.upcoming_meetings')}
               value={isLoadingStats ? "-" : stats?.upcomingMeetings.toString() || "0"}
               icon={<CalendarPlus />}
               color="accent"
-              linkText="View all"
+              linkText={t('dashboard.view_all')}
               linkHref="/meetings"
             />
             
             <StatsCard
-              title="Pending Tasks"
+              title={t('dashboard.pending_tasks')}
               value={isLoadingStats ? "-" : stats?.pendingTasks.toString() || "0"}
               icon={<ListTodo />}
               color="warning"
-              linkText="View all"
+              linkText={t('dashboard.view_all')}
               linkHref="/tasks"
             />
           </div>
           
           {/* Quick Actions */}
           <div className="mt-6">
-            <h2 className="text-lg font-medium text-neutral-800 mb-4">Quick Actions</h2>
+            <h2 className="text-lg font-medium text-neutral-800 mb-4">{t('dashboard.quick_actions')}</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               <QuickActionButton
-                title="Register Entity"
+                title={t('dashboard.register_entity')}
                 icon={<Building2 />}
                 color="primary"
                 onClick={() => setRegisterEntityOpen(true)}
               />
               
               <QuickActionButton
-                title="Send Message"
+                title={t('dashboard.send_message')}
                 icon={<Send />}
                 color="secondary"
                 onClick={() => setSendMessageOpen(true)}
               />
               
               <QuickActionButton
-                title="Schedule Meeting"
+                title={t('dashboard.schedule_meeting')}
                 icon={<CalendarPlus />}
                 color="accent"
                 onClick={() => setScheduleMeetingOpen(true)}
               />
               
               <QuickActionButton
-                title="Create Task"
+                title={t('dashboard.create_task')}
                 icon={<ListTodo />}
                 color="success"
                 onClick={() => setCreateTaskOpen(true)}
@@ -135,19 +137,21 @@ export default function DashboardPage() {
             <div className="bg-white shadow rounded-lg">
               <div className="px-4 py-5 border-b border-neutral-200 sm:px-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-neutral-800">Upcoming Meetings</h3>
-                  <a href="/meetings" className="text-sm font-medium text-primary hover:text-primary-600">View all</a>
+                  <h3 className="text-lg font-medium text-neutral-800">{t('dashboard.upcoming_meetings')}</h3>
+                  <a href="/meetings" className="text-sm font-medium text-primary hover:text-primary-600">
+                    {t('dashboard.view_all')}
+                  </a>
                 </div>
               </div>
               <ul className="divide-y divide-neutral-200 px-4 py-2">
                 {isLoadingMeetings ? (
-                  <div className="py-4 text-center text-neutral-500">Loading meetings...</div>
+                  <div className="py-4 text-center text-neutral-500">{t('dashboard.loading_meetings')}</div>
                 ) : meetings && meetings.length > 0 ? (
                   meetings.slice(0, 3).map((meeting) => (
                     <MeetingListItem key={meeting.id} meeting={meeting} />
                   ))
                 ) : (
-                  <div className="py-4 text-center text-neutral-500">No upcoming meetings</div>
+                  <div className="py-4 text-center text-neutral-500">{t('dashboard.no_meetings')}</div>
                 )}
               </ul>
             </div>
@@ -156,19 +160,21 @@ export default function DashboardPage() {
             <div className="bg-white shadow rounded-lg">
               <div className="px-4 py-5 border-b border-neutral-200 sm:px-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-neutral-800">Recent Tasks</h3>
-                  <a href="/tasks" className="text-sm font-medium text-primary hover:text-primary-600">View all</a>
+                  <h3 className="text-lg font-medium text-neutral-800">{t('dashboard.recent_tasks')}</h3>
+                  <a href="/tasks" className="text-sm font-medium text-primary hover:text-primary-600">
+                    {t('dashboard.view_all')}
+                  </a>
                 </div>
               </div>
               <ul className="divide-y divide-neutral-200 px-4 py-2">
                 {isLoadingTasks ? (
-                  <div className="py-4 text-center text-neutral-500">Loading tasks...</div>
+                  <div className="py-4 text-center text-neutral-500">{t('dashboard.loading_tasks')}</div>
                 ) : tasks && tasks.length > 0 ? (
                   tasks.slice(0, 3).map((task) => (
                     <TaskListItem key={task.id} task={task} />
                   ))
                 ) : (
-                  <div className="py-4 text-center text-neutral-500">No tasks available</div>
+                  <div className="py-4 text-center text-neutral-500">{t('dashboard.no_tasks')}</div>
                 )}
               </ul>
             </div>
@@ -177,19 +183,21 @@ export default function DashboardPage() {
           {/* Registered Entities */}
           <div className="mt-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-medium text-neutral-800">Registered Entities</h2>
-              <a href="/entities" className="text-sm font-medium text-primary hover:text-primary-600">View all</a>
+              <h2 className="text-lg font-medium text-neutral-800">{t('dashboard.registered_entities')}</h2>
+              <a href="/entities" className="text-sm font-medium text-primary hover:text-primary-600">
+                {t('dashboard.view_all')}
+              </a>
             </div>
             
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {isLoadingEntities ? (
-                <div className="col-span-full py-4 text-center text-neutral-500">Loading entities...</div>
+                <div className="col-span-full py-4 text-center text-neutral-500">{t('dashboard.loading_entities')}</div>
               ) : entities && entities.length > 0 ? (
                 entities.slice(0, 3).map((entity) => (
                   <EntityCard key={entity.id} entity={entity} />
                 ))
               ) : (
-                <div className="col-span-full py-4 text-center text-neutral-500">No entities registered</div>
+                <div className="col-span-full py-4 text-center text-neutral-500">{t('dashboard.no_entities')}</div>
               )}
             </div>
           </div>
@@ -197,8 +205,10 @@ export default function DashboardPage() {
           {/* Recent Communications */}
           <div className="mt-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-medium text-neutral-800">Recent Communications</h2>
-              <a href="/communications" className="text-sm font-medium text-primary hover:text-primary-600">View all</a>
+              <h2 className="text-lg font-medium text-neutral-800">{t('dashboard.recent_communications')}</h2>
+              <a href="/communications" className="text-sm font-medium text-primary hover:text-primary-600">
+                {t('dashboard.view_all')}
+              </a>
             </div>
             
             <CommunicationsTable 
