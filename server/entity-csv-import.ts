@@ -388,13 +388,22 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
         // Check the record for debugging
         console.log(`Processing member row ${rowIndex}, data: `, JSON.stringify(member));
         
-        // Skip rows that look like comment rows or headers
-        if (Object.keys(member).some(key => 
-          key.includes('CSV Template') || 
-          key.startsWith('#') || 
-          key.toLowerCase() === 'fullname'
-        )) {
-          console.log(`Skipping row ${rowIndex} - appears to be a header or comment row`);
+        // Skip rows that look like comment rows
+        if (Object.keys(member).some(key => key.includes('CSV Template') || key.startsWith('#'))) {
+          console.log(`Skipping row ${rowIndex} - appears to be a comment row`);
+          continue;
+        }
+        
+        // Check if the row is a duplicate header row (contains column name as a value)
+        const isHeaderRow = Object.values(member).some(
+          value => typeof value === 'string' && 
+          (value.toLowerCase() === 'fullname' || 
+           value.toLowerCase() === 'email' || 
+           value.toLowerCase() === 'position')
+        );
+        
+        if (isHeaderRow) {
+          console.log(`Skipping row ${rowIndex} - appears to be a header row`);
           continue;
         }
         

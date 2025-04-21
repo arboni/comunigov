@@ -27,15 +27,23 @@ export async function apiRequest(
     }
   }
   
-  const res = await fetch(url, {
-    method,
-    headers,
-    body,
-    credentials: "include",
-  });
+  try {
+    const res = await fetch(url, {
+      method,
+      headers,
+      body,
+      credentials: "include",
+    });
 
-  await throwIfResNotOk(res);
-  return res;
+    await throwIfResNotOk(res);
+    return res;
+  } catch (error) {
+    console.error(`Network error for ${method} ${url}:`, error);
+    // Rethrow with more descriptive message
+    throw new Error(
+      `Network error: Failed to ${method.toLowerCase()} ${url}. Please check your connection and try again. ${error instanceof Error ? error.message : ''}`
+    );
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -44,16 +52,23 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-    });
+    try {
+      const res = await fetch(queryKey[0] as string, {
+        credentials: "include",
+      });
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        return null;
+      }
+
+      await throwIfResNotOk(res);
+      return await res.json();
+    } catch (error) {
+      console.error(`Network error for GET ${queryKey[0]}:`, error);
+      throw new Error(
+        `Network error: Failed to fetch data from ${queryKey[0]}. Please check your connection and try again. ${error instanceof Error ? error.message : ''}`
+      );
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({
