@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { apiRequest, invalidateUsers } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -54,6 +55,7 @@ export default function EditMemberDialog({
   member,
 }: EditMemberDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [passwordReset, setPasswordReset] = useState(false);
   
   // Form setup with member data as default values
@@ -105,8 +107,8 @@ export default function EditMemberDialog({
         } catch (error) {
           console.error("Failed to reset password:", error);
           toast({
-            title: "Password reset failed",
-            description: "Member was updated but password reset failed.",
+            title: t("entities.members.reset_password_failed"),
+            description: t("entities.members.member_updated_but_reset_failed"),
             variant: "destructive",
           });
         }
@@ -117,10 +119,10 @@ export default function EditMemberDialog({
       
       // Show success message
       toast({
-        title: "Member updated",
+        title: t("entities.members.member_updated"),
         description: passwordReset 
-          ? "Member has been updated and their password has been reset. A notification email was sent." 
-          : "Member has been successfully updated.",
+          ? t("entities.members.password_reset_description") 
+          : t("entities.members.member_updated_description"),
       });
       
       // Close dialog
@@ -128,7 +130,7 @@ export default function EditMemberDialog({
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to update member",
+        title: t("entities.members.update_failed"),
         description: error.message,
         variant: "destructive",
       });
@@ -143,9 +145,9 @@ export default function EditMemberDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit Member</DialogTitle>
+          <DialogTitle>{t("entities.members.edit_member")}</DialogTitle>
           <DialogDescription>
-            Update member information or reset their password.
+            {t("entities.members.edit_member_description")}
           </DialogDescription>
         </DialogHeader>
         
@@ -156,9 +158,9 @@ export default function EditMemberDialog({
               name="fullName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>{t("entities.members.full_name")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder={t("auth.full_name_placeholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -170,9 +172,9 @@ export default function EditMemberDialog({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("common.email")}</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="john.doe@example.com" {...field} />
+                    <Input type="email" placeholder={t("auth.email_placeholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -185,19 +187,19 @@ export default function EditMemberDialog({
                 name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Role</FormLabel>
+                    <FormLabel>{t("entities.members.role")}</FormLabel>
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select role" />
+                          <SelectValue placeholder={t("entities.members.select_role")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="entity_member">Member</SelectItem>
-                        <SelectItem value="entity_head">Entity Head</SelectItem>
+                        <SelectItem value="entity_member">{t("entities.members.role_member")}</SelectItem>
+                        <SelectItem value="entity_head">{t("entities.members.role_head")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -210,9 +212,9 @@ export default function EditMemberDialog({
                 name="position"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Position (Optional)</FormLabel>
+                    <FormLabel>{t("entities.members.position")} ({t("common.optional")})</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Analyst" {...field} value={field.value || ''} />
+                      <Input placeholder={t("entities.members.position_placeholder")} {...field} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -225,9 +227,9 @@ export default function EditMemberDialog({
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone (Optional)</FormLabel>
+                  <FormLabel>{t("common.phone")} ({t("common.optional")})</FormLabel>
                   <FormControl>
-                    <Input placeholder="+1 234 567 8901" {...field} value={field.value || ''} />
+                    <Input placeholder="+55 11 98765-4321" {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -246,9 +248,9 @@ export default function EditMemberDialog({
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>Reset Password</FormLabel>
+                    <FormLabel>{t("entities.members.reset_password")}</FormLabel>
                     <p className="text-sm text-muted-foreground">
-                      This will reset the member's password to a default value and they will be notified to change it.
+                      {t("entities.members.reset_password_description")}
                     </p>
                   </div>
                 </FormItem>
@@ -257,8 +259,8 @@ export default function EditMemberDialog({
             
             {passwordReset && (
               <div className="rounded-md bg-green-50 p-4 text-sm text-green-800">
-                <p>A password reset email has been sent to the member with their temporary password.</p>
-                <p className="mt-1 font-medium">The member will need to change their password after login.</p>
+                <p>{t("entities.members.welcome_email_sent")}</p>
+                <p className="mt-1 font-medium">{t("entities.members.password_change_required")}</p>
               </div>
             )}
             
@@ -268,13 +270,13 @@ export default function EditMemberDialog({
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button 
                 type="submit" 
                 disabled={editMemberMutation.isPending}
               >
-                {editMemberMutation.isPending ? "Updating..." : "Update Member"}
+                {editMemberMutation.isPending ? t("entities.members.updating") : t("entities.members.update_member")}
               </Button>
             </DialogFooter>
           </form>
