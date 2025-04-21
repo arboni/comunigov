@@ -137,7 +137,7 @@ export default function MeetingDetailPage() {
   // Format the date
   const meetingDate = new Date(meeting.date);
   const isValidDate = isValid(meetingDate);
-  const formattedDate = isValidDate ? format(meetingDate, "PPP") : "TBD";
+  const formattedDate = isValidDate ? format(meetingDate, "dd/MM/yyyy") : "TBD";
 
   // Rendering Tasks
   const renderTasks = () => {
@@ -265,7 +265,7 @@ export default function MeetingDetailPage() {
                 {document.name}
               </p>
               <p className="text-xs text-neutral-500">
-                {formatFileSize(document.size || 0)} • Uploaded {new Date(document.uploadedAt).toLocaleDateString()}
+                {formatFileSize(document.size || 0)} • {t('meetings.uploaded')} {format(new Date(document.uploadedAt), "dd/MM/yyyy")}
               </p>
             </div>
             <a 
