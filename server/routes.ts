@@ -2748,7 +2748,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Entity CSV import endpoint
+  // Entity CSV import endpoint - for importing just entity data
   app.post("/api/entities/import", isMasterImplementer, csvUpload.single('file'), async (req, res, next) => {
     try {
       if (!req.file) {
@@ -2758,20 +2758,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log the file upload activity
       await ActivityLogger.logUpload(
         req.user!.id,
-        'CSV import file',
+        'Entity CSV import file',
         'entity_import',
         undefined,
         req
       );
       
-      // Process the CSV file
+      // Process the entity CSV file
       const results = await importEntitiesFromCSV(req.file.path, req.user!.id);
       
       // Calculate summary counts
-      const usersCreated = results.newUsers ? results.newUsers.length : 0;
       const entitiesCreated = results.newEntities ? results.newEntities.length : 0;
       
-      console.log(`Import complete: ${entitiesCreated} entities and ${usersCreated} users created`);
+      console.log(`Entity import complete: ${entitiesCreated} entities created`);
       
       // Return the results
       res.status(200).json({
@@ -2780,14 +2779,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         successful: results.successful,
         failed: results.failed,
         errors: results.errors,
-        usersCreated: usersCreated,
-        userDetails: results.newUsers.map(u => ({
-          id: u.id,
-          username: u.username,
-          fullName: u.fullName,
-          email: u.email,
-          role: u.role,
-          tempPassword: u.tempPassword // Include the temporary password in the response
+        entitiesCreated: entitiesCreated,
+        entityDetails: results.newEntities.map(e => ({
+          id: e.id,
+          name: e.name,
+          type: e.type,
+          headName: e.headName,
+          headEmail: e.headEmail
         }))
       });
     } catch (error) {
@@ -2800,6 +2798,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(500).json({
         message: "Error importing entities",
+        error: (error as Error).message
+      });
+    }
+  });
+  
+  // Entity Members CSV import endpoint - for importing members for an existing entity
+  app.post("/api/entities/:entityId/members/import", [isMasterImplementer, hasEntityAccess], csvUpload.single('file'), async (req, res, next) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+      
+      const entityId = parseInt(req.params.entityId);
+      if (isNaN(entityId)) {
+        return res.status(400).json({ message: "Invalid entity ID" });
+      }
+      
+      // Check if entity exists
+      const entity = await db.select().from(entities).where(eq(entities.id, entityId)).limit(1);
+      if (entity.length === 0) {
+        return res.status(404).json({ message: "Entity not found" });
+      }
+      
+      // Log the file upload activity
+      await ActivityLogger.logUpload(
+        req.user!.id,
+        'Members CSV import file',
+        'member_import',
+        entityId,
+        req
+      );
+      
+      // Process the members CSV file 
+      const results = await importEntityMembersFromCSV(req.file.path, entityId, req.user!.id);
+      
+      // Calculate summary counts
+      const usersCreated = results.newUsers ? results.newUsers.length : 0;
+      
+      console.log(`Member import complete: ${usersCreated} members created for entity ${entityId}`);
+      
+      // Return the results
+      res.status(200).json({
+        message: "Entity members import completed",
+        entityId: entityId,
+        entityName: entity[0].name,
+        totalProcessed: results.totalProcessed,
+        successful: results.successful,
+        failed: results.failed,
+        errors: results.errors,
+        usersCreated: usersCreated,
+        userDetails: results.newUsers.map(u => ({
+          id: u.id,
+          username: u.username,
+          fullName: u.fullName,
+          email: u.email,
+          role: u.role,
+          position: u.position,
+          tempPassword: u.tempPassword // Include temporary passwords in response
+        }))
+      });
+    } catch (error) {
+      console.error("Error importing entity members:", error);
+      
+      // Clean up the file if it exists
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      res.status(500).json({
+        message: "Error importing entity members",
         error: (error as Error).message
       });
     }

@@ -3,7 +3,7 @@ import { parse } from 'csv-parse/sync';
 import { entities, entityTypeEnum, users, userRoleEnum } from '../shared/schema';
 import { db } from './db';
 import { ActivityLogger } from './activity-logger';
-import { sql } from 'drizzle-orm';
+import { sql, eq } from 'drizzle-orm';
 import { hashPassword } from './auth';
 
 interface EntityMember {
@@ -108,6 +108,13 @@ function generateTemporaryPassword(): string {
   return password;
 }
 
+/**
+ * Import entities from a CSV file
+ * This function only imports entities without members
+ * @param filePath Path to the CSV file
+ * @param userId ID of the user performing the import
+ * @returns Import results with created entities
+ */
 export async function importEntitiesFromCSV(filePath: string, userId: number) {
   try {
     // Read the CSV file
@@ -118,6 +125,7 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
       columns: (header) => {
         // Convert all header column names to the exact case we expect
         // This solves case-sensitivity issues with column names
+        console.log("CSV Headers found:", header);
         return header.map((column: string) => {
           // Clean up column name and standardize
           const cleaned = column.trim();
@@ -133,8 +141,8 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
             'phone': 'phone',
             'website': 'website',
             'socialmedia': 'socialMedia',
-            'tags': 'tags',
-            'members': 'members'
+            'tags': 'tags'
+            // Note: 'members' field removed from entity import
           };
           
           // Get the standardized column name or keep original if not found
@@ -277,84 +285,7 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
           results.errors.push(`Row ${rowIndex}: Warning - Entity created but head user creation failed: ${(userError as Error).message}`);
         }
         
-        // Process entity members if present
-        if (record.members) {
-          try {
-            console.log(`Processing members string: "${record.members}"`);
-            const members = parseMembersString(record.members);
-            console.log(`Parsed ${members.length} members for entity "${record.name}"`);
-            
-            for (const member of members) {
-              console.log(`Processing member: ${member.fullName}, email: ${member.email}`);
-              
-              let memberUsername = '';
-              let usernameIndex = 0;
-              let isUsernameTaken = true;
-              
-              // Find an available username based on the email
-              while (isUsernameTaken && usernameIndex < 10) {
-                memberUsername = generateUsernameFromEmail(member.email, usernameIndex);
-                
-                // Check if username already exists
-                const existingUsers = await db.select().from(users).where(sql`username = ${memberUsername}`);
-                
-                if (existingUsers.length === 0) {
-                  isUsernameTaken = false;
-                } else {
-                  usernameIndex++;
-                }
-              }
-              
-              if (isUsernameTaken) {
-                throw new Error(`Could not generate a unique username for member ${member.fullName}`);
-              }
-              
-              const tempPassword = generateTemporaryPassword();
-              const hashedPassword = await hashPassword(tempPassword);
-              
-              // Create the entity member user
-              const [memberUser] = await db.insert(users).values({
-                username: memberUsername,
-                password: hashedPassword,
-                email: member.email,
-                fullName: member.fullName,
-                role: 'entity_member' as typeof userRoleEnum.enumValues[number],
-                position: member.position,
-                phone: member.phone || null,
-                whatsapp: member.whatsapp || null,
-                telegram: member.telegram || null,
-                entityId: newEntity.id
-              }).returning();
-              
-              console.log(`Created entity member user: ${memberUser.username} with temporary password`);
-              
-              // Add to new users list - avoiding circular references
-              const userToAdd = {
-                id: memberUser.id,
-                username: memberUser.username,
-                email: memberUser.email,
-                fullName: memberUser.fullName,
-                role: memberUser.role,
-                position: memberUser.position,
-                entityId: memberUser.entityId,
-                tempPassword
-              };
-              console.log('Adding user to results:', JSON.stringify(userToAdd));
-              results.newUsers.push(userToAdd);
-              
-              // Log user creation
-              await ActivityLogger.logCreate(
-                userId,
-                'user',
-                memberUser.id,
-                `Created entity member user "${memberUser.username}" for entity "${newEntity.name}"`
-              );
-            }
-          } catch (membersError) {
-            console.error(`Error processing entity members:`, membersError);
-            results.errors.push(`Row ${rowIndex}: Warning - Entity created but member processing failed: ${(membersError as Error).message}`);
-          }
-        }
+        // Note: Members are now imported separately through a different endpoint
         
         // Add to successful entities list
         results.newEntities.push(newEntity);
@@ -372,6 +303,173 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
     return results;
   } catch (error) {
     console.error('Error processing CSV file:', error);
+    // Clean up the temporary file if it exists
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    throw error;
+  }
+}
+
+/**
+ * Import entity members from a CSV file for a specific entity
+ * @param filePath Path to the CSV file
+ * @param entityId ID of the entity to add members to
+ * @param userId ID of the user performing the import
+ * @returns Import results with created members
+ */
+export async function importEntityMembersFromCSV(filePath: string, entityId: number, userId: number) {
+  try {
+    // Read the CSV file
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    
+    // Parse the CSV file with advanced options to handle complex fields
+    const records = parse(fileContent, {
+      columns: (header) => {
+        // Convert all header column names to the exact case we expect
+        console.log("CSV Headers found:", header);
+        return header.map((column: string) => {
+          // Clean up column name and standardize
+          const cleaned = column.trim();
+          
+          // Map to our expected case-sensitive field names for member imports
+          const columnMap: Record<string, string> = {
+            'fullname': 'fullName',
+            'email': 'email',
+            'position': 'position',
+            'phone': 'phone',
+            'whatsapp': 'whatsapp',
+            'telegram': 'telegram'
+          };
+          
+          // Get the standardized column name or keep original if not found
+          const standardized = columnMap[cleaned.toLowerCase()] || cleaned;
+          console.log(`Column mapping: "${cleaned}" -> "${standardized}"`);
+          return standardized;
+        });
+      },
+      skip_empty_lines: true,
+      trim: true,
+      relax_column_count: true, // Don't error on inconsistent columns
+      quote: '"', // Use double quotes for field enclosure
+      escape: '"', // Use double quotes as escape character
+      relax_quotes: true, // Handle inconsistent use of quotes
+      delimiter: ',' // Explicitly set comma as delimiter
+    });
+    
+    const results = {
+      totalProcessed: records.length,
+      successful: 0,
+      failed: 0,
+      errors: [] as string[],
+      entityId: entityId,
+      newUsers: [] as any[]
+    };
+    
+    // Fetch the entity to verify it exists
+    const [entity] = await db.select().from(entities).where(sql`id = ${entityId}`);
+    if (!entity) {
+      throw new Error(`Entity with ID ${entityId} not found`);
+    }
+    
+    // Process each record
+    for (let i = 0; i < records.length; i++) {
+      const member = records[i];
+      const rowIndex = i + 2; // +2 because 1-indexed + header row
+      
+      try {
+        // Check the record for debugging
+        console.log(`Processing member row ${rowIndex}, data: `, JSON.stringify(member));
+        
+        // Validate each required field separately for better error reporting
+        const missingFields = [];
+        
+        if (!member.fullName) missingFields.push("fullName");
+        if (!member.email) missingFields.push("email");
+        if (!member.position) missingFields.push("position");
+        
+        if (missingFields.length > 0) {
+          throw new Error(`Missing required field(s) in row ${rowIndex}: ${missingFields.join(', ')}. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram`);
+        }
+        
+        // Generate username for the member
+        let memberUsername = '';
+        let usernameIndex = 0;
+        let isUsernameTaken = true;
+        
+        // Find an available username based on the email
+        while (isUsernameTaken && usernameIndex < 10) {
+          memberUsername = generateUsernameFromEmail(member.email, usernameIndex);
+          
+          // Check if username already exists
+          const existingUsers = await db.select().from(users).where(eq(users.username, memberUsername));
+          
+          if (existingUsers.length === 0) {
+            isUsernameTaken = false;
+          } else {
+            usernameIndex++;
+          }
+        }
+        
+        if (isUsernameTaken) {
+          throw new Error(`Could not generate a unique username for member ${member.fullName}`);
+        }
+        
+        const tempPassword = generateTemporaryPassword();
+        const hashedPassword = await hashPassword(tempPassword);
+        
+        // Create the entity member user
+        const [memberUser] = await db.insert(users).values({
+          username: memberUsername,
+          password: hashedPassword,
+          email: member.email,
+          fullName: member.fullName,
+          role: 'entity_member' as typeof userRoleEnum.enumValues[number],
+          position: member.position,
+          phone: member.phone || null,
+          whatsapp: member.whatsapp || null,
+          telegram: member.telegram || null,
+          entityId: entityId
+        }).returning();
+        
+        console.log(`Created entity member user: ${memberUser.username} with temporary password`);
+        
+        // Add to new users list - avoiding circular references
+        const userToAdd = {
+          id: memberUser.id,
+          username: memberUser.username,
+          email: memberUser.email,
+          fullName: memberUser.fullName,
+          role: memberUser.role,
+          position: memberUser.position,
+          entityId: memberUser.entityId,
+          tempPassword
+        };
+        console.log('Adding user to results:', JSON.stringify(userToAdd));
+        results.newUsers.push(userToAdd);
+        
+        // Log user creation
+        await ActivityLogger.logCreate(
+          userId,
+          'user',
+          memberUser.id,
+          `Created entity member user "${memberUser.username}" for entity "${entity.name}"`
+        );
+        
+        results.successful++;
+      } catch (error) {
+        console.error(`Error processing member row ${rowIndex}:`, error);
+        results.failed++;
+        results.errors.push(`Row ${rowIndex}: ${(error as Error).message}`);
+      }
+    }
+    
+    // Clean up the temporary file
+    fs.unlinkSync(filePath);
+    
+    return results;
+  } catch (error) {
+    console.error('Error processing members CSV file:', error);
     // Clean up the temporary file if it exists
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
