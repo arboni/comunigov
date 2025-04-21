@@ -116,7 +116,7 @@ export default function EntityDetailPage() {
               <Link href="/entities">
                 <Button variant="ghost" className="mr-4">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Entities
+                  {t("entities.return_to_entities")}
                 </Button>
               </Link>
               
@@ -132,7 +132,7 @@ export default function EntityDetailPage() {
                 variant="outline"
                 className="flex items-center gap-1"
               >
-                Edit Entity
+                {t("entities.edit_entity")}
               </Button>
             )}
           </div>
@@ -143,7 +143,7 @@ export default function EntityDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center text-lg">
                     <Building className="h-5 w-5 mr-2" />
-                    Entity Overview
+                    {t("entities.entity_overview")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -252,7 +252,7 @@ export default function EntityDetailPage() {
                             onClick={() => setLocation(`/entities/${id}/members/import`)}
                           >
                             <FileUp className="h-4 w-4 mr-1" />
-                            Import Members
+                            {t("entities.members.import_members")}
                           </Button>
                           <Button 
                             variant="outline" 
@@ -261,7 +261,7 @@ export default function EntityDetailPage() {
                             onClick={() => setCreateMemberOpen(true)}
                           >
                             <UserPlus className="h-4 w-4 mr-1" />
-                            Add Member
+                            {t("entities.members.add_member")}
                           </Button>
                         </div>
                       )}
