@@ -341,9 +341,9 @@ export default function ScheduleMeetingDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Meeting Name</FormLabel>
+                  <FormLabel>{t('meetings.form.name')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Budget Planning Meeting" {...field} />
+                    <Input placeholder={t('meetings.form.name_placeholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -355,10 +355,10 @@ export default function ScheduleMeetingDialog({
               name="agenda"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Agenda</FormLabel>
+                  <FormLabel>{t('meetings.form.agenda')}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Describe the purpose and agenda of the meeting" 
+                      placeholder={t('meetings.form.agenda_placeholder')}
                       className="min-h-24"
                       {...field} 
                     />
@@ -374,7 +374,7 @@ export default function ScheduleMeetingDialog({
                 name="date"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Date</FormLabel>
+                    <FormLabel>{t('meetings.form.date')}</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -388,7 +388,7 @@ export default function ScheduleMeetingDialog({
                             {field.value ? (
                               format(field.value, "PPP")
                             ) : (
-                              <span>Pick a date</span>
+                              <span>{t('meetings.form.pick_a_date')}</span>
                             )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
@@ -417,9 +417,9 @@ export default function ScheduleMeetingDialog({
                 name="location"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Location (optional)</FormLabel>
+                    <FormLabel>{t('meetings.form.location')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Conference Room A" {...field} />
+                      <Input placeholder={t('meetings.form.location_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -433,14 +433,14 @@ export default function ScheduleMeetingDialog({
                 name="startTime"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Start Time</FormLabel>
+                    <FormLabel>{t('meetings.form.start_time')}</FormLabel>
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select start time" />
+                          <SelectValue placeholder={t('meetings.form.select_start_time')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -461,14 +461,14 @@ export default function ScheduleMeetingDialog({
                 name="endTime"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>End Time</FormLabel>
+                    <FormLabel>{t('meetings.form.end_time')}</FormLabel>
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select end time" />
+                          <SelectValue placeholder={t('meetings.form.select_end_time')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -492,10 +492,10 @@ export default function ScheduleMeetingDialog({
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">
-                      Use Registered Subject
+                      {t('meetings.form.use_registered_subject')}
                     </FormLabel>
                     <FormDescription>
-                      Link this meeting to a registered subject to automatically include relevant participants
+                      {t('meetings.form.use_registered_subject_description')}
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -524,7 +524,7 @@ export default function ScheduleMeetingDialog({
                     <FormLabel>
                       <span className="flex items-center">
                         <BookOpen className="h-4 w-4 mr-2" />
-                        Select Subject
+                        {t('meetings.form.select_subject')}
                       </span>
                     </FormLabel>
                     <Select
@@ -537,7 +537,7 @@ export default function ScheduleMeetingDialog({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a registered subject" />
+                          <SelectValue placeholder={t('meetings.form.select_registered_subject')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -552,7 +552,7 @@ export default function ScheduleMeetingDialog({
                           ))
                         ) : (
                           <SelectItem value="none" disabled>
-                            No subjects available
+                            {t('meetings.form.no_subjects_available')}
                           </SelectItem>
                         )}
                       </SelectContent>
