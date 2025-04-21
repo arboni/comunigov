@@ -40,6 +40,8 @@
     "login_success": "Login successful",
     "login_error": "Invalid username or password",
     "logout_success": "Logout successful",
+    "logout_success_message": "You have been successfully logged out",
+    "logout_error": "Logout failed",
     "username_placeholder": "username",
     "email_placeholder": "john.doe@example.com",
     "full_name_placeholder": "John Doe",

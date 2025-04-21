@@ -40,6 +40,8 @@
     "login_success": "Login realizado com sucesso",
     "login_error": "Nome de usuário ou senha inválidos",
     "logout_success": "Logout realizado com sucesso",
+    "logout_success_message": "Você saiu do sistema com sucesso",
+    "logout_error": "Erro ao fazer logout",
     "username_placeholder": "nome_de_usuario",
     "email_placeholder": "joao.silva@exemplo.com",
     "full_name_placeholder": "João Silva",
