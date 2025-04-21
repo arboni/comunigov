@@ -1134,7 +1134,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUsersByEntityId(entityId: number): Promise<User[]> {
-    return await db.select().from(users).where(eq(users.entityId, entityId));
+    console.log(`Fetching users for entity ID: ${entityId}`);
+    const result = await db.select().from(users).where(eq(users.entityId, entityId));
+    console.log(`Found ${result.length} users for entity ID ${entityId}`);
+    return result;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {

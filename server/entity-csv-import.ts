@@ -36,30 +36,48 @@ interface EntityRecord {
  */
 function parseMembersString(membersString: string): EntityMember[] {
   if (!membersString || membersString.trim() === '') {
+    console.log("Members string is empty");
     return [];
   }
   
-  // Split by semicolon to get individual member entries
-  const memberEntries = membersString.split(';').filter(entry => entry.trim() !== '');
+  console.log(`Parsing members string: "${membersString}"`);
   
-  return memberEntries.map(entry => {
-    // Split by comma to get member fields
-    const fields = entry.split(',').map(f => f.trim());
+  try {
+    // Split by semicolon to get individual member entries
+    const memberEntries = membersString.split(';').filter(entry => entry.trim() !== '');
+    console.log(`Found ${memberEntries.length} member entries after split by semicolon`);
     
-    // Basic validation - need at least name, email, position
-    if (fields.length < 3) {
-      throw new Error(`Invalid member entry: ${entry}. Must contain at least fullName, email, and position`);
-    }
+    const members = memberEntries.map((entry, index) => {
+      console.log(`Processing member entry ${index + 1}: "${entry}"`);
+      
+      // Split by comma to get member fields
+      const fields = entry.split(',').map(f => f.trim());
+      console.log(`Found ${fields.length} fields for member ${index + 1}`);
+      
+      // Basic validation - need at least name, email, position
+      if (fields.length < 3) {
+        throw new Error(`Invalid member entry: ${entry}. Must contain at least fullName, email, and position`);
+      }
+      
+      const member = {
+        fullName: fields[0],
+        email: fields[1],
+        position: fields[2],
+        phone: fields[3] || undefined,
+        whatsapp: fields[4] || undefined,
+        telegram: fields[5] || undefined
+      };
+      
+      console.log(`Parsed member: ${JSON.stringify(member)}`);
+      return member;
+    });
     
-    return {
-      fullName: fields[0],
-      email: fields[1],
-      position: fields[2],
-      phone: fields[3] || undefined,
-      whatsapp: fields[4] || undefined,
-      telegram: fields[5] || undefined
-    };
-  });
+    console.log(`Successfully parsed ${members.length} members`);
+    return members;
+  } catch (error) {
+    console.error("Error parsing members string:", error);
+    throw error;
+  }
 }
 
 /**
@@ -189,11 +207,19 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
           
           console.log(`Created entity head user: ${headUser.username} with temporary password`);
           
-          // Add to new users list
-          results.newUsers.push({
-            ...headUser,
-            tempPassword // Include the plain temporary password for potential email sending
-          });
+          // Add to new users list - avoiding circular references
+          const headUserToAdd = {
+            id: headUser.id,
+            username: headUser.username,
+            email: headUser.email,
+            fullName: headUser.fullName,
+            role: headUser.role,
+            position: headUser.position,
+            entityId: headUser.entityId,
+            tempPassword
+          };
+          console.log('Adding head user to results:', JSON.stringify(headUserToAdd));
+          results.newUsers.push(headUserToAdd);
           
           // Log user creation
           await ActivityLogger.logCreate(
@@ -211,9 +237,13 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
         // Process entity members if present
         if (record.members) {
           try {
+            console.log(`Processing members string: "${record.members}"`);
             const members = parseMembersString(record.members);
+            console.log(`Parsed ${members.length} members for entity "${record.name}"`);
             
             for (const member of members) {
+              console.log(`Processing member: ${member.fullName}, email: ${member.email}`);
+              
               let memberUsername = '';
               let usernameIndex = 0;
               let isUsernameTaken = true;
@@ -255,11 +285,19 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
               
               console.log(`Created entity member user: ${memberUser.username} with temporary password`);
               
-              // Add to new users list
-              results.newUsers.push({
-                ...memberUser,
-                tempPassword // Include the plain temporary password for potential email sending
-              });
+              // Add to new users list - avoiding circular references
+              const userToAdd = {
+                id: memberUser.id,
+                username: memberUser.username,
+                email: memberUser.email,
+                fullName: memberUser.fullName,
+                role: memberUser.role,
+                position: memberUser.position,
+                entityId: memberUser.entityId,
+                tempPassword
+              };
+              console.log('Adding user to results:', JSON.stringify(userToAdd));
+              results.newUsers.push(userToAdd);
               
               // Log user creation
               await ActivityLogger.logCreate(

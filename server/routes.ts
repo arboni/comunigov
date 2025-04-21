@@ -2767,13 +2767,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process the CSV file
       const results = await importEntitiesFromCSV(req.file.path, req.user!.id);
       
+      // Calculate summary counts
+      const usersCreated = results.newUsers ? results.newUsers.length : 0;
+      const entitiesCreated = results.newEntities ? results.newEntities.length : 0;
+      
+      console.log(`Import complete: ${entitiesCreated} entities and ${usersCreated} users created`);
+      
       // Return the results
       res.status(200).json({
         message: "Entity import completed",
         totalProcessed: results.totalProcessed,
         successful: results.successful,
         failed: results.failed,
-        errors: results.errors
+        errors: results.errors,
+        usersCreated: usersCreated,
+        userDetails: results.newUsers.map(u => ({
+          id: u.id,
+          username: u.username,
+          fullName: u.fullName,
+          email: u.email,
+          role: u.role
+        }))
       });
     } catch (error) {
       console.error("Error importing entities:", error);
