@@ -205,7 +205,9 @@
       "external_entity": "Entidade Externa",
       "government_agency": "Órgão Governamental",
       "association": "Associação",
-      "council": "Conselho"
+      "council": "Conselho",
+      "note_title": "Nota sobre tipos de entidades",
+      "valid_types": "Tipos de entidade válidos são: secretariat, administrative_unit, external_entity, government_agency, association, council"
     },
     "members": {
       "title": "Membros",
@@ -252,7 +254,47 @@
     },
     "import": {
       "title": "Importar Entidades",
-      "description": "Faça upload de um arquivo CSV com dados de entidades",
+      "description": "Importação em massa de entidades a partir de um arquivo CSV",
+      "how_to": {
+        "title": "Como Importar Entidades",
+        "description": "Siga estes passos para importar entidades em massa para o sistema"
+      },
+      "steps": {
+        "download": "Baixe o arquivo modelo CSV",
+        "fill": "Preencha os dados das entidades seguindo o formato do modelo",
+        "upload": "Faça upload do arquivo CSV preenchido",
+        "review": "Revise os resultados da validação e corrija quaisquer erros",
+        "confirm": "Confirme a importação para adicionar as entidades ao sistema"
+      },
+      "download_template": "Baixar Modelo CSV",
+      "upload": {
+        "title": "Carregar Arquivo CSV",
+        "description": "Selecione um arquivo CSV com dados de entidades para importar",
+        "file_selected": "Selecionado: {{filename}}",
+        "dropzone_text": "Clique para selecionar ou arraste e solte arquivo CSV",
+        "select_button": "Selecionar Arquivo"
+      },
+      "validation": {
+        "error_title": "Erro de Validação"
+      },
+      "buttons": {
+        "reset": "Reiniciar",
+        "import": "Importar Entidades",
+        "importing": "Importando...",
+        "import_another": "Importar Outro Arquivo"
+      },
+      "results": {
+        "title": "Resultados da Importação",
+        "description": "Resumo da operação de importação de entidades",
+        "total_processed": "Total Processado",
+        "successful": "Bem-sucedido",
+        "failed": "Falhas",
+        "users_created": "Usuários Criados",
+        "created_users": "Usuários Criados",
+        "error_details": "Detalhes dos Erros",
+        "error": "Erro",
+        "save_credentials_notice": "Certifique-se de salvar estas credenciais ou comunicá-las aos usuários de forma segura. Estas senhas temporárias serão mostradas apenas uma vez."
+      },
       "file_upload": "Upload de Arquivo",
       "upload_instructions": "Arraste e solte um arquivo CSV aqui ou clique para selecionar",
       "csv_template": "Baixar Modelo CSV",
@@ -306,6 +348,11 @@
       "action_generate_passwords": "Gerar senhas temporárias aleatórias",
       "action_associate_entity": "Associar todos os membros à entidade '{entity}'",
       "proceed_import": "Prosseguir com a Importação",
+      "action_create_entities": "Criar entidades baseadas nos dados do CSV",
+      "action_create_entity_heads": "Criar responsáveis das entidades como usuários com função 'entity_head'",
+      "action_generate_usernames": "Gerar nomes de usuário baseados nos endereços de e-mail",
+      "action_generate_passwords": "Gerar senhas temporárias para todos os usuários criados",
+      "note_members": "Nota: Os membros das entidades podem ser importados separadamente após a criação da entidade.",
       "error_select_csv": "Por favor, selecione um arquivo CSV",
       "error_file_size": "Tamanho do arquivo excede o limite de 5MB",
       "error_file_rows": "O arquivo CSV deve conter pelo menos uma linha de cabeçalho e uma linha de dados",

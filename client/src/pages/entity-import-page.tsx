@@ -490,25 +490,25 @@ export default function EntityImportPage() {
         <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Confirm Entity Import</AlertDialogTitle>
+              <AlertDialogTitle>{t("entities.import.confirm_import")}</AlertDialogTitle>
               <AlertDialogDescriptionCustom>
                 <div className="space-y-2">
-                  <div>Are you sure you want to import the entities from <strong>{selectedFile?.name}</strong>?</div>
-                  <div>This will add new entities to the system with the following actions:</div>
+                  <div>{t("entities.import.confirm_question", { file: selectedFile?.name })}</div>
+                  <div>{t("entities.import.confirm_description")}</div>
                   <ul className="list-disc pl-5 text-sm">
-                    <li>Create entities based on CSV data</li>
-                    <li>Create entity heads as users with 'entity_head' role</li>
-                    <li>Generate usernames based on email addresses</li>
-                    <li>Generate temporary passwords for all created users</li>
+                    <li>{t("entities.import.action_create_entities")}</li>
+                    <li>{t("entities.import.action_create_entity_heads")}</li>
+                    <li>{t("entities.import.action_generate_usernames")}</li>
+                    <li>{t("entities.import.action_generate_passwords")}</li>
                   </ul>
-                  <div className="mt-2 text-sm font-medium">Note: Entity members can be imported separately after creating the entity.</div>
+                  <div className="mt-2 text-sm font-medium">{t("entities.import.note_members")}</div>
                 </div>
               </AlertDialogDescriptionCustom>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
               <AlertDialogAction onClick={startImport}>
-                Proceed with Import
+                {t("entities.import.proceed_import")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
