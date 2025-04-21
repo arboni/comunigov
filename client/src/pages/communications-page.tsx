@@ -5,8 +5,10 @@ import DashboardLayout from "@/components/layouts/dashboard-layout";
 import CommunicationsTable from "@/components/dashboard/communications-table";
 import SendMessageDialog from "@/components/dialogs/send-message-dialog";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export default function CommunicationsPage() {
+  const { t } = useTranslation();
   const [sendMessageOpen, setSendMessageOpen] = useState(false);
   
   // Fetch communications
@@ -21,9 +23,9 @@ export default function CommunicationsPage() {
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-2xl font-semibold text-neutral-800">Communications</h1>
+              <h1 className="text-2xl font-semibold text-neutral-800">{t('communications.title')}</h1>
               <p className="mt-1 text-sm text-neutral-500">
-                Manage and view all communications sent through the system
+                {t('communications.description')}
               </p>
             </div>
             
@@ -32,7 +34,7 @@ export default function CommunicationsPage() {
               className="flex items-center gap-1"
             >
               <PlusCircle className="h-4 w-4" />
-              <span>Send Message</span>
+              <span>{t('communications.send_communication')}</span>
             </Button>
           </div>
           
