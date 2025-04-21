@@ -296,7 +296,7 @@ export default function SendMessageDialog({
       
       {/* Main message sending dialog */}
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-xl md:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{t('communications.send_communication')}</DialogTitle>
             <DialogDescription>
@@ -523,9 +523,9 @@ export default function SendMessageDialog({
                                               }}
                                             />
                                           </FormControl>
-                                          <FormLabel className="text-sm font-normal flex items-center justify-between w-full overflow-hidden">
-                                            <span className="truncate">{user.fullName}</span>
-                                            <Badge variant="outline" className="ml-2 flex-shrink-0">
+                                          <FormLabel className="text-sm font-normal flex items-center justify-between w-full flex-wrap">
+                                            <span className="mr-auto">{user.fullName}</span>
+                                            <Badge variant="outline" className="ml-1 flex-shrink-0">
                                               {user.role === 'master_implementer' ? t('users.roles.master_implementer') :
                                                user.role === 'entity_head' ? t('users.roles.entity_head') : t('users.roles.entity_member')}
                                             </Badge>
@@ -580,9 +580,9 @@ export default function SendMessageDialog({
                                               }}
                                             />
                                           </FormControl>
-                                          <FormLabel className="text-sm font-normal flex items-center justify-between w-full overflow-hidden">
-                                            <span className="truncate">{entity.name}</span>
-                                            <Badge variant="outline" className="ml-2 flex-shrink-0">
+                                          <FormLabel className="text-sm font-normal flex items-center justify-between w-full flex-wrap">
+                                            <span className="mr-auto">{entity.name}</span>
+                                            <Badge variant="outline" className="ml-1 flex-shrink-0">
                                               {t(`entities.types.${entity.type}`)}
                                             </Badge>
                                           </FormLabel>
