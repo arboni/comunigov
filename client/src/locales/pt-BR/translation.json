@@ -36,6 +36,31 @@
     "continue": "Continuar",
     "close": "Fechar"
   },
+  "communications": {
+    "title": "Comunicações",
+    "description": "Gerencie e visualize todas as comunicações enviadas pelo sistema",
+    "send_communication": "Enviar Mensagem",
+    "subject": "Assunto",
+    "recipients": "Destinatários",
+    "channel": "Canal",
+    "date": "Data",
+    "status": "Status",
+    "actions": "Ações",
+    "loading": "Carregando comunicações...",
+    "no_communications": "Nenhuma comunicação encontrada",
+    "view": "Visualizar",
+    "channel_types": {
+      "email": "E-mail",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "system_notification": "Notificação do Sistema"
+    },
+    "status_types": {
+      "all_read": "Todas Lidas",
+      "partially_read": "Parcialmente Lidas"
+    },
+    "multiple_recipients": "Múltiplos Destinatários"
+  },
   "auth": {
     "login": "Entrar",
     "logout": "Sair",
@@ -380,6 +405,7 @@
   },
   "communications": {
     "title": "Comunicações",
+    "description": "Gerencie e visualize todas as comunicações enviadas pelo sistema",
     "add_communication": "Adicionar Comunicação",
     "edit_communication": "Editar Comunicação",
     "delete_communication": "Excluir Comunicação",
@@ -390,15 +416,27 @@
     "sender": "Remetente",
     "sent_at": "Enviado em",
     "channel": "Canal",
+    "date": "Data",
+    "status": "Status",
+    "actions": "Ações",
     "attachments": "Anexos",
+    "loading": "Carregando comunicações...",
     "no_communications": "Nenhuma comunicação encontrada",
-    "send_communication": "Enviar Comunicação",
+    "send_communication": "Enviar Mensagem",
+    "multiple_recipients": "Múltiplos Destinatários",
+    "unknown_date": "Data desconhecida",
+    "view": "Visualizar",
     "channels": {
       "email": "E-mail",
       "whatsapp": "WhatsApp",
       "telegram": "Telegram",
       "system_notification": "Notificação do Sistema"
     },
+    "status": {
+      "all_read": "Todas Lidas",
+      "partially_read": "Parcialmente Lidas"
+    },
+    "back_to_communications": "Voltar para Comunicações",
     "select_recipients": "Selecionar Destinatários",
     "select_channel": "Selecionar Canal",
     "add_attachment": "Adicionar Anexo",
