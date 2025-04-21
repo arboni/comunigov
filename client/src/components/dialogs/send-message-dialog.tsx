@@ -240,7 +240,7 @@ export default function SendMessageDialog({
         data.selectedEntities.forEach(entityId => {
           const entity = entities?.find((e: any) => e.id === entityId);
           if (entity) {
-            missingWhatsAppRecipients.push(`${entity.name} (Entity)`);
+            missingWhatsAppRecipients.push(`${entity.name} (${t('common.entity')})`);
           }
         });
       }
@@ -534,7 +534,7 @@ export default function SendMessageDialog({
                                       ))}
                                     </div>
                                   ) : (
-                                    <p className="text-sm text-neutral-500">No users available.</p>
+                                    <p className="text-sm text-neutral-500">{t('communications.no_users_available')}</p>
                                   )}
                                 </div>
                                 
@@ -551,9 +551,9 @@ export default function SendMessageDialog({
                             render={({ field }) => (
                               <FormItem>
                                 <div className="mb-4">
-                                  <FormLabel className="text-base">Select Entities</FormLabel>
+                                  <FormLabel className="text-base">{t('communications.select_entities')}</FormLabel>
                                   <FormDescription>
-                                    Select the entities you want to send this message to. All members of the entity will receive it.
+                                    {t('communications.select_entities_description')}
                                   </FormDescription>
                                 </div>
                                 
@@ -590,7 +590,7 @@ export default function SendMessageDialog({
                                       ))}
                                     </div>
                                   ) : (
-                                    <p className="text-sm text-neutral-500">No entities available.</p>
+                                    <p className="text-sm text-neutral-500">{t('communications.no_entities_available')}</p>
                                   )}
                                 </div>
                                 
@@ -611,7 +611,7 @@ export default function SendMessageDialog({
                   variant="outline" 
                   onClick={() => onOpenChange(false)}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button 
                   type="submit" 
@@ -619,11 +619,11 @@ export default function SendMessageDialog({
                   disabled={sendMessageMutation.isPending}
                 >
                   {sendMessageMutation.isPending ? (
-                    "Sending..."
+                    t('communications.sending')
                   ) : (
                     <>
                       <Send className="h-4 w-4" />
-                      Send Message
+                      {t('communications.send_message')}
                     </>
                   )}
                 </Button>
