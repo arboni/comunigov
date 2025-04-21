@@ -29,7 +29,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
+  AlertDialogDescriptionCustom,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -542,7 +542,7 @@ export default function EntityMemberImportPage() {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Confirm Member Import</AlertDialogTitle>
-              <AlertDialogDescription>
+              <AlertDialogDescriptionCustom>
                 <div className="space-y-2">
                   <div>Are you sure you want to import members for <strong>{entity?.name}</strong> from <strong>{selectedFile?.name}</strong>?</div>
                   <div>This will add new members to the entity with the following actions:</div>
@@ -553,7 +553,7 @@ export default function EntityMemberImportPage() {
                     <li>Associate the members with {entity?.name}</li>
                   </ul>
                 </div>
-              </AlertDialogDescription>
+              </AlertDialogDescriptionCustom>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
