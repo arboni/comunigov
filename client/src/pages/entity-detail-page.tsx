@@ -242,7 +242,7 @@ export default function EntityDetailPage() {
                 <TabsContent value="members" className="pt-4">
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
-                      <CardTitle>Entity Members</CardTitle>
+                      <CardTitle>{t("entities.members.title")}</CardTitle>
                       {(user?.role === 'master_implementer' || user?.role === 'entity_head') && (
                         <div className="flex items-center gap-2">
                           <Button 
@@ -275,14 +275,14 @@ export default function EntityDetailPage() {
                         </div>
                       ) : members.length === 0 ? (
                         <div className="text-center py-8">
-                          <p className="text-neutral-500 mb-4">No members found for this entity.</p>
+                          <p className="text-neutral-500 mb-4">{t("entities.members.no_members")}</p>
                           {(user?.role === 'master_implementer' || user?.role === 'entity_head') && (
                             <Button 
                               onClick={() => setCreateMemberOpen(true)}
                               className="flex items-center gap-1"
                             >
                               <UserPlus className="h-4 w-4 mr-1" />
-                              Add First Member
+                              {t("entities.members.add_first_member")}
                             </Button>
                           )}
                         </div>
@@ -291,11 +291,11 @@ export default function EntityDetailPage() {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>Member</TableHead>
-                                <TableHead>Role</TableHead>
-                                <TableHead>Contact</TableHead>
+                                <TableHead>{t("entities.members.table.member")}</TableHead>
+                                <TableHead>{t("entities.members.table.role")}</TableHead>
+                                <TableHead>{t("entities.members.table.contact")}</TableHead>
                                 {(user?.role === 'master_implementer' || user?.role === 'entity_head') && (
-                                  <TableHead className="text-right">Actions</TableHead>
+                                  <TableHead className="text-right">{t("common.actions")}</TableHead>
                                 )}
                               </TableRow>
                             </TableHeader>
@@ -311,7 +311,7 @@ export default function EntityDetailPage() {
                                       </Avatar>
                                       <div>
                                         <p className="font-medium text-neutral-800">{member.fullName}</p>
-                                        <p className="text-xs text-neutral-500">{member.position || 'No position'}</p>
+                                        <p className="text-xs text-neutral-500">{member.position || t("entities.members.no_position")}</p>
                                       </div>
                                     </div>
                                   </TableCell>
@@ -320,7 +320,7 @@ export default function EntityDetailPage() {
                                       variant={member.role === 'entity_head' ? 'default' : 'outline'}
                                       className={member.role === 'entity_head' ? 'bg-primary-100 text-primary' : ''}
                                     >
-                                      {member.role === 'entity_head' ? 'Entity Head' : 'Member'}
+                                      {member.role === 'entity_head' ? t("roles.entity_head") : t("roles.member")}
                                     </Badge>
                                   </TableCell>
                                   <TableCell>
@@ -364,11 +364,11 @@ export default function EntityDetailPage() {
                 <TabsContent value="meetings" className="pt-4">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Meetings</CardTitle>
+                      <CardTitle>{t("meetings.title")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="text-center py-8">
-                        <p className="text-neutral-500">No meetings associated with this entity yet.</p>
+                        <p className="text-neutral-500">{t("meetings.no_meetings_for_entity")}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -377,11 +377,11 @@ export default function EntityDetailPage() {
                 <TabsContent value="tasks" className="pt-4">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Tasks</CardTitle>
+                      <CardTitle>{t("tasks.title")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="text-center py-8">
-                        <p className="text-neutral-500">No tasks associated with this entity yet.</p>
+                        <p className="text-neutral-500">{t("tasks.no_tasks_for_entity")}</p>
                       </div>
                     </CardContent>
                   </Card>
