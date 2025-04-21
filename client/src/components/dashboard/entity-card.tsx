@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { useState } from "react";
 import EditEntityDialog from "@/components/dialogs/edit-entity-dialog";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 
 interface EntityCardProps {
   entity: Entity;
@@ -13,15 +14,20 @@ interface EntityCardProps {
 export default function EntityCard({ entity }: EntityCardProps) {
   const { t } = useTranslation();
   const [editEntityOpen, setEditEntityOpen] = useState(false);
-
+  
+  // Fetch entity members count
+  const { data: members = [] } = useQuery({
+    queryKey: [`/api/entities/${entity.id}/users`],
+    enabled: !!entity.id
+  });
+  
   // Function to get the translated entity type
   const getTranslatedEntityType = (type: string) => {
     return t(`entities.types.${type}`);
   };
 
-  // Mock member count since we don't have that data immediately available
-  // In a real implementation, you would fetch this from the API
-  const memberCount = 0;
+  // Use actual member count from API response
+  const memberCount = members.length;
 
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow">
