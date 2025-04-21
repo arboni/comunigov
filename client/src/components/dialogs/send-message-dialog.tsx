@@ -526,8 +526,8 @@ export default function SendMessageDialog({
                                           <FormLabel className="text-sm font-normal flex items-center justify-between w-full overflow-hidden">
                                             <span className="truncate">{user.fullName}</span>
                                             <Badge variant="outline" className="ml-2 flex-shrink-0">
-                                              {user.role === 'master_implementer' ? 'Master' :
-                                               user.role === 'entity_head' ? 'Head' : 'Member'}
+                                              {user.role === 'master_implementer' ? t('users.roles.master_implementer') :
+                                               user.role === 'entity_head' ? t('users.roles.entity_head') : t('users.roles.entity_member')}
                                             </Badge>
                                           </FormLabel>
                                         </FormItem>
@@ -583,7 +583,7 @@ export default function SendMessageDialog({
                                           <FormLabel className="text-sm font-normal flex items-center justify-between w-full overflow-hidden">
                                             <span className="truncate">{entity.name}</span>
                                             <Badge variant="outline" className="ml-2 flex-shrink-0">
-                                              {entity.type.replace("_", " ")}
+                                              {t(`entity.types.${entity.type}`)}
                                             </Badge>
                                           </FormLabel>
                                         </FormItem>
