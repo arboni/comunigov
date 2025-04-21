@@ -208,8 +208,8 @@ export default function ScheduleMeetingDialog({
           } catch (error) {
             console.error("Error uploading meeting files:", error);
             toast({
-              title: "Meeting files upload issue",
-              description: "The meeting was created but there was an issue uploading files.",
+              title: t('meetings.toast.meeting_files_issue'),
+              description: t('meetings.toast.meeting_files_issue_description'),
               variant: "destructive",
             });
           }
@@ -220,8 +220,8 @@ export default function ScheduleMeetingDialog({
         await invalidateDashboardStats();
         
         toast({
-          title: "Meeting scheduled",
-          description: "The meeting has been successfully scheduled.",
+          title: t('meetings.toast.meeting_scheduled'),
+          description: t('meetings.toast.meeting_scheduled_description'),
         });
         form.reset();
         setSelectedFiles([]);
@@ -232,8 +232,8 @@ export default function ScheduleMeetingDialog({
       } catch (error) {
         console.error("Error adding attendees:", error);
         toast({
-          title: "Meeting created, but attendee issue",
-          description: "The meeting was created but there was an issue adding some attendees.",
+          title: t('meetings.toast.meeting_created_attendee_issue'),
+          description: t('meetings.toast.meeting_created_attendee_issue_description'),
           variant: "destructive",
         });
       }
@@ -241,7 +241,7 @@ export default function ScheduleMeetingDialog({
     onError: (error: Error) => {
       console.error("Meeting scheduling error:", error);
       toast({
-        title: "Scheduling failed",
+        title: t('meetings.toast.scheduling_failed'),
         description: error.message,
         variant: "destructive",
       });
@@ -262,8 +262,8 @@ export default function ScheduleMeetingDialog({
     // Check if adding these files would exceed the 5-file limit
     if (selectedFiles.length + newFiles.length > 5) {
       toast({
-        title: "File limit exceeded",
-        description: "You can only upload up to 5 files per meeting.",
+        title: t('meetings.toast.file_limit_exceeded'),
+        description: t('meetings.toast.file_limit_exceeded_description'),
         variant: "destructive"
       });
       return;
