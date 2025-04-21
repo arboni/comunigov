@@ -441,8 +441,21 @@
     "select_recipients": "Selecionar Destinatários",
     "select_channel": "Selecionar Canal",
     "add_attachment": "Adicionar Anexo",
+    "add_files": "Adicionar Arquivos",
+    "add_attachments": "Adicione arquivos para enviar com esta mensagem (opcional).",
+    "write_message": "Escreva sua mensagem aqui...",
     "send_success": "Comunicação enviada com sucesso",
-    "send_error": "Erro ao enviar comunicação"
+    "send_error": "Erro ao enviar comunicação",
+    "sending": "Enviando...",
+    "send_message": "Enviar Mensagem",
+    "select_users": "Selecionar Usuários",
+    "select_users_description": "Selecione os usuários para quem deseja enviar esta mensagem.",
+    "select_entities": "Selecionar Entidades",
+    "select_entities_description": "Selecione as entidades para as quais deseja enviar esta mensagem. Todos os membros da entidade a receberão.",
+    "no_users_available": "Nenhum usuário disponível.",
+    "no_entities_available": "Nenhuma entidade disponível.",
+    "recipient_type": "Tipo de Destinatário",
+    "choose_recipients": "Escolha para quem enviar esta mensagem"
   },
   "meetings": {
     "title": "Reuniões",
