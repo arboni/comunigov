@@ -432,7 +432,8 @@
       "telegram": "Telegram",
       "system_notification": "Notificação do Sistema"
     },
-    "status": {
+    "status": "Status",
+    "status_types": {
       "all_read": "Todas Lidas",
       "partially_read": "Parcialmente Lidas"
     },
