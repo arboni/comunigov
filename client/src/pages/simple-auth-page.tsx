@@ -144,35 +144,34 @@ export default function SimpleAuthPage() {
               <h1 className="text-4xl font-bold text-primary">ComuniGov</h1>
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-neutral-800">Institutional Communication Platform</h2>
+              <h2 className="text-3xl font-bold text-neutral-800">{t('auth.platform_title')}</h2>
               <p className="mt-4 text-lg text-neutral-600">
-                A comprehensive solution for institutional communication, 
-                meeting scheduling and task management aimed at city halls and public environments.
+                {t('auth.platform_description')}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
               <div className="p-4 rounded-lg bg-white shadow">
-                <h3 className="font-medium text-neutral-800">Hierarchical Registration</h3>
+                <h3 className="font-medium text-neutral-800">{t('auth.feature_registration_title')}</h3>
                 <p className="text-sm text-neutral-600 mt-2">
-                  Create structured organization management with entities, users, and roles.
+                  {t('auth.feature_registration_desc')}
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-white shadow">
-                <h3 className="font-medium text-neutral-800">Communications</h3>
+                <h3 className="font-medium text-neutral-800">{t('auth.feature_communications_title')}</h3>
                 <p className="text-sm text-neutral-600 mt-2">
-                  Send messages via email, WhatsApp, Telegram, and internal system.
+                  {t('auth.feature_communications_desc')}
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-white shadow">
-                <h3 className="font-medium text-neutral-800">Meeting Management</h3>
+                <h3 className="font-medium text-neutral-800">{t('auth.feature_meetings_title')}</h3>
                 <p className="text-sm text-neutral-600 mt-2">
-                  Schedule meetings with smart attendee selection and follow-ups.
+                  {t('auth.feature_meetings_desc')}
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-white shadow">
-                <h3 className="font-medium text-neutral-800">Task Tracking</h3>
+                <h3 className="font-medium text-neutral-800">{t('auth.feature_tasks_title')}</h3>
                 <p className="text-sm text-neutral-600 mt-2">
-                  Assign and track tasks linked to meetings and entities.
+                  {t('auth.feature_tasks_desc')}
                 </p>
               </div>
             </div>
@@ -207,9 +206,9 @@ export default function SimpleAuthPage() {
                         name="username"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Username</FormLabel>
+                            <FormLabel>{t('auth.username')}</FormLabel>
                             <FormControl>
-                              <Input placeholder="username" {...field} />
+                              <Input placeholder={t('auth.username_placeholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -220,7 +219,7 @@ export default function SimpleAuthPage() {
                         name="password"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Password</FormLabel>
+                            <FormLabel>{t('auth.password')}</FormLabel>
                             <FormControl>
                               <Input type="password" placeholder="********" {...field} />
                             </FormControl>
@@ -233,7 +232,7 @@ export default function SimpleAuthPage() {
                         className="w-full" 
                         disabled={loginMutation.isPending}
                       >
-                        {loginMutation.isPending ? "Logging in..." : "Login"}
+                        {loginMutation.isPending ? t('auth.logging_in') : t('auth.login')}
                       </Button>
                     </form>
                   </Form>
@@ -247,9 +246,9 @@ export default function SimpleAuthPage() {
                         name="fullName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Full Name</FormLabel>
+                            <FormLabel>{t('auth.full_name')}</FormLabel>
                             <FormControl>
-                              <Input placeholder="John Doe" {...field} />
+                              <Input placeholder={t('auth.full_name_placeholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -260,9 +259,9 @@ export default function SimpleAuthPage() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel>{t('auth.email')}</FormLabel>
                             <FormControl>
-                              <Input type="email" placeholder="john.doe@example.com" {...field} />
+                              <Input type="email" placeholder={t('auth.email_placeholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -273,9 +272,9 @@ export default function SimpleAuthPage() {
                         name="username"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Username</FormLabel>
+                            <FormLabel>{t('auth.username')}</FormLabel>
                             <FormControl>
-                              <Input placeholder="johndoe" {...field} />
+                              <Input placeholder={t('auth.username_placeholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -286,7 +285,7 @@ export default function SimpleAuthPage() {
                         name="password"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Password</FormLabel>
+                            <FormLabel>{t('auth.password')}</FormLabel>
                             <FormControl>
                               <Input type="password" placeholder="********" {...field} />
                             </FormControl>
@@ -299,7 +298,7 @@ export default function SimpleAuthPage() {
                         className="w-full" 
                         disabled={registerMutation.isPending}
                       >
-                        {registerMutation.isPending ? "Registering..." : "Register"}
+                        {registerMutation.isPending ? t('auth.registering') : t('auth.register')}
                       </Button>
                     </form>
                   </Form>
@@ -308,7 +307,7 @@ export default function SimpleAuthPage() {
             </CardContent>
             <CardFooter className="flex justify-center">
               <p className="text-sm text-neutral-500">
-                By continuing, you agree to our Terms of Service and Privacy Policy
+                {t('auth.terms_agreement')}
               </p>
             </CardFooter>
           </Card>
