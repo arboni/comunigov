@@ -83,6 +83,19 @@ const AlertDialogTitle = React.forwardRef<
 ))
 AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName
 
+// Use a div instead of the default Description component when we need to put complex content
+// This avoids DOM nesting issues as the default component uses a <p> tag internally
+const AlertDialogDescriptionCustom = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+)
+AlertDialogDescriptionCustom.displayName = "AlertDialogDescriptionCustom"
+
 const AlertDialogDescription = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
@@ -134,6 +147,7 @@ export {
   AlertDialogFooter,
   AlertDialogTitle,
   AlertDialogDescription,
+  AlertDialogDescriptionCustom,
   AlertDialogAction,
   AlertDialogCancel,
 }

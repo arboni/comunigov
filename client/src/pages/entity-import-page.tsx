@@ -27,7 +27,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
+  AlertDialogDescriptionCustom,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -484,7 +484,7 @@ export default function EntityImportPage() {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Confirm Entity Import</AlertDialogTitle>
-              <AlertDialogDescription>
+              <AlertDialogDescriptionCustom>
                 <div className="space-y-2">
                   <div>Are you sure you want to import the entities from <strong>{selectedFile?.name}</strong>?</div>
                   <div>This will add new entities to the system with the following actions:</div>
@@ -496,7 +496,7 @@ export default function EntityImportPage() {
                   </ul>
                   <div className="mt-2 text-sm font-medium">Note: Entity members can be imported separately after creating the entity.</div>
                 </div>
-              </AlertDialogDescription>
+              </AlertDialogDescriptionCustom>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
