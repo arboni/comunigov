@@ -560,7 +560,7 @@ export default function ScheduleMeetingDialog({
                     {selectedSubjectId && (
                       <div className="mt-2 text-sm text-muted-foreground">
                         <p className="text-blue-600">
-                          Relevant users will be automatically selected as attendees
+                          {t('meetings.form.auto_select_users_message')}
                         </p>
                       </div>
                     )}
@@ -574,9 +574,9 @@ export default function ScheduleMeetingDialog({
                 name="subject"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subject/Topic (optional)</FormLabel>
+                    <FormLabel>{t('meetings.form.subject_topic_optional')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Q3 Budget Review" {...field} />
+                      <Input placeholder={t('meetings.form.subject_topic_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -590,9 +590,9 @@ export default function ScheduleMeetingDialog({
               render={() => (
                 <FormItem>
                   <div className="mb-4">
-                    <FormLabel className="text-base">Select Attendees</FormLabel>
+                    <FormLabel className="text-base">{t('meetings.form.select_attendees')}</FormLabel>
                     <FormDescription>
-                      Choose the users who should attend this meeting.
+                      {t('meetings.form.select_attendees_description')}
                     </FormDescription>
                   </div>
                   
@@ -601,7 +601,7 @@ export default function ScheduleMeetingDialog({
                       <div className="space-y-2">
                         <h4 className="text-sm font-medium text-neutral-700 flex items-center">
                           <Users className="h-4 w-4 mr-2" />
-                          Users
+                          {t('meetings.form.users')}
                         </h4>
                         {users.map((attendee: any) => (
                           <FormField
@@ -630,7 +630,7 @@ export default function ScheduleMeetingDialog({
                                     />
                                   </FormControl>
                                   <FormLabel className="text-sm font-normal">
-                                    {attendee.fullName} ({attendee.position || "No position"})
+                                    {attendee.fullName} ({attendee.position || t('common.no_position')})
                                   </FormLabel>
                                 </FormItem>
                               );
@@ -639,7 +639,7 @@ export default function ScheduleMeetingDialog({
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-neutral-500">No users available to invite.</p>
+                      <p className="text-sm text-neutral-500">{t('meetings.form.no_users_available')}</p>
                     )}
                   </div>
                   <FormMessage />
@@ -649,9 +649,9 @@ export default function ScheduleMeetingDialog({
             
             <FormItem>
               <div className="mb-2">
-                <FormLabel className="text-base">Meeting Documents</FormLabel>
+                <FormLabel className="text-base">{t('meetings.form.meeting_documents')}</FormLabel>
                 <FormDescription>
-                  Attach up to 5 documents to share with the attendees (optional).
+                  {t('meetings.form.meeting_documents_description')}
                 </FormDescription>
               </div>
               
@@ -671,7 +671,7 @@ export default function ScheduleMeetingDialog({
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Upload className="mr-2 h-4 w-4" />
-                  Upload Documents
+                  {t('meetings.form.upload_documents')}
                 </Button>
               </div>
               
@@ -707,13 +707,13 @@ export default function ScheduleMeetingDialog({
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button 
                 type="submit" 
                 disabled={scheduleMeetingMutation.isPending}
               >
-                {scheduleMeetingMutation.isPending ? "Scheduling..." : "Schedule Meeting"}
+                {scheduleMeetingMutation.isPending ? t('meetings.form.scheduling') : t('meetings.form.schedule_meeting')}
               </Button>
             </DialogFooter>
           </form>
