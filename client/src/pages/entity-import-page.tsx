@@ -38,12 +38,23 @@ import { apiRequest } from "@/lib/queryClient";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { useToast } from "@/hooks/use-toast";
 
+interface UserCreated {
+  id: number;
+  username: string;
+  fullName: string;
+  email: string;
+  role: string;
+  tempPassword?: string;
+}
+
 interface ImportResult {
   message: string;
   totalProcessed: number;
   successful: number;
   failed: number;
   errors: string[];
+  usersCreated?: number;
+  userDetails?: UserCreated[];
 }
 
 export default function EntityImportPage() {
@@ -56,9 +67,14 @@ export default function EntityImportPage() {
   
   // Download CSV template
   const downloadTemplate = () => {
+    // Header row with column names
     const headers = ['name', 'type', 'headName', 'headPosition', 'headEmail', 'address', 'phone', 'website', 'socialMedia', 'tags', 'members'];
+    
+    // Create a sample row using proper CSV format with escaping
+    // Note: Double quotes are used for fields that contain commas or special characters
+    // The members field must be wrapped in quotes and use semicolons between members
     const exampleRow = [
-      'City Hall',
+      'City Hall', 
       'administrative_unit',
       'John Smith',
       'Mayor',
@@ -66,12 +82,16 @@ export default function EntityImportPage() {
       '123 Main Street',
       '+12345678901',
       'https://example.com',
-      'Twitter: @cityhallex',
-      'government,local',
-      'Jane Doe,jane.doe@example.com,Secretary,+12345678902,+12345678902,@janedoe;Bob Johnson,bob.johnson@example.com,Clerk,+12345678903,,'
+      '"Twitter: @cityhallex"',
+      '"government,local"', // Tags with comma need quotes
+      '"Jane Doe,jane.doe@example.com,Secretary,+12345678902,+12345678902,@janedoe;Bob Johnson,bob.johnson@example.com,Clerk,+12345678903,,"' // Quotes for entire members field
     ];
     
+    // Add a comment row explaining members format
+    const commentRow = '# The "members" column uses semicolons (;) to separate multiple members and commas (,) to separate fields. Format: "name,email,position,phone,whatsapp,telegram;name2,email2,...". The entire column must be wrapped in quotes.';
+    
     const csvContent = [
+      commentRow,
       headers.join(','),
       exampleRow.join(',')
     ].join('\n');
@@ -248,6 +268,15 @@ export default function EntityImportPage() {
                 <p className="mb-2">You can include entity members in the CSV file using the "members" column. Format:</p>
                 <p className="font-mono text-xs">fullName,email,position,phone,whatsapp,telegram;fullName2,email2,position2,...</p>
                 <p className="mt-2">Members will be created as entity_member users automatically. Only name, email, and position are required for each member.</p>
+                <div className="mt-3 p-2 bg-muted rounded-md">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">CSV Format Requirements:</p>
+                  <ul className="list-disc text-xs pl-4 space-y-1 text-muted-foreground">
+                    <li>The <strong>entire members column</strong> must be wrapped in double quotes</li>
+                    <li>Use <strong>semicolons (;)</strong> to separate different members</li>
+                    <li>Use <strong>commas (,)</strong> to separate fields within each member</li>
+                    <li>If you're using Excel, save as CSV and verify quotes are preserved</li>
+                  </ul>
+                </div>
               </AlertDescription>
             </Alert>
             
@@ -331,7 +360,7 @@ export default function EntityImportPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-muted/30 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium">Total Processed</span>
@@ -359,10 +388,62 @@ export default function EntityImportPage() {
                   </div>
                   <p className="text-2xl font-bold">{importResult.failed}</p>
                 </div>
+                
+                <div className="bg-blue-100 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium">Users Created</span>
+                    <Info className="h-4 w-4 text-blue-500" />
+                  </div>
+                  <p className="text-2xl font-bold">{importResult.usersCreated || 0}</p>
+                </div>
               </div>
               
+              {/* Display created users */}
+              {importResult.userDetails && importResult.userDetails.length > 0 && (
+                <div className="mt-6 mb-2">
+                  <h3 className="text-lg font-medium mb-2">Created Users</h3>
+                  <div className="border rounded-lg max-h-96 overflow-y-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Full Name</TableHead>
+                          <TableHead>Username</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Temporary Password</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {importResult.userDetails.map((user) => (
+                          <TableRow key={user.id}>
+                            <TableCell className="font-medium">{user.fullName}</TableCell>
+                            <TableCell>{user.username}</TableCell>
+                            <TableCell>
+                              <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                                user.role === 'entity_head' 
+                                  ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' 
+                                  : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
+                              }`}>
+                                {user.role === 'entity_head' ? 'Entity Head' : 'Entity Member'}
+                              </span>
+                            </TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell className="font-mono text-xs">{user.tempPassword}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Make sure to save these credentials or communicate them to the users securely. 
+                    These temporary passwords will only be shown once.
+                  </p>
+                </div>
+              )}
+              
+              {/* Display errors */}
               {importResult.errors.length > 0 && (
-                <div className="mt-4">
+                <div className="mt-6">
                   <h3 className="text-lg font-medium mb-2">Error Details</h3>
                   <div className="border rounded-lg max-h-60 overflow-y-auto">
                     <Table>

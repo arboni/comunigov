@@ -113,11 +113,16 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
     // Read the CSV file
     const fileContent = fs.readFileSync(filePath, 'utf8');
     
-    // Parse the CSV file
+    // Parse the CSV file with advanced options to handle complex fields
     const records = parse(fileContent, {
       columns: true,
       skip_empty_lines: true,
       trim: true,
+      relax_column_count: true, // Don't error on inconsistent columns
+      quote: '"', // Use double quotes for field enclosure
+      escape: '"', // Use double quotes as escape character
+      relax_quotes: true, // Handle inconsistent use of quotes
+      delimiter: ',' // Explicitly set comma as delimiter
     });
     
     const results = {
