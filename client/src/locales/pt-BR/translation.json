@@ -245,6 +245,14 @@
       "update_failed": "Falha ao atualizar membro",
       "password_reset_description": "O membro foi atualizado e sua senha foi redefinida. Um email de notificação foi enviado.",
       "optional": "Opcional",
+      "import_title": "Importação de Membros",
+      "import_description_1": "Após criar uma entidade, você pode importar seus membros em massa.",
+      "import_description_2": "Acesse a página de detalhes da entidade e clique no botão 'Importar Membros'.",
+      "import_description_3": "Ou crie membros individualmente usando o botão 'Adicionar Membro'.",
+      "roles": {
+        "entity_head": "Gestor da Entidade",
+        "entity_member": "Membro da Entidade"
+      },
       "table": {
         "member": "Membro",
         "role": "Função",
@@ -311,6 +319,11 @@
       "whatsapp_format": "Para WhatsApp, inclua o número completo com código do país (ex: +5511987654321).",
       "telegram_format": "Para Telegram, inclua apenas o nome de usuário sem o símbolo @ (ex: usuario_123).",
       "steps": {
+        "download": "Baixe o arquivo modelo CSV",
+        "fill": "Preencha os dados das entidades seguindo o formato do modelo",
+        "upload": "Faça upload do arquivo CSV preenchido",
+        "review": "Revise os resultados da validação e corrija quaisquer erros",
+        "confirm": "Confirme a importação para adicionar as entidades ao sistema",
         "download_template": "Baixe o arquivo modelo CSV",
         "fill_data": "Preencha os dados dos membros seguindo o formato do modelo",
         "upload_file": "Faça upload do arquivo CSV preenchido",
@@ -359,6 +372,7 @@
       "error_missing_headers": "Cabeçalhos obrigatórios ausentes: {{headers}}",
       "error_reading_file": "Erro ao ler o arquivo CSV",
       "error_import_failed": "Falha ao importar membros da entidade",
+      "temp_password": "Senha Temporária",
       "toast_success": "Importação concluída",
       "toast_success_description": "Processados {{total}} membros: {{successful}} com sucesso, {{failed}} com falha",
       "toast_error": "Falha na importação"

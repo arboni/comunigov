@@ -205,14 +205,18 @@ export default function EntityImportPage() {
     onSuccess: (data) => {
       setImportResult(data);
       toast({
-        title: "Import complete",
-        description: `Processed ${data.totalProcessed} entities: ${data.successful} successful, ${data.failed} failed`,
+        title: t("entities.import.toast_success"),
+        description: t("entities.import.toast_success_description", { 
+          total: data.totalProcessed,
+          successful: data.successful,
+          failed: data.failed
+        }),
         variant: data.failed > 0 ? "destructive" : "default",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Import failed",
+        title: t("entities.import.toast_error"),
         description: error.message,
         variant: "destructive",
       });
