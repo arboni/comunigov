@@ -56,12 +56,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       await apiRequest("POST", "/api/logout");
     },
     onSuccess: () => {
+      // Set user data to null in the cache
       queryClient.setQueryData(["/api/user"], null);
+      
+      // Clear all cached data to ensure clean state after logout
+      queryClient.clear();
+      
       toast({
         title: t('auth.logout_success'),
         description: t('auth.logout_success_message')
       });
-      setLocation("/auth");
+      
+      // Force navigation to auth page
+      window.location.href = "/auth";
     },
     onError: (error: Error) => {
       toast({
