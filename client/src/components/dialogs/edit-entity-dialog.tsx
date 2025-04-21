@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { apiRequest, invalidateEntities, invalidateDashboardStats } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -58,6 +59,7 @@ export default function EditEntityDialog({
   entity,
 }: EditEntityDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   // Convert tags array to comma-separated string for the form
   const tagsString = entity.tags ? entity.tags.join(', ') : '';
@@ -90,14 +92,14 @@ export default function EditEntityDialog({
       invalidateDashboardStats();
       
       toast({
-        title: "Entity updated",
-        description: "The entity has been successfully updated.",
+        title: t("entities.entity_updated"),
+        description: t("entities.entity_updated_description"),
       });
       onOpenChange(false);
     },
     onError: (error: Error) => {
       toast({
-        title: "Update failed",
+        title: t("entities.update_failed"),
         description: error.message,
         variant: "destructive",
       });
@@ -112,9 +114,9 @@ export default function EditEntityDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit Entity</DialogTitle>
+          <DialogTitle>{t("entities.edit_entity")}</DialogTitle>
           <DialogDescription>
-            Update the entity details. All fields are required unless marked as optional.
+            {t("entities.edit_entity_description")}
           </DialogDescription>
         </DialogHeader>
         
@@ -125,9 +127,9 @@ export default function EditEntityDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Entity Name</FormLabel>
+                  <FormLabel>{t("entities.entity_name")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Finance Department" {...field} />
+                    <Input placeholder={t("entities.entity_name_placeholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -139,23 +141,23 @@ export default function EditEntityDialog({
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Entity Type</FormLabel>
+                  <FormLabel>{t("entities.entity_type")}</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select entity type" />
+                        <SelectValue placeholder={t("entities.select_entity_type")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="secretariat">Secretariat</SelectItem>
-                      <SelectItem value="administrative_unit">Administrative Unit</SelectItem>
-                      <SelectItem value="external_entity">External Entity</SelectItem>
-                      <SelectItem value="government_agency">Government Agency</SelectItem>
-                      <SelectItem value="association">Association</SelectItem>
-                      <SelectItem value="council">Council</SelectItem>
+                      <SelectItem value="secretariat">{t("entities.types.secretariat")}</SelectItem>
+                      <SelectItem value="administrative_unit">{t("entities.types.administrative_unit")}</SelectItem>
+                      <SelectItem value="external_entity">{t("entities.types.external_entity")}</SelectItem>
+                      <SelectItem value="government_agency">{t("entities.types.government_agency")}</SelectItem>
+                      <SelectItem value="association">{t("entities.types.association")}</SelectItem>
+                      <SelectItem value="council">{t("entities.types.council")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -295,13 +297,13 @@ export default function EditEntityDialog({
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button 
                 type="submit" 
                 disabled={updateEntityMutation.isPending}
               >
-                {updateEntityMutation.isPending ? "Updating..." : "Update Entity"}
+                {updateEntityMutation.isPending ? t("entities.updating") : t("entities.update_entity")}
               </Button>
             </DialogFooter>
           </form>
