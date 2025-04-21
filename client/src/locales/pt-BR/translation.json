@@ -476,6 +476,10 @@
       "meeting_documents": "Documentos da Reunião",
       "meeting_documents_description": "Anexe até 5 documentos para compartilhar com os participantes (opcional).",
       "upload_documents": "Enviar Documentos",
+      "use_registered_subject": "Usar Assunto Cadastrado",
+      "use_registered_subject_description": "Vincule esta reunião a um assunto previamente cadastrado no sistema",
+      "select_registered_subject": "Selecione um assunto cadastrado",
+      "auto_select_users_message": "Os usuários envolvidos neste assunto serão automaticamente adicionados como participantes",
       "validation": {
         "name_min_length": "O nome da reunião deve ter pelo menos 3 caracteres",
         "agenda_min_length": "A pauta da reunião deve ter pelo menos 10 caracteres",
