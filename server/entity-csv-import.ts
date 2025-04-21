@@ -1,9 +1,10 @@
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
-import { entities, entityTypeEnum } from '../shared/schema';
+import { entities, entityTypeEnum, users, userRoleEnum } from '../shared/schema';
 import { db } from './db';
 import { ActivityLogger } from './activity-logger';
 import { SQL } from 'drizzle-orm';
+import { hashPassword } from './auth';
 
 interface EntityRecord {
   name: string;
