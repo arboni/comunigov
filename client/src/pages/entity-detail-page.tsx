@@ -13,8 +13,10 @@ import { useState } from "react";
 import EditEntityDialog from "@/components/dialogs/edit-entity-dialog";
 import CreateMemberDialog from "@/components/dialogs/create-member-dialog";
 import EditMemberDialog from "@/components/dialogs/edit-member-dialog";
+import { useTranslation } from "react-i18next";
 
 export default function EntityDetailPage() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const { id } = useParams<{ id: string }>();
   const [editEntityOpen, setEditEntityOpen] = useState(false);
@@ -47,7 +49,7 @@ export default function EntityDetailPage() {
               <Link href="/entities">
                 <Button variant="ghost" className="mr-4">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Entities
+                  {t("entities.back_to_entities")}
                 </Button>
               </Link>
             </div>
@@ -79,18 +81,18 @@ export default function EntityDetailPage() {
               <Link href="/entities">
                 <Button variant="ghost" className="mr-4">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Entities
+                  {t("entities.back_to_entities")}
                 </Button>
               </Link>
             </div>
             
             <div className="bg-white shadow rounded-lg p-8 text-center">
-              <h1 className="text-2xl font-semibold text-neutral-800 mb-2">Entity Not Found</h1>
+              <h1 className="text-2xl font-semibold text-neutral-800 mb-2">{t("entities.entity_not_found")}</h1>
               <p className="text-neutral-500 mb-6">
-                The entity you're looking for doesn't exist or you don't have permission to view it.
+                {t("entities.entity_not_found_message")}
               </p>
               <Link href="/entities">
-                <Button>Return to Entities</Button>
+                <Button>{t("entities.return_to_entities")}</Button>
               </Link>
             </div>
           </div>
@@ -99,12 +101,9 @@ export default function EntityDetailPage() {
     );
   }
   
-  // Function to format the entity type for display
-  const formatEntityType = (type: string) => {
-    return type
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+  // Function to get the translated entity type
+  const getTranslatedEntityType = (type: string) => {
+    return t(`entities.types.${type}`);
   };
 
   return (
@@ -123,7 +122,7 @@ export default function EntityDetailPage() {
               
               <div>
                 <h1 className="text-2xl font-semibold text-neutral-800">{entity.name}</h1>
-                <p className="text-neutral-500">{formatEntityType(entity.type)}</p>
+                <p className="text-neutral-500">{getTranslatedEntityType(entity.type)}</p>
               </div>
             </div>
             
@@ -150,13 +149,13 @@ export default function EntityDetailPage() {
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-sm font-medium text-neutral-500 mb-1">Entity Type</h3>
-                      <Badge variant="outline">{formatEntityType(entity.type)}</Badge>
+                      <h3 className="text-sm font-medium text-neutral-500 mb-1">{t("entities.entity_type")}</h3>
+                      <Badge variant="outline">{getTranslatedEntityType(entity.type)}</Badge>
                     </div>
                     
                     {entity.tags && entity.tags.length > 0 && (
                       <div>
-                        <h3 className="text-sm font-medium text-neutral-500 mb-1">Tags</h3>
+                        <h3 className="text-sm font-medium text-neutral-500 mb-1">{t("entities.tags")}</h3>
                         <div className="flex flex-wrap gap-1">
                           {entity.tags.map((tag: string, index: number) => (
                             <Badge key={index} variant="secondary">{tag}</Badge>
@@ -168,7 +167,7 @@ export default function EntityDetailPage() {
                     <Separator />
                     
                     <div>
-                      <h3 className="text-sm font-medium text-neutral-500 mb-1">Contact Information</h3>
+                      <h3 className="text-sm font-medium text-neutral-500 mb-1">{t("entities.contact_information")}</h3>
                       {entity.phone && (
                         <div className="flex items-center text-sm text-neutral-700 mb-2">
                           <Phone className="h-4 w-4 mr-2 text-neutral-500" />
@@ -203,7 +202,7 @@ export default function EntityDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center text-lg">
                     <User className="h-5 w-5 mr-2" />
-                    Entity Head
+                    {t("entities.entity_head")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -235,9 +234,9 @@ export default function EntityDetailPage() {
             <div className="md:col-span-3">
               <Tabs defaultValue="members">
                 <TabsList className="w-full border-b">
-                  <TabsTrigger value="members">Members</TabsTrigger>
-                  <TabsTrigger value="meetings">Meetings</TabsTrigger>
-                  <TabsTrigger value="tasks">Tasks</TabsTrigger>
+                  <TabsTrigger value="members">{t("entities.members.title")}</TabsTrigger>
+                  <TabsTrigger value="meetings">{t("meetings.title")}</TabsTrigger>
+                  <TabsTrigger value="tasks">{t("tasks.title")}</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="members" className="pt-4">
