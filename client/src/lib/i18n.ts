@@ -24,7 +24,8 @@ i18n
   // inicializa i18next
   .init({
     resources,
-    fallbackLng: 'en',
+    fallbackLng: 'pt-BR',
+    lng: 'pt-BR', // Define português como idioma padrão
     debug: false, // desativa o debug para evitar muitos logs
 
     interpolation: {
