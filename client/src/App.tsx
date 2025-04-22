@@ -22,6 +22,7 @@ import SettingsPage from "@/pages/settings-page";
 import SubjectsPage from "@/pages/subjects-page";
 import AnalyticsPage from "@/pages/analytics-page";
 import { useTranslation } from "@/hooks/use-translation";
+import i18n from "./lib/i18n";
 import { I18nProvider } from "@/components/ui/i18n-provider";
 
 // This is a simpler implementation that doesn't rely on the auth context
@@ -91,6 +92,11 @@ function Router() {
 }
 
 function App() {
+  // Força a mudança de idioma para português ao iniciar
+  useEffect(() => {
+    i18n.changeLanguage('pt-BR');
+  }, []);
+
   return (
     <I18nProvider>
       <Router />

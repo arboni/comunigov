@@ -32,11 +32,12 @@ i18n
       escapeValue: false, // não escapa HTML em componentes React
     },
     
-    // Configuração para detectar o idioma
+    // Configuração para sempre usar português como idioma principal
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage'],
       caches: ['localStorage'],
-    }
+    },
+    load: 'currentOnly', // Carrega apenas o idioma selecionado
   });
 
 export default i18n;

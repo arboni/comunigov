@@ -22,7 +22,14 @@ export function useI18nContext() {
 
 // I18n Provider component
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  // Garante que o idioma seja sempre português
+  React.useEffect(() => {
+    if (i18n.language !== 'pt-BR') {
+      i18n.changeLanguage('pt-BR');
+    }
+  }, [i18n]);
   
   // Function to get localized text
   const getLocalizedText = (key: string): string => {
