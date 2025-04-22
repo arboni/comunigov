@@ -93,12 +93,12 @@ export default function SendMessageDialog({
   const [pendingSubmission, setPendingSubmission] = useState<FormValues | null>(null);
   
   // Fetch users for recipient selection
-  const { data: users } = useQuery({
+  const { data: users = [] } = useQuery<any[]>({
     queryKey: ["/api/users"],
   });
   
   // Fetch entities for recipient selection
-  const { data: entities } = useQuery({
+  const { data: entities = [] } = useQuery<any[]>({
     queryKey: ["/api/entities"],
   });
   
@@ -227,9 +227,9 @@ export default function SendMessageDialog({
       // Check users for missing WhatsApp numbers
       if (data.recipientType === "users" && data.selectedUsers && data.selectedUsers.length > 0) {
         data.selectedUsers.forEach(userId => {
-          const user = users?.find((u: any) => u.id === userId);
-          if (user && (!user.whatsapp || user.whatsapp.trim() === '')) {
-            missingWhatsAppRecipients.push(user.fullName || user.username);
+          const userFound = users.find((u: any) => u.id === userId);
+          if (userFound && (!userFound.whatsapp || userFound.whatsapp.trim() === '')) {
+            missingWhatsAppRecipients.push(userFound.fullName || userFound.username);
           }
         });
       }
@@ -238,9 +238,9 @@ export default function SendMessageDialog({
       // Note: This is a simplified check - in a real app you'd want to check all entity members
       else if (data.recipientType === "entities" && data.selectedEntities && data.selectedEntities.length > 0) {
         data.selectedEntities.forEach(entityId => {
-          const entity = entities?.find((e: any) => e.id === entityId);
-          if (entity) {
-            missingWhatsAppRecipients.push(`${entity.name} (${t('common.entity')})`);
+          const entityFound = entities.find((e: any) => e.id === entityId);
+          if (entityFound) {
+            missingWhatsAppRecipients.push(`${entityFound.name} (${t('common.entity')})`);
           }
         });
       }

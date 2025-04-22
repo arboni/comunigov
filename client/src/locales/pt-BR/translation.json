@@ -655,6 +655,22 @@
     "confirm_password": "Confirmar Senha",
     "change_password": "Alterar Senha"
   },
+  "callmebot": {
+    "notice_title": "Aviso Importante sobre WhatsApp",
+    "before_recipients": "Antes que seus destinatários possam receber mensagens pelo WhatsApp",
+    "recipients_must": "cada um deve",
+    "step1": "Ter um número de WhatsApp configurado no perfil de usuário",
+    "step2_prefix": "Enviar a mensagem",
+    "step2_suffix": "para",
+    "via_whatsapp": "no WhatsApp",
+    "step3": "Aguardar a mensagem de confirmação do CallMeBot",
+    "open_whatsapp": "Clique para Abrir o WhatsApp",
+    "troubleshooting": "Dicas de Solução de Problemas",
+    "tip1": "Certifique-se de que os números de telefone incluam o código do país (ex: +5551999701152)",
+    "tip2": "Verifique se você concluiu o registro no CallMeBot verificando se recebeu a mensagem de confirmação",
+    "tip3": "Se as mensagens não estiverem sendo entregues, tente enviar a mensagem de registro novamente",
+    "requirement_notice": "Esse é um requisito do CallMeBot. Se os destinatários não concluírem essa configuração, eles não receberão mensagens de WhatsApp, mesmo que o sistema reporte o envio com sucesso."
+  },
   "whatsapp": {
     "missing_numbers": "Números de WhatsApp Ausentes",
     "missing_numbers_description": "Os seguintes destinatários não possuem números de WhatsApp configurados em seus perfis:",
