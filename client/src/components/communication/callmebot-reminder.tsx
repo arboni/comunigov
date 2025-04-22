@@ -7,8 +7,11 @@ import {
 import { AlertTriangleIcon, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useTranslation } from "@/hooks/use-translation";
 
 export default function CallMeBotReminder() {
+  const { t } = useTranslation();
+  
   // Function to open WhatsApp with the predefined message
   const openWhatsApp = () => {
     const phone = "34644660195"; // CallMeBot number without + sign
@@ -20,19 +23,19 @@ export default function CallMeBotReminder() {
   return (
     <Alert className="bg-amber-50 border-amber-200 mb-6">
       <AlertTriangleIcon className="h-4 w-4 text-amber-600" />
-      <AlertTitle className="text-amber-700 font-semibold text-sm">Important WhatsApp Notice</AlertTitle>
+      <AlertTitle className="text-amber-700 font-semibold text-sm">{t('callmebot.notice_title')}</AlertTitle>
       <AlertDescription className="text-sm mt-2">
         <p className="mb-2">
-          <strong>Before your recipients can receive WhatsApp messages</strong>, they must each:
+          <strong>{t('callmebot.before_recipients')}</strong>, {t('callmebot.recipients_must')}:
         </p>
         
         <ol className="list-decimal pl-5 mb-3 space-y-1">
-          <li>Have a WhatsApp number configured in their user profile</li>
+          <li>{t('callmebot.step1')}</li>
           <li>
-            Send the message <span className="font-mono bg-white px-2 py-0.5 rounded border border-amber-200">I allow callmebot to send me messages</span> to 
-            <span className="font-semibold"> +34 644 66 01 95</span> on WhatsApp
+            {t('callmebot.step2_prefix')} <span className="font-mono bg-white px-2 py-0.5 rounded border border-amber-200">I allow callmebot to send me messages</span> {t('callmebot.step2_suffix')}
+            <span className="font-semibold"> +34 644 66 01 95</span> {t('callmebot.via_whatsapp')}
           </li>
-          <li>Wait for the confirmation response from CallMeBot</li>
+          <li>{t('callmebot.step3')}</li>
         </ol>
         
         <Button 
@@ -40,23 +43,22 @@ export default function CallMeBotReminder() {
           className="bg-green-600 hover:bg-green-700 text-white my-2"
           size="sm"
         >
-          Click to Open WhatsApp <ExternalLink className="ml-2 h-3 w-3" />
+          {t('callmebot.open_whatsapp')} <ExternalLink className="ml-2 h-3 w-3" />
         </Button>
         
         <Separator className="my-3 bg-amber-200" />
         
         <div className="bg-amber-100 dark:bg-amber-900 p-3 rounded-md mt-2">
-          <h4 className="font-semibold mb-2 text-amber-800">Troubleshooting Tips:</h4>
+          <h4 className="font-semibold mb-2 text-amber-800">{t('callmebot.troubleshooting')}:</h4>
           <ul className="list-disc pl-5 space-y-1 text-amber-700">
-            <li>Ensure phone numbers include the country code (e.g., +5551999701152)</li>
-            <li>Verify you've completed the CallMeBot registration by checking for their confirmation message</li>
-            <li>If messages aren't being delivered, try sending the registration message again</li>
+            <li>{t('callmebot.tip1')}</li>
+            <li>{t('callmebot.tip2')}</li>
+            <li>{t('callmebot.tip3')}</li>
           </ul>
         </div>
         
         <p className="text-xs text-amber-700 mt-3">
-          This is a CallMeBot requirement. If recipients haven't completed this setup, they will not 
-          receive WhatsApp messages even though the system reports successful sending.
+          {t('callmebot.requirement_notice')}
         </p>
       </AlertDescription>
     </Alert>

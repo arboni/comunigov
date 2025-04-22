@@ -655,6 +655,12 @@
     "confirm_password": "Confirmar Senha",
     "change_password": "Alterar Senha"
   },
+  "whatsapp": {
+    "missing_numbers": "Números de WhatsApp Ausentes",
+    "missing_numbers_description": "Os seguintes destinatários não possuem números de WhatsApp configurados em seus perfis:",
+    "fallback_message": "As mensagens ainda serão enviadas por e-mail para esses destinatários, mas eles não receberão mensagens no WhatsApp.",
+    "continue_anyway": "Continuar Mesmo Assim"
+  },
   "settings": {
     "title": "Configurações",
     "app_settings": "Configurações do Aplicativo",

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface NoWhatsAppDialogProps {
   open: boolean;
@@ -21,13 +22,15 @@ export default function NoWhatsAppDialog({
   onClose,
   recipientsWithoutWhatsApp,
 }: NoWhatsAppDialogProps) {
+  const { t } = useTranslation();
+  
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Missing WhatsApp Numbers</DialogTitle>
+          <DialogTitle>{t('whatsapp.missing_numbers')}</DialogTitle>
           <DialogDescription>
-            The following recipients don't have WhatsApp numbers configured in their profiles:
+            {t('whatsapp.missing_numbers_description')}
           </DialogDescription>
         </DialogHeader>
         <div className="mt-2 mb-4">
@@ -39,17 +42,17 @@ export default function NoWhatsAppDialog({
             ))}
           </ul>
           <p className="mt-4 text-sm text-gray-600">
-            Messages will still be sent via email to these recipients, but they won't receive WhatsApp messages.
+            {t('whatsapp.fallback_message')}
           </p>
         </div>
         <DialogFooter className="flex justify-between sm:justify-between">
           <Link href="/users">
             <Button variant="outline" type="button">
-              Manage Users
+              {t('users.manage_users')}
             </Button>
           </Link>
           <Button type="button" onClick={onClose}>
-            Continue Anyway
+            {t('whatsapp.continue_anyway')}
           </Button>
         </DialogFooter>
       </DialogContent>

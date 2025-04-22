@@ -9,7 +9,7 @@ import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import NoWhatsAppDialog from "@/components/communication/no-whatsapp-dialog";
 import CallMeBotReminder from "@/components/communication/callmebot-reminder";
 import { reloadPage } from "@/lib/utils";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@/hooks/use-translation";
 
 import {
   Dialog,
