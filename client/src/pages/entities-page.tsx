@@ -1,14 +1,24 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { PlusCircle } from "lucide-react";
+import { useLocation } from "wouter";
+import { PlusCircle, FileUp, Users } from "lucide-react";
 import DashboardLayout from "@/components/layouts/dashboard-layout";
 import EntityCard from "@/components/dashboard/entity-card";
 import RegisterEntityDialog from "@/components/dialogs/register-entity-dialog";
 import { Button } from "@/components/ui/button";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { useTranslation } from "react-i18next";
 
 export default function EntitiesPage() {
   const { t } = useTranslation();
+  const [, setLocation] = useLocation();
   const [registerEntityOpen, setRegisterEntityOpen] = useState(false);
   
   // Get the current user
@@ -20,6 +30,10 @@ export default function EntitiesPage() {
   const { data: entities, isLoading } = useQuery({
     queryKey: ["/api/entities"],
   });
+  
+  // Navigation functions
+  const navigateToEntityImport = () => setLocation("/entities/import");
+  const navigateToMembersImport = () => setLocation("/entities/members/import");
 
   return (
     <DashboardLayout>
@@ -35,13 +49,36 @@ export default function EntitiesPage() {
             </div>
             
             {user?.role === 'master_implementer' && (
-              <Button 
-                onClick={() => setRegisterEntityOpen(true)}
-                className="flex items-center gap-1"
-              >
-                <PlusCircle className="h-4 w-4" />
-                <span>{t("entity.register")}</span>
-              </Button>
+              <div className="flex gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="flex items-center gap-1">
+                      <FileUp className="h-4 w-4" />
+                      <span>{t("entities.import.title")}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>{t("entities.import.options")}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={navigateToEntityImport} className="flex items-center gap-2 cursor-pointer">
+                      <FileUp className="h-4 w-4" />
+                      <span>{t("entities.import.import_entities")}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={navigateToMembersImport} className="flex items-center gap-2 cursor-pointer">
+                      <Users className="h-4 w-4" />
+                      <span>{t("entities.import.import_members")}</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
+                <Button 
+                  onClick={() => setRegisterEntityOpen(true)}
+                  className="flex items-center gap-1"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  <span>{t("entity.register")}</span>
+                </Button>
+              </div>
             )}
           </div>
           
