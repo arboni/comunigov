@@ -1,3 +1,24 @@
-nome,tipo,nomeResponsavel,cargoResponsavel,emailResponsavel,endereco,telefone,site,redesSociais,etiquetas
-"Secretaria de Educação",secretariat,"João Silva","Secretário de Educação","joao.silva@example.com","Av. Principal 123","(99) 1234-5678","www.educacao.gov.br","@educsecretaria","educação,ensino"
-"Associação Comercial",association,"Maria Santos","Presidente","maria@assoc.com","Rua do Comércio 456","(99) 8765-4321","www.assoc.com","@assoccomercial","comércio,negócios"
+# Modelo CSV para Importação de Entidades
+#
+# CAMPOS OBRIGATÓRIOS:
+# - name: Nome da entidade
+# - type: Tipo da entidade (associação, secretaria, órgão governamental, entidade externa, unidade administrativa, conselho)
+# - headName: Nome do responsável da entidade
+# - headPosition: Cargo do responsável da entidade
+# - headEmail: Email do responsável da entidade
+#
+# CAMPOS OPCIONAIS:
+# - address: Endereço da entidade
+# - phone: Número de telefone de contato
+# - website: Site da entidade
+# - socialMedia: Redes sociais da entidade
+# - tags: Tags para categorização (use / para separar múltiplas tags)
+#
+# OBSERVAÇÃO: Os dados importados serão associados à sua conta
+#
+# SUPORTE: Este arquivo suporta delimitadores ponto-e-vírgula (;) ou vírgula (,)
+#
+name;type;headName;headPosition;headEmail;address;phone;website;socialMedia;tags
+"Câmara de Dirigentes Lojistas";"associacao";"João Silva";"Presidente";"joao@cdl.org";"Rua Central, 123";"(99) 1234-5678";"https://cdl.org";"@cdl_oficial";"comércio/segurança"
+"Secretaria Municipal de Saúde";"secretaria";"Maria Santos";"Secretária";"maria@saude.gov.br";"Av. Principal, 500";"(99) 8765-4321";"https://saude.gov.br";"@saude_gov";"saúde/atendimento"
+"Associação dos Agricultores";"associacao";"Carlos Oliveira";"Presidente";"carlos@agri.org";"Rodovia Norte, Km 5";"(99) 2345-6789";"https://agri.org";"@agricultores";"agricultura/sustentabilidade"

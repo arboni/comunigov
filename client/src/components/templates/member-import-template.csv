@@ -1,0 +1,20 @@
+# Modelo CSV para Importação de Membros de Entidade
+#
+# CAMPOS OBRIGATÓRIOS:
+# - nomeCompleto: Nome completo do membro
+# - email: Endereço de email do membro
+# - cargo: Cargo/posição do membro na entidade
+#
+# CAMPOS OPCIONAIS:
+# - telefone: Número de telefone de contato
+# - whatsapp: Número de WhatsApp (incluir código do país)
+# - telegram: Nome de usuário do Telegram (com @)
+#
+# OBSERVAÇÃO: Os membros serão automaticamente associados à entidade selecionada
+#
+# SUPORTE: Este arquivo suporta delimitadores ponto-e-vírgula (;) ou vírgula (,)
+#
+nomeCompleto;email;cargo;telefone;whatsapp;telegram
+"Carlos Oliveira";"carlos@example.com";"Assistente Administrativo";"(99) 1234-5678";"5599123456789";"@carlos_telegram"
+"Ana Paula Silva";"ana@example.com";"Analista Técnico";"(99) 8765-4321";"5599987654321";"@ana_telegram"
+"Roberto Santos";"roberto@example.com";"Coordenador de TI";"(99) 2345-6789";"";"@roberto_santos"
