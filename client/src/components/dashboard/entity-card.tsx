@@ -6,6 +6,7 @@ import { useState } from "react";
 import EditEntityDialog from "@/components/dialogs/edit-entity-dialog";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
+import { fixEncoding, getEntityTypeDisplay } from "@/lib/utils";
 
 interface EntityCardProps {
   entity: Entity;
@@ -21,13 +22,26 @@ export default function EntityCard({ entity }: EntityCardProps) {
     enabled: !!entity.id
   });
   
-  // Function to get the translated entity type
+  // Function to get the translated entity type with encoding fix
   const getTranslatedEntityType = (type: string) => {
-    return t(`entities.types.${type}`);
+    // Try using the translation first
+    const translatedType = t(`entities.types.${type}`);
+    
+    // If the translation key wasn't found (returns the key itself), use our utility function
+    if (translatedType === `entities.types.${type}`) {
+      return getEntityTypeDisplay(type);
+    }
+    
+    return translatedType;
   };
 
   // Use actual member count from API response
   const memberCount = members.length;
+
+  // Fix encoding in entity data
+  const fixedName = fixEncoding(entity.name);
+  const fixedHeadName = fixEncoding(entity.headName);
+  const fixedHeadPosition = fixEncoding(entity.headPosition);
 
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow">
@@ -39,7 +53,7 @@ export default function EntityCard({ entity }: EntityCardProps) {
             </div>
           </div>
           <div>
-            <h3 className="text-base font-medium text-neutral-900">{entity.name}</h3>
+            <h3 className="text-base font-medium text-neutral-900">{fixedName}</h3>
             <p className="text-sm text-neutral-500">{getTranslatedEntityType(entity.type)}</p>
           </div>
         </div>
@@ -47,7 +61,7 @@ export default function EntityCard({ entity }: EntityCardProps) {
         <div className="mt-4 border-t border-neutral-100 pt-4">
           <div className="flex items-center text-sm text-neutral-500 mb-1">
             <User className="mr-2 h-4 w-4 text-neutral-400" />
-            <span>{entity.headName} - {entity.headPosition}</span>
+            <span>{fixedHeadName} - {fixedHeadPosition}</span>
           </div>
           <div className="flex items-center text-sm text-neutral-500 mb-1">
             <Mail className="mr-2 h-4 w-4 text-neutral-400" />
@@ -85,7 +99,12 @@ export default function EntityCard({ entity }: EntityCardProps) {
         open={editEntityOpen} 
         onOpenChange={setEditEntityOpen} 
         entityId={entity.id}
-        entity={entity}
+        entity={{
+          ...entity,
+          name: fixedName,
+          headName: fixedHeadName,
+          headPosition: fixedHeadPosition
+        }}
       />
     </div>
   );

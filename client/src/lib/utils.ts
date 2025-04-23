@@ -26,3 +26,57 @@ export function reloadPage(delay: number = 0, path?: string): void {
     }
   }, delay);
 }
+
+/**
+ * Fix encoding issues in text that may have been saved with incorrect character encoding
+ * @param text The text to fix
+ * @returns The fixed text
+ */
+export function fixEncoding(text: string | null | undefined): string {
+  if (!text) return '';
+  
+  // Replace common encoding issues
+  const replacements: Record<string, string> = {
+    '��': 'ã',
+    '�o': 'ão',
+    '�a': 'ça',
+    '�c': 'çã',
+    '�e': 'é',
+    '�i': 'í',
+    '�u': 'ú',
+    '�': 'á',
+    'C�': 'Câ',
+    'Associa��o': 'Associação',
+    'Secret�ria': 'Secretária',
+    'Respons�vel': 'Responsável'
+  };
+  
+  let fixedText = text;
+  
+  // Apply all replacements
+  Object.entries(replacements).forEach(([incorrect, correct]) => {
+    fixedText = fixedText.replace(new RegExp(incorrect, 'g'), correct);
+  });
+  
+  return fixedText;
+}
+
+/**
+ * Get a display name for an entity type, handling common encoding issues
+ * @param type The entity type 
+ * @returns A user-friendly display name
+ */
+export function getEntityTypeDisplay(type: string): string {
+  // Normalize the type to handle encoding issues
+  const normalizedType = type.toLowerCase();
+  
+  if (normalizedType.includes('associa')) return 'Associação';
+  if (normalizedType.includes('secr')) return 'Secretaria';
+  if (normalizedType.includes('govern')) return 'Agência Governamental';
+  if (normalizedType.includes('admin')) return 'Unidade Administrativa';
+  if (normalizedType.includes('extern')) return 'Entidade Externa';
+  if (normalizedType.includes('coun')) return 'Conselho';
+  
+  // Default: return capitalized type
+  return type.charAt(0).toUpperCase() + type.slice(1);
+}
