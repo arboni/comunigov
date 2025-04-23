@@ -38,6 +38,31 @@
     "continue": "Continuar",
     "close": "Fechar"
   },
+  "password": {
+    "change": {
+      "title": "Alterar Senha",
+      "description": "É necessário alterar sua senha para continuar usando o sistema",
+      "currentPassword": "Senha Atual",
+      "currentPasswordPlaceholder": "Digite sua senha atual",
+      "currentPasswordHelp": "Esta é a senha temporária que você recebeu por e-mail",
+      "newPassword": "Nova Senha",
+      "newPasswordPlaceholder": "Digite sua nova senha",
+      "newPasswordHelp": "Crie uma senha forte com pelo menos 6 caracteres",
+      "confirmPassword": "Confirmar Senha",
+      "confirmPasswordPlaceholder": "Digite novamente sua nova senha",
+      "submit": "Alterar Senha",
+      "processing": "Processando...",
+      "footer": "Esta senha será usada para acessos futuros ao sistema"
+    },
+    "changeSuccess": {
+      "title": "Senha Alterada",
+      "description": "Sua senha foi alterada com sucesso!"
+    },
+    "changeError": {
+      "title": "Erro ao Alterar Senha",
+      "description": "Não foi possível alterar sua senha. Verifique se a senha atual está correta."
+    }
+  },
   "communications": {
     "title": "Comunicações",
     "description": "Gerencie e visualize todas as comunicações enviadas pelo sistema",

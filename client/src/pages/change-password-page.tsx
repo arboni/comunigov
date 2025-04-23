@@ -88,7 +88,6 @@ export default function ChangePasswordPage() {
       toast({
         title: t("password.changeSuccess.title"),
         description: t("password.changeSuccess.description"),
-        variant: "success",
       });
       
       // Redirect to dashboard

@@ -3,8 +3,10 @@ import { Switch, Route, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import NotFound from "@/pages/not-found";
 import SimpleAuthPage from "@/pages/simple-auth-page";
+import ChangePasswordPage from "@/pages/change-password-page";
 import DashboardPage from "@/pages/dashboard-page";
 import EntitiesPage from "@/pages/entities-page";
 import CommunicationsPage from "@/pages/communications-page";
@@ -25,24 +27,48 @@ import AnalyticsPage from "@/pages/analytics-page";
 import { useTranslation } from "@/hooks/use-translation";
 import i18n from "./lib/i18n";
 import { I18nProvider } from "@/components/ui/i18n-provider";
+import { PasswordChangeRoute } from "@/components/password-change-route";
 
 // This is a simpler implementation that doesn't rely on the auth context
 function ProtectedRoute({ component: Component, path }: { component: () => JSX.Element, path: string }) {
   const [, setLocation] = useLocation();
   const { t } = useTranslation();
   
-  const { data: user, isLoading } = useQuery({
+  const { data: user, isLoading: isUserLoading } = useQuery({
     queryKey: ["/api/user"],
     retry: false,
     gcTime: 0
   });
 
+  // Check if the user needs to change their password
+  const { data: passwordStatus, isLoading: isPasswordStatusLoading } = useQuery({
+    queryKey: ["/api/user/password-status"],
+    enabled: !!user, // Only run this query if the user is authenticated
+    queryFn: async () => {
+      try {
+        const res = await apiRequest("GET", "/api/user/password-status");
+        return await res.json();
+      } catch (error) {
+        return { requirePasswordChange: false };
+      }
+    }
+  });
+
+  const isLoading = isUserLoading || (!!user && isPasswordStatusLoading);
+
   // Always declare all hooks regardless of conditions
   useEffect(() => {
-    if (!user && !isLoading) {
+    if (!user && !isUserLoading) {
       setLocation("/auth");
     }
-  }, [user, isLoading, setLocation]);
+  }, [user, isUserLoading, setLocation]);
+
+  // Redirect to change password page if needed
+  useEffect(() => {
+    if (user && !isPasswordStatusLoading && passwordStatus?.requirePasswordChange) {
+      setLocation("/change-password");
+    }
+  }, [user, passwordStatus, isPasswordStatusLoading, setLocation]);
 
   if (isLoading) {
     return (
@@ -64,12 +90,24 @@ function ProtectedRoute({ component: Component, path }: { component: () => JSX.E
     );
   }
 
+  // If the user needs to change their password, show loading while redirecting
+  if (passwordStatus?.requirePasswordChange) {
+    return (
+      <Route path={path}>
+        <div className="flex items-center justify-center min-h-screen">
+          <p>{t('common.redirecting')}</p>
+        </div>
+      </Route>
+    );
+  }
+
   return <Route path={path} component={Component} />;
 }
 
 function Router() {
   return (
     <Switch>
+      <PasswordChangeRoute path="/change-password" component={ChangePasswordPage} />
       <ProtectedRoute path="/" component={DashboardPage} />
       <ProtectedRoute path="/entities" component={EntitiesPage} />
       <ProtectedRoute path="/entities/import" component={EntityImportPage} />
