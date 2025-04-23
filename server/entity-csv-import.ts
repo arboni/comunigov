@@ -120,13 +120,33 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
     // Read the CSV file
     const fileContent = fs.readFileSync(filePath, 'utf8');
     
+    // Determine delimiter used in the file (comma or semicolon)
+    const firstLine = fileContent.split('\n')[0];
+    const hasSemicolon = firstLine.includes(';');
+    const hasComma = firstLine.includes(',');
+    const delimiter = hasSemicolon ? ';' : (hasComma ? ',' : ','); // Default to comma if neither found
+    
+    console.log(`Detected delimiter: "${delimiter}" in CSV file`);
+    
+    // Preprocess headers if necessary (for semicolon delimited files with headers like "name;type;...")
+    const preprocessedContent = fileContent.startsWith('name;') || fileContent.startsWith('name,') 
+      ? fileContent 
+      : fileContent;
+    
     // Parse the CSV file with advanced options to handle complex fields
-    const records = parse(fileContent, {
+    const records = parse(preprocessedContent, {
       columns: (header) => {
-        // Convert all header column names to the exact case we expect
-        // This solves case-sensitivity issues with column names
-        console.log("CSV Headers found:", header);
-        return header.map((column: string) => {
+        // If we have a single header item containing semicolons, split it into separate headers
+        let processedHeader = header;
+        if (header.length === 1 && header[0].includes(';')) {
+          processedHeader = header[0].split(';');
+          console.log("Split semicolon-separated header into separate columns");
+        }
+        
+        // Log processed headers
+        console.log("CSV Headers found:", processedHeader);
+        
+        return processedHeader.map((column: string) => {
           // Clean up column name and standardize
           const cleaned = column.trim();
           
@@ -157,7 +177,7 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
       quote: '"', // Use double quotes for field enclosure
       escape: '"', // Use double quotes as escape character
       relax_quotes: true, // Handle inconsistent use of quotes
-      delimiter: ',' // Explicitly set comma as delimiter
+      delimiter: delimiter // Use auto-detected delimiter
     });
     
     const results = {
