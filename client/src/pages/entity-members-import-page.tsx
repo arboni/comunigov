@@ -273,6 +273,9 @@ export default function EntityMembersImportPage() {
         }),
         variant: data.failed > 0 ? "destructive" : "default",
       });
+      
+      // Invalidate the entity users query to refresh data
+      queryClient.invalidateQueries({ queryKey: [`/api/entities/${selectedEntityId}/users`] });
     },
     onError: (error: Error) => {
       toast({

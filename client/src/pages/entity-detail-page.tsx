@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EditEntityDialog from "@/components/dialogs/edit-entity-dialog";
 import CreateMemberDialog from "@/components/dialogs/create-member-dialog";
 import EditMemberDialog from "@/components/dialogs/edit-member-dialog";
@@ -36,10 +36,17 @@ export default function EntityDetailPage() {
   });
 
   // Fetch entity members
-  const { data: members = [], isLoading: loadingMembers } = useQuery({
+  const { data: members = [], isLoading: loadingMembers, refetch: refetchMembers } = useQuery({
     queryKey: [`/api/entities/${id}/users`],
     enabled: !!entity
   });
+  
+  // Refetch members when the component mounts (for when returning from import pages)
+  useEffect(() => {
+    if (entity) {
+      refetchMembers();
+    }
+  }, [refetchMembers, entity]);
 
   if (isLoading) {
     return (
