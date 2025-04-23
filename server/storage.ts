@@ -70,6 +70,8 @@ export interface IStorage {
   updateMeeting(id: number, meetingData: Partial<Meeting>): Promise<Meeting | undefined>;
   getAllMeetings(): Promise<Meeting[]>;
   getUpcomingMeetings(): Promise<Meeting[]>;
+  getMeetingsForUsers(userIds: number[]): Promise<Meeting[]>;
+  getUpcomingMeetingsForUsers(userIds: number[]): Promise<Meeting[]>;
   
   // Meeting Attendees
   getMeetingAttendee(id: number): Promise<MeetingAttendee | undefined>;

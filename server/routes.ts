@@ -673,8 +673,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Meetings
   app.get("/api/meetings", isAuthenticated, async (req, res, next) => {
     try {
-      const meetings = await storage.getAllMeetings();
-      res.json(meetings);
+      // Master implementers see all meetings
+      if (req.user!.role === 'master_implementer') {
+        const meetings = await storage.getAllMeetings();
+        return res.json(meetings);
+      } 
+      
+      // Entity heads and members only see meetings associated with their entity
+      if (req.user!.entityId) {
+        // Get users from the same entity
+        const entityUsers = await storage.getUsersByEntityId(req.user!.entityId);
+        const entityUserIds = entityUsers.map(user => user.id);
+        
+        // Get meetings where entity members are attendees or creators
+        const meetings = await storage.getMeetingsForUsers(entityUserIds);
+        return res.json(meetings);
+      }
+      
+      // If no entity is associated, return empty array
+      return res.json([]);
     } catch (error) {
       next(error);
     }
@@ -682,8 +699,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/meetings/upcoming", isAuthenticated, async (req, res, next) => {
     try {
-      const meetings = await storage.getUpcomingMeetings();
-      res.json(meetings);
+      // Master implementers see all upcoming meetings
+      if (req.user!.role === 'master_implementer') {
+        const meetings = await storage.getUpcomingMeetings();
+        return res.json(meetings);
+      } 
+      
+      // Entity heads and members only see upcoming meetings associated with their entity
+      if (req.user!.entityId) {
+        // Get users from the same entity
+        const entityUsers = await storage.getUsersByEntityId(req.user!.entityId);
+        const entityUserIds = entityUsers.map(user => user.id);
+        
+        // Get upcoming meetings where entity members are attendees or creators
+        const meetings = await storage.getUpcomingMeetingsForUsers(entityUserIds);
+        return res.json(meetings);
+      }
+      
+      // If no entity is associated, return empty array
+      return res.json([]);
     } catch (error) {
       next(error);
     }
