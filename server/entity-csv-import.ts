@@ -222,7 +222,29 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
         }
         
         // Clean and validate entity type
-        const entityType = record.type.trim().toLowerCase();
+        let entityType = record.type.trim().toLowerCase();
+        
+        // Handle encoding issues by normalizing common entity types
+        if (entityType.includes('associa')) {
+          entityType = 'association';
+          console.log(`Row ${rowIndex}: Normalized entity type from "${record.type}" to "association"`);
+        } else if (entityType.includes('secr')) {
+          entityType = 'secretariat';
+          console.log(`Row ${rowIndex}: Normalized entity type from "${record.type}" to "secretariat"`);
+        } else if (entityType.includes('govern')) {
+          entityType = 'government_agency';
+          console.log(`Row ${rowIndex}: Normalized entity type from "${record.type}" to "government_agency"`);
+        } else if (entityType.includes('admin')) {
+          entityType = 'administrative_unit';
+          console.log(`Row ${rowIndex}: Normalized entity type from "${record.type}" to "administrative_unit"`);
+        } else if (entityType.includes('extern')) {
+          entityType = 'external_entity';
+          console.log(`Row ${rowIndex}: Normalized entity type from "${record.type}" to "external_entity"`);
+        } else if (entityType.includes('coun')) {
+          entityType = 'council';
+          console.log(`Row ${rowIndex}: Normalized entity type from "${record.type}" to "council"`);
+        }
+        
         if (!validEntityTypes.includes(entityType)) {
           throw new Error(`Invalid entity type "${entityType}" in row ${rowIndex}. Valid types are: ${validEntityTypes.join(', ')}`);
         }
