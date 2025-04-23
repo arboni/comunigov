@@ -620,6 +620,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!entity) {
         return res.status(404).json({ message: "Entity not found" });
       }
+      
+      // Check if the user has permission to access this entity
+      // Master implementers can access any entity
+      // Entity heads and members can only access their own entity
+      if (req.user!.role !== 'master_implementer' && 
+          req.user!.entityId !== id) {
+        return res.status(403).json({ message: "You do not have permission to access this entity" });
+      }
+      
       res.json(entity);
     } catch (error) {
       next(error);
@@ -660,6 +669,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/entities/:id/users", isAuthenticated, async (req, res, next) => {
     try {
       const entityId = parseInt(req.params.id);
+      
+      // Check if the user has permission to access this entity's users
+      // Master implementers can access any entity's users
+      // Entity heads and members can only access their own entity's users
+      if (req.user!.role !== 'master_implementer' && 
+          req.user!.entityId !== entityId) {
+        return res.status(403).json({ message: "You do not have permission to access users from this entity" });
+      }
+      
       const users = await storage.getUsersByEntityId(entityId);
       res.json(users.map(user => {
         const { password, ...userWithoutPassword } = user;
@@ -1386,8 +1404,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Communications
   app.get("/api/communications", isAuthenticated, async (req, res, next) => {
     try {
-      const communications = await storage.getAllCommunications();
-      res.json(communications);
+      // Master implementers can see all communications
+      if (req.user!.role === 'master_implementer') {
+        const communications = await storage.getAllCommunications();
+        return res.json(communications);
+      }
+      
+      // Entity heads and members can only see communications related to their entity
+      if (req.user!.entityId) {
+        // Get entity communications (sent by entity members or received by the entity)
+        const allCommunications = await storage.getAllCommunications();
+        const entityUsers = await storage.getUsersByEntityId(req.user!.entityId);
+        const entityUserIds = entityUsers.map(user => user.id);
+        
+        // Filter communications:
+        // 1. Communications sent by any entity member
+        // 2. Communications where entity or any of its members are recipients
+        const entityCommunications = [];
+        
+        for (const communication of allCommunications) {
+          // Check if sent by an entity member
+          if (entityUserIds.includes(communication.sentBy)) {
+            entityCommunications.push(communication);
+            continue;
+          }
+          
+          // Check if the entity or any of its members are recipients
+          const recipients = await storage.getCommunicationRecipientsByCommunicationId(communication.id);
+          const isEntityRecipient = recipients.some(recipient => 
+            (recipient.entityId && recipient.entityId === req.user!.entityId) || 
+            (recipient.userId && entityUserIds.includes(recipient.userId))
+          );
+          
+          if (isEntityRecipient) {
+            entityCommunications.push(communication);
+          }
+        }
+        
+        return res.json(entityCommunications);
+      }
+      
+      // If no entity is associated, return empty array
+      return res.json([]);
     } catch (error) {
       next(error);
     }
