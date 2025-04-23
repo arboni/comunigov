@@ -1,0 +1,3 @@
+nome,tipo,nomeResponsavel,cargoResponsavel,emailResponsavel,endereco,telefone,site,redesSociais,etiquetas
+"Secretaria de Educação",secretariat,"João Silva","Secretário de Educação","joao.silva@example.com","Av. Principal 123","(99) 1234-5678","www.educacao.gov.br","@educsecretaria","educação,ensino"
+"Associação Comercial",association,"Maria Santos","Presidente","maria@assoc.com","Rua do Comércio 456","(99) 8765-4321","www.assoc.com","@assoccomercial","comércio,negócios"

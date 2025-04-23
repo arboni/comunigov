@@ -67,48 +67,122 @@ export default function EntityImportPage() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   
-  // Download CSV template
-  const downloadTemplate = () => {
-    // Create a multi-line comment with detailed instructions
-    const comments = [
-      '# CSV Template for Entity Import',
-      '# ',
-      '# REQUIRED FIELDS (case-sensitive):',
-      '# - name: Entity name',
-      '# - type: Entity type (Must be one of: secretariat, administrative_unit, external_entity, government_agency, association, council)',
-      '# - headName: Full name of the entity head',
-      '# - headPosition: Position/title of the entity head',
-      '# - headEmail: Email address of the entity head',
-      '# ',
-      '# OPTIONAL FIELDS:',
-      '# - address: Physical address',
-      '# - phone: Contact phone number',
-      '# - website: Website URL',
-      '# - socialMedia: Social media handles',
-      '# - tags: Comma-separated tags without spaces between them (e.g., government,health)',
-      '# ',
-      '# NOTE: To import entity members, use the separate "Import Entity Members" feature after creating the entity',
-      '# '
-    ].join('\n');
+  // Function to download a pre-made template from the assets
+  const downloadTemplate = (templateName = 'entity') => {
+    // Choose the appropriate template
+    const template = templateName === 'entity' 
+      ? '/client/src/components/templates/entity-import-template.csv'
+      : '/client/src/components/templates/entity-members-template.csv';
     
-    // Header row with column names - EXACT match with validation
-    const headers = 'name,type,headName,headPosition,headEmail,address,phone,website,socialMedia,tags';
+    // Create a fetch request to the template file
+    fetch(template)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch template');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        // Create a download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = templateName === 'entity' 
+          ? 'modelo_entidades.csv' 
+          : 'modelo_membros.csv';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      })
+      .catch(error => {
+        console.error('Error downloading template:', error);
+        fallbackTemplateDownload(templateName);
+      });
+  };
+  
+  // Fallback function that creates the template dynamically if fetching fails
+  const fallbackTemplateDownload = (templateName = 'entity') => {
+    let csvContent = '';
     
-    // Example row with properly formatted data
-    const exampleRow = 'City Hall,administrative_unit,John Smith,Mayor,john.smith@example.com,123 Main Street,+12345678901,https://example.com,@cityhallex,government/local';
+    if (templateName === 'entity') {
+      // Create a multi-line comment with detailed instructions
+      const comments = [
+        '# Modelo CSV para Importação de Entidades',
+        '# ',
+        '# CAMPOS OBRIGATÓRIOS:',
+        '# - nome: Nome da entidade',
+        '# - tipo: Tipo da entidade (Deve ser um dos seguintes: secretariat, administrative_unit, external_entity, government_agency, association, council)',
+        '# - nomeResponsavel: Nome completo do responsável da entidade',
+        '# - cargoResponsavel: Cargo/posição do responsável da entidade',
+        '# - emailResponsavel: Endereço de email do responsável da entidade',
+        '# ',
+        '# CAMPOS OPCIONAIS:',
+        '# - endereco: Endereço físico',
+        '# - telefone: Número de telefone de contato',
+        '# - site: URL do site',
+        '# - redesSociais: Identificadores de redes sociais',
+        '# - etiquetas: Tags separadas por vírgula (ex: governo,saude)',
+        '# ',
+        '# OBSERVAÇÃO: Para importar membros da entidade, use o recurso "Importar Membros da Entidade" após criar a entidade',
+        '# '
+      ].join('\n');
+      
+      // Header row with column names
+      const headers = 'nome,tipo,nomeResponsavel,cargoResponsavel,emailResponsavel,endereco,telefone,site,redesSociais,etiquetas';
+      
+      // Example rows with properly formatted data
+      const exampleRows = [
+        '"Secretaria de Educação",secretariat,"João Silva","Secretário de Educação","joao.silva@example.com","Av. Principal 123","(99) 1234-5678","www.educacao.gov.br","@educsecretaria","educação,ensino"',
+        '"Associação Comercial",association,"Maria Santos","Presidente","maria@assoc.com","Rua do Comércio 456","(99) 8765-4321","www.assoc.com","@assoccomercial","comércio,negócios"'
+      ].join('\n');
+      
+      csvContent = [
+        comments,
+        headers,
+        exampleRows
+      ].join('\n');
+    } else {
+      // Template for entity members
+      const comments = [
+        '# Modelo CSV para Importação de Membros de Entidade',
+        '# ',
+        '# CAMPOS OBRIGATÓRIOS:',
+        '# - nomeCompleto: Nome completo do membro',
+        '# - email: Endereço de email do membro',
+        '# - cargo: Cargo/posição do membro na entidade',
+        '# ',
+        '# CAMPOS OPCIONAIS:',
+        '# - telefone: Número de telefone de contato',
+        '# - whatsapp: Número de WhatsApp (incluir código do país)',
+        '# - telegram: Nome de usuário do Telegram (com @)',
+        '# ',
+        '# OBSERVAÇÃO: Os membros serão automaticamente associados à entidade selecionada',
+        '# '
+      ].join('\n');
+      
+      // Header row with column names
+      const headers = 'nomeCompleto,email,cargo,telefone,whatsapp,telegram';
+      
+      // Example rows with properly formatted data
+      const exampleRows = [
+        '"Carlos Oliveira","carlos@example.com","Assistente Administrativo","(99) 1234-5678","5599123456789","@carlos_telegram"',
+        '"Ana Paula Silva","ana@example.com","Analista Técnico","(99) 8765-4321","5599987654321","@ana_telegram"'
+      ].join('\n');
+      
+      csvContent = [
+        comments,
+        headers,
+        exampleRows
+      ].join('\n');
+    }
     
-    const csvContent = [
-      comments,
-      headers,
-      exampleRow
-    ].join('\n');
-    
+    // Create and download the file
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     
     link.setAttribute('href', url);
-    link.setAttribute('download', 'entity_template.csv');
+    link.setAttribute('download', templateName === 'entity' ? 'modelo_entidades.csv' : 'modelo_membros.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -137,13 +211,13 @@ export default function EntityImportPage() {
   const validateCSV = async (file: File): Promise<boolean> => {
     // Check file extension
     if (!file.name.toLowerCase().endsWith('.csv')) {
-      setCsvValidationError('Please select a CSV file');
+      setCsvValidationError(t("entities.import.validation.not_csv"));
       return false;
     }
     
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setCsvValidationError('File size exceeds 5MB limit');
+      setCsvValidationError(t("entities.import.validation.file_too_large"));
       return false;
     }
     
@@ -155,33 +229,91 @@ export default function EntityImportPage() {
       const lines = text.split('\n').filter(line => !line.trim().startsWith('#'));
       
       if (lines.length < 2) {
-        setCsvValidationError('The CSV file must contain at least a header row and one data row');
+        setCsvValidationError(t("entities.import.validation.missing_rows"));
         return false;
       }
       
       // Get the first line with actual content (header row)
       // Convert to lowercase and trim whitespace for case-insensitive comparison
       const headerLine = lines[0].toLowerCase();
-      const headers = headerLine.split(',').map(h => h.trim());
       
-      // Define the required headers 
-      const requiredHeaders = ['name', 'type', 'headname', 'headposition', 'heademail'];
+      // Auto-detect the delimiter (comma or semicolon)
+      const delimiter = headerLine.includes(';') ? ';' : ',';
+      console.log(`Detected delimiter: "${delimiter}" in CSV`);
+      
+      const headers = headerLine.split(delimiter).map(h => h.trim());
+      
+      // Define the required headers with both English and Portuguese versions
+      const requiredHeadersMap = {
+        'name': ['name', 'nome'],
+        'type': ['type', 'tipo'],
+        'headname': ['headname', 'head_name', 'head name', 'headname', 'nomeresponsavel', 'nome_responsavel', 'nome responsavel', 'responsavel'],
+        'headposition': ['headposition', 'head_position', 'head position', 'cargoresponsavel', 'cargo_responsavel', 'cargo responsavel', 'posicao'],
+        'heademail': ['heademail', 'head_email', 'head email', 'emailresponsavel', 'email_responsavel', 'email responsavel']
+      };
       
       console.log('CSV Headers found:', headers);
       
-      // Check for required headers
-      const missingHeaders = requiredHeaders.filter(rh => {
-        return !headers.includes(rh);
-      });
+      // For each required header category, check if any variant exists in the file
+      const missingHeaders = [];
+      for (const [key, variants] of Object.entries(requiredHeadersMap)) {
+        const hasHeaderVariant = variants.some(variant => headers.includes(variant));
+        if (!hasHeaderVariant) {
+          missingHeaders.push(key);
+        }
+      }
       
       if (missingHeaders.length > 0) {
-        setCsvValidationError(`Required headers missing: ${missingHeaders.join(', ')}`);
+        setCsvValidationError(t("entities.import.validation.missing_headers", { headers: missingHeaders.join(', ') }));
         return false;
+      }
+      
+      // Additional check for "type" field to ensure it contains valid values
+      const typeIndex = headers.findIndex(h => 
+        ['type', 'tipo'].includes(h)
+      );
+      
+      if (typeIndex !== -1) {
+        const validTypes = [
+          'secretariat', 'administrative_unit', 'external_entity', 
+          'government_agency', 'association', 'council',
+          'secretaria', 'unidade_administrativa', 'entidade_externa',
+          'agencia_governamental', 'associacao', 'conselho', 'associação'
+        ];
+        
+        // Check at least some rows for valid type values
+        const sampleSize = Math.min(5, lines.length - 1);
+        let validTypesFound = false;
+        
+        for (let i = 1; i <= sampleSize; i++) {
+          if (i < lines.length) {
+            const line = lines[i].toLowerCase();
+            const fields = line.split(delimiter).map(f => f.trim());
+            
+            if (fields.length > typeIndex) {
+              const typeValue = fields[typeIndex].replace(/^"(.*)"$/, '$1'); // Remove quotes if present
+              const isValidType = validTypes.some(vt => 
+                typeValue.includes(vt.toLowerCase())
+              );
+              
+              if (isValidType) {
+                validTypesFound = true;
+                break;
+              }
+            }
+          }
+        }
+        
+        // If we checked rows but found no valid types, warn the user
+        if (!validTypesFound && sampleSize > 0) {
+          console.warn('No valid entity types found in sample rows');
+          // This is just a warning, not an error that blocks import
+        }
       }
       
       return true;
     } catch (error) {
-      setCsvValidationError('Error reading CSV file');
+      setCsvValidationError(t("entities.import.validation.read_error"));
       console.error('CSV validation error:', error);
       return false;
     }
@@ -293,9 +425,12 @@ export default function EntityImportPage() {
               </AlertDescription>
             </Alert>
             
-            <div className="pt-2">
-              <Button onClick={downloadTemplate} variant="outline" className="flex items-center gap-2">
+            <div className="pt-2 flex flex-wrap gap-2">
+              <Button onClick={() => downloadTemplate('entity')} variant="outline" className="flex items-center gap-2">
                 <Download className="h-4 w-4" /> {t("entities.import.download_template")}
+              </Button>
+              <Button onClick={() => downloadTemplate('members')} variant="outline" className="flex items-center gap-2 text-blue-600">
+                <Download className="h-4 w-4" /> {t("entities.import.download_members_template")}
               </Button>
             </div>
           </CardContent>
