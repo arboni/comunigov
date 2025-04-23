@@ -143,6 +143,11 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
           console.log("Split semicolon-separated header into separate columns");
         }
         
+        // Handle potential CSV export formats with quoted fields
+        processedHeader = processedHeader.map((col: string) => {
+          return col.replace(/^"(.*)"$/, '$1').trim(); // Remove quotes if present
+        });
+        
         // Log processed headers
         console.log("CSV Headers found:", processedHeader);
         
@@ -150,18 +155,60 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
           // Clean up column name and standardize
           const cleaned = column.trim();
           
-          // Map to our expected case-sensitive field names
+          // Map to our expected case-sensitive field names - CASE INSENSITIVE matching
           const columnMap: Record<string, string> = {
+            // English column names
             'name': 'name',
             'type': 'type',
             'headname': 'headName',
+            'head_name': 'headName',
+            'head name': 'headName',
+            'responsiblename': 'headName',
+            'responsible name': 'headName',
+            'responsible_name': 'headName',
             'headposition': 'headPosition',
+            'head_position': 'headPosition',
+            'head position': 'headPosition',
+            'responsibleposition': 'headPosition',
+            'responsible position': 'headPosition',
+            'responsible_position': 'headPosition',
             'heademail': 'headEmail',
+            'head_email': 'headEmail',
+            'head email': 'headEmail',
+            'responsibleemail': 'headEmail',
+            'responsible email': 'headEmail',
+            'responsible_email': 'headEmail',
             'address': 'address',
             'phone': 'phone',
             'website': 'website',
             'socialmedia': 'socialMedia',
-            'tags': 'tags'
+            'social_media': 'socialMedia',
+            'social media': 'socialMedia',
+            'tags': 'tags',
+            
+            // Portuguese column names
+            'nome': 'name',
+            'tipo': 'type',
+            'nomeresponsavel': 'headName',
+            'nome_responsavel': 'headName',
+            'nome responsavel': 'headName',
+            'responsavel': 'headName',
+            'posicaoresponsavel': 'headPosition',
+            'posicao_responsavel': 'headPosition',
+            'posicao responsavel': 'headPosition',
+            'cargoresponsavel': 'headPosition',
+            'cargo_responsavel': 'headPosition',
+            'cargo responsavel': 'headPosition',
+            'emailresponsavel': 'headEmail',
+            'email_responsavel': 'headEmail',
+            'email responsavel': 'headEmail',
+            'endereco': 'address',
+            'telefone': 'phone',
+            'site': 'website',
+            'redessociais': 'socialMedia',
+            'redes_sociais': 'socialMedia',
+            'redes sociais': 'socialMedia',
+            'etiquetas': 'tags'
             // Note: 'members' field removed from entity import
           };
           
@@ -218,7 +265,22 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
         if (!record.headEmail) missingFields.push("headEmail");
         
         if (missingFields.length > 0) {
-          throw new Error(`Missing required field(s) in row ${rowIndex}: ${missingFields.join(', ')}. Check if column headers are exactly: name,type,headName,headPosition,headEmail,...`);
+          // Provide detailed guidance on CSV header format and accepted column names
+          const guidance = `
+Missing required field(s) in row ${rowIndex}: ${missingFields.join(', ')}. 
+
+CSV HEADER GUIDE:
+* Headers should be in the first row
+* Required columns: name, type, headName, headPosition, headEmail
+* Also accepts Portuguese headers: nome, tipo, nomeResponsavel, cargoResponsavel, emailResponsavel
+* Accepts both commas and semicolons as separators
+* Headers are case-insensitive
+
+Example of correct CSV format:
+name,type,headName,headPosition,headEmail,address,phone,website,socialMedia,tags
+"Entity Name","secretariat","Head Person","Director","head@example.com","Entity Address","555-1234","website.com","twitter/entity","tag1,tag2"
+          `;
+          throw new Error(guidance);
         }
         
         // Clean and validate entity type
@@ -386,6 +448,11 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
           console.log("Split semicolon-separated header into separate columns");
         }
         
+        // Handle potential CSV export formats with quoted fields
+        processedHeader = processedHeader.map((col: string) => {
+          return col.replace(/^"(.*)"$/, '$1').trim(); // Remove quotes if present
+        });
+        
         console.log("CSV Headers found:", processedHeader);
         
         // Filter out any comment rows or empty columns
@@ -397,14 +464,50 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
           // Clean up column name and standardize
           const cleaned = column.trim();
           
-          // Map to our expected case-sensitive field names for member imports
+          // Map to our expected case-sensitive field names for member imports - CASE INSENSITIVE
           const columnMap: Record<string, string> = {
+            // English column names
             'fullname': 'fullName',
+            'full_name': 'fullName',
+            'full name': 'fullName',
+            'name': 'fullName',
             'email': 'email',
             'position': 'position',
+            'job title': 'position',
+            'job_title': 'position',
+            'jobtitle': 'position',
+            'title': 'position',
+            'role': 'position',
             'phone': 'phone',
+            'telephone': 'phone',
+            'phone_number': 'phone',
+            'phonenumber': 'phone',
             'whatsapp': 'whatsapp',
-            'telegram': 'telegram'
+            'whatsapp_number': 'whatsapp',
+            'whatsappnumber': 'whatsapp',
+            'telegram': 'telegram',
+            'telegram_username': 'telegram',
+            'telegramusername': 'telegram',
+            
+            // Portuguese column names
+            'nomecompleto': 'fullName',
+            'nome_completo': 'fullName',
+            'nome completo': 'fullName',
+            'nome': 'fullName',
+            'cargo': 'position',
+            'funcao': 'position',
+            'função': 'position',
+            'posicao': 'position',
+            'posição': 'position',
+            'telefone': 'phone',
+            'fone': 'phone',
+            'celular': 'phone',
+            'numero_whatsapp': 'whatsapp',
+            'whatsapp_numero': 'whatsapp',
+            'whatsapp numero': 'whatsapp',
+            'usuario_telegram': 'telegram',
+            'usuario telegram': 'telegram',
+            'telegram_usuario': 'telegram'
           };
           
           // Get the standardized column name or keep original if not found
@@ -500,7 +603,23 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
         if (!member.position) missingFields.push("position");
         
         if (missingFields.length > 0) {
-          throw new Error(`Missing required field(s) in row ${rowIndex}: ${missingFields.join(', ')}. Check if column headers are exactly: fullName,email,position,phone,whatsapp,telegram`);
+          // Provide detailed guidance on CSV header format and accepted column names
+          const guidance = `
+Missing required field(s) in row ${rowIndex}: ${missingFields.join(', ')}. 
+
+CSV MEMBER IMPORT GUIDE:
+* Headers should be in the first row
+* Required columns: fullName, email, position
+* Optional columns: phone, whatsapp, telegram
+* Also accepts Portuguese headers: nome/nomeCompleto, email, cargo/posicao, telefone
+* Accepts both commas and semicolons as separators
+* Headers are case-insensitive
+
+Example of correct CSV format:
+fullName,email,position,phone,whatsapp,telegram
+"Person Name","person@example.com","Position Title","555-1234","5551234","@telegram_handle"
+          `;
+          throw new Error(guidance);
         }
         
         // Generate username for the member
