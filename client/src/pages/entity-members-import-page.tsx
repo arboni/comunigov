@@ -251,8 +251,9 @@ export default function EntityMembersImportPage() {
       
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('entityId', selectedEntityId);
       
-      const response = await apiRequest('POST', `/api/entities/${selectedEntityId}/members/import`, formData, true);
+      const response = await apiRequest('POST', '/api/entities/members/import', formData, true);
       
       if (!response.ok) {
         const errorData = await response.json();
