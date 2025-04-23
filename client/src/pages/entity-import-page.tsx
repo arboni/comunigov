@@ -72,32 +72,14 @@ export default function EntityImportPage() {
     // Choose the appropriate template
     const template = templateName === 'entity' 
       ? '/client/src/components/templates/entity-import-template.csv'
-      : '/client/src/components/templates/entity-members-template.csv';
+      : '/client/src/components/templates/member-import-template.csv';
     
-    // Create a fetch request to the template file
-    fetch(template)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch template');
-        }
-        return response.blob();
-      })
-      .then(blob => {
-        // Create a download link
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = templateName === 'entity' 
-          ? 'modelo_entidades.csv' 
-          : 'modelo_membros.csv';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      })
-      .catch(error => {
-        console.error('Error downloading template:', error);
-        fallbackTemplateDownload(templateName);
-      });
+    try {
+      // Use fallback since we've created template files but they might not be accessible via fetch
+      fallbackTemplateDownload(templateName);
+    } catch (error) {
+      console.error('Error downloading template:', error);
+    }
   };
   
   // Fallback function that creates the template dynamically if fetching fails
@@ -110,30 +92,33 @@ export default function EntityImportPage() {
         '# Modelo CSV para Importação de Entidades',
         '# ',
         '# CAMPOS OBRIGATÓRIOS:',
-        '# - nome: Nome da entidade',
-        '# - tipo: Tipo da entidade (Deve ser um dos seguintes: secretariat, administrative_unit, external_entity, government_agency, association, council)',
-        '# - nomeResponsavel: Nome completo do responsável da entidade',
-        '# - cargoResponsavel: Cargo/posição do responsável da entidade',
-        '# - emailResponsavel: Endereço de email do responsável da entidade',
+        '# - name: Nome da entidade',
+        '# - type: Tipo da entidade (associacao, secretaria, orgao_governamental, entidade_externa, unidade_administrativa, conselho)',
+        '# - headName: Nome do responsável da entidade',
+        '# - headPosition: Cargo do responsável da entidade',
+        '# - headEmail: Email do responsável da entidade',
         '# ',
         '# CAMPOS OPCIONAIS:',
-        '# - endereco: Endereço físico',
-        '# - telefone: Número de telefone de contato',
-        '# - site: URL do site',
-        '# - redesSociais: Identificadores de redes sociais',
-        '# - etiquetas: Tags separadas por vírgula (ex: governo,saude)',
+        '# - address: Endereço da entidade',
+        '# - phone: Número de telefone de contato',
+        '# - website: Site da entidade',
+        '# - socialMedia: Redes sociais da entidade',
+        '# - tags: Tags para categorização (use / para separar múltiplas tags)',
         '# ',
-        '# OBSERVAÇÃO: Para importar membros da entidade, use o recurso "Importar Membros da Entidade" após criar a entidade',
+        '# OBSERVAÇÃO: Os dados importados serão associados à sua conta',
+        '# ',
+        '# SUPORTE: Este arquivo suporta delimitadores ponto-e-vírgula (;) ou vírgula (,)',
         '# '
       ].join('\n');
       
-      // Header row with column names
-      const headers = 'nome,tipo,nomeResponsavel,cargoResponsavel,emailResponsavel,endereco,telefone,site,redesSociais,etiquetas';
+      // Header row with column names using semicolon as delimiter for better compatibility with Brazilian Excel
+      const headers = 'name;type;headName;headPosition;headEmail;address;phone;website;socialMedia;tags';
       
       // Example rows with properly formatted data
       const exampleRows = [
-        '"Secretaria de Educação",secretariat,"João Silva","Secretário de Educação","joao.silva@example.com","Av. Principal 123","(99) 1234-5678","www.educacao.gov.br","@educsecretaria","educação,ensino"',
-        '"Associação Comercial",association,"Maria Santos","Presidente","maria@assoc.com","Rua do Comércio 456","(99) 8765-4321","www.assoc.com","@assoccomercial","comércio,negócios"'
+        '"Câmara de Dirigentes Lojistas";"associacao";"João Silva";"Presidente";"joao@cdl.org";"Rua Central, 123";"(99) 1234-5678";"https://cdl.org";"@cdl_oficial";"comércio/segurança"',
+        '"Secretaria Municipal de Saúde";"secretaria";"Maria Santos";"Secretária";"maria@saude.gov.br";"Av. Principal, 500";"(99) 8765-4321";"https://saude.gov.br";"@saude_gov";"saúde/atendimento"',
+        '"Associação dos Agricultores";"associacao";"Carlos Oliveira";"Presidente";"carlos@agri.org";"Rodovia Norte, Km 5";"(99) 2345-6789";"https://agri.org";"@agricultores";"agricultura/sustentabilidade"'
       ].join('\n');
       
       csvContent = [
@@ -157,16 +142,19 @@ export default function EntityImportPage() {
         '# - telegram: Nome de usuário do Telegram (com @)',
         '# ',
         '# OBSERVAÇÃO: Os membros serão automaticamente associados à entidade selecionada',
+        '# ',
+        '# SUPORTE: Este arquivo suporta delimitadores ponto-e-vírgula (;) ou vírgula (,)',
         '# '
       ].join('\n');
       
-      // Header row with column names
-      const headers = 'nomeCompleto,email,cargo,telefone,whatsapp,telegram';
+      // Header row with column names using semicolon as delimiter
+      const headers = 'nomeCompleto;email;cargo;telefone;whatsapp;telegram';
       
       // Example rows with properly formatted data
       const exampleRows = [
-        '"Carlos Oliveira","carlos@example.com","Assistente Administrativo","(99) 1234-5678","5599123456789","@carlos_telegram"',
-        '"Ana Paula Silva","ana@example.com","Analista Técnico","(99) 8765-4321","5599987654321","@ana_telegram"'
+        '"Carlos Oliveira";"carlos@example.com";"Assistente Administrativo";"(99) 1234-5678";"5599123456789";"@carlos_telegram"',
+        '"Ana Paula Silva";"ana@example.com";"Analista Técnico";"(99) 8765-4321";"5599987654321";"@ana_telegram"',
+        '"Roberto Santos";"roberto@example.com";"Coordenador de TI";"(99) 2345-6789";"";"@roberto_santos"'
       ].join('\n');
       
       csvContent = [
