@@ -343,14 +343,31 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
     // Read the CSV file
     const fileContent = fs.readFileSync(filePath, 'utf8');
     
+    // Determine delimiter used in the file (comma or semicolon)
+    const firstLine = fileContent.split('\n')[0];
+    const hasSemicolon = firstLine.includes(';');
+    const hasComma = firstLine.includes(',');
+    const delimiter = hasSemicolon ? ';' : (hasComma ? ',' : ','); // Default to comma if neither found
+    
+    console.log(`Detected delimiter: "${delimiter}" in member CSV file`);
+    
+    // Preprocess headers if necessary
+    const preprocessedContent = fileContent;
+    
     // Parse the CSV file with advanced options to handle complex fields
-    const records = parse(fileContent, {
-      columns: (header: string[]) => {
-        // Convert all header column names to the exact case we expect
-        console.log("CSV Headers found:", header);
+    const records = parse(preprocessedContent, {
+      columns: (header) => {
+        // If we have a single header item containing semicolons, split it into separate headers
+        let processedHeader = header;
+        if (header.length === 1 && header[0].includes(';')) {
+          processedHeader = header[0].split(';');
+          console.log("Split semicolon-separated header into separate columns");
+        }
+        
+        console.log("CSV Headers found:", processedHeader);
         
         // Filter out any comment rows or empty columns
-        const filteredHeader = header.filter((col: string) => 
+        const filteredHeader = processedHeader.filter((col: string) => 
           col && !col.trim().startsWith('#') && col.trim() !== ''
         );
         
@@ -380,7 +397,7 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
       quote: '"', // Use double quotes for field enclosure
       escape: '"', // Use double quotes as escape character
       relax_quotes: true, // Handle inconsistent use of quotes
-      delimiter: ',', // Explicitly set comma as delimiter
+      delimiter: delimiter, // Use auto-detected delimiter
       comment: '#' // Skip lines that start with #
     });
     
