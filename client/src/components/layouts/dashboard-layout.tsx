@@ -53,7 +53,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/logout");
+      try {
+        await apiRequest("POST", "/api/logout");
+        return true;
+      } catch (error) {
+        console.error("Logout error:", error);
+        return false;
+      }
     },
     onSuccess: () => {
       // Set user data to null in the cache
@@ -68,14 +74,24 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       });
       
       // Force navigation to auth page
-      window.location.href = "/auth";
+      setTimeout(() => {
+        window.location.href = "/auth";
+      }, 100);
     },
-    onError: (error: Error) => {
+    onError: () => {
+      // Even if the API call fails, we'll still log the user out on the client side
+      queryClient.setQueryData(["/api/user"], null);
+      queryClient.clear();
+      
       toast({
-        title: t('auth.logout_error'),
-        description: error.message,
-        variant: "destructive",
+        title: t('auth.logout_success'),
+        description: t('auth.logout_success_message')
       });
+      
+      // Force navigation to auth page
+      setTimeout(() => {
+        window.location.href = "/auth";
+      }, 100);
     },
   });
 

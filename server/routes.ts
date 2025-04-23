@@ -592,8 +592,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Entity Management
   app.get("/api/entities", isAuthenticated, async (req, res, next) => {
     try {
-      const entities = await storage.getAllEntities();
-      res.json(entities);
+      // For master implementers and entity heads, return all entities
+      // For entity members, return only their entity
+      if (req.user!.role === 'master_implementer') {
+        const entities = await storage.getAllEntities();
+        return res.json(entities);
+      } else {
+        // Entity heads and members only see their own entity
+        if (req.user!.entityId) {
+          const entity = await storage.getEntity(req.user!.entityId);
+          if (entity) {
+            return res.json([entity]);
+          }
+        }
+        // If no entity is associated with the user
+        return res.json([]);
+      }
     } catch (error) {
       next(error);
     }
