@@ -95,27 +95,31 @@ export default function EntityMemberImportPage() {
   const downloadTemplate = () => {
     // Create a multi-line comment with detailed instructions
     const comments = [
-      '# CSV Template for Entity Member Import',
+      '# Modelo CSV para Importação de Membros de Entidade',
       '# ',
-      '# REQUIRED FIELDS (case-sensitive):',
-      '# - fullName: Member\'s full name',
-      '# - email: Member\'s email address',
-      '# - position: Member\'s position or role in the entity',
+      '# CAMPOS OBRIGATÓRIOS:',
+      '# - nomeCompleto: Nome completo do membro',
+      '# - email: Endereço de email do membro',
+      '# - cargo: Cargo/posição do membro na entidade',
       '# ',
-      '# OPTIONAL FIELDS:',
-      '# - phone: Contact phone number',
-      '# - whatsapp: WhatsApp number (must include country code)',
-      '# - telegram: Telegram username (without @ symbol)',
+      '# CAMPOS OPCIONAIS:',
+      '# - telefone: Número de telefone de contato',
+      '# - whatsapp: Número de WhatsApp (incluir código do país)',
+      '# - telegram: Nome de usuário do Telegram (com @)',
+      '# ',
+      '# OBSERVAÇÃO: Os membros serão automaticamente associados à entidade selecionada',
+      '# ',
+      '# SUPORTE: Este arquivo suporta delimitadores ponto-e-vírgula (;) ou vírgula (,)',
       '# '
     ].join('\n');
     
-    // Header row with column names - EXACT match with validation
-    const headers = 'fullName,email,position,phone,whatsapp,telegram';
+    // Header row with column names using semicolon as delimiter
+    const headers = 'nomeCompleto;email;cargo;telefone;whatsapp;telegram';
     
     // Example rows with properly formatted data
-    const exampleRow1 = 'Jane Doe,jane.doe@example.com,Secretary,+12345678902,+12345678902,janedoe';
-    const exampleRow2 = 'Bob Johnson,bob.johnson@example.com,IT Manager,+12345678903,,';
-    const exampleRow3 = 'Susan Smith,susan.smith@example.com,Accountant,,,susansmith';
+    const exampleRow1 = '"Carlos Oliveira";"carlos@example.com";"Assistente Administrativo";"(99) 1234-5678";"5599123456789";"@carlos_telegram"';
+    const exampleRow2 = '"Ana Paula Silva";"ana@example.com";"Analista Técnico";"(99) 8765-4321";"5599987654321";"@ana_telegram"';
+    const exampleRow3 = '"Roberto Santos";"roberto@example.com";"Coordenador de TI";"(99) 2345-6789";"";"@roberto_santos"';
     
     const csvContent = [
       comments,
@@ -159,13 +163,13 @@ export default function EntityMemberImportPage() {
   const validateCSV = async (file: File): Promise<boolean> => {
     // Check file extension
     if (!file.name.toLowerCase().endsWith('.csv')) {
-      setCsvValidationError(t('entities.import.error_select_csv'));
+      setCsvValidationError(t('entities.import.validation.not_csv'));
       return false;
     }
     
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setCsvValidationError(t('entities.import.error_file_size'));
+      setCsvValidationError(t('entities.import.validation.file_too_large'));
       return false;
     }
     
@@ -177,24 +181,37 @@ export default function EntityMemberImportPage() {
       const lines = text.split('\n').filter(line => !line.trim().startsWith('#'));
       
       if (lines.length < 2) {
-        setCsvValidationError(t('entities.import.error_file_rows'));
+        setCsvValidationError(t('entities.import.validation.missing_rows'));
         return false;
       }
       
       // Get the first line with actual content (header row)
       // Convert to lowercase and trim whitespace for case-insensitive comparison
       const headerLine = lines[0].toLowerCase();
-      const headers = headerLine.split(',').map(h => h.trim());
       
-      // Define the required headers 
-      const requiredHeaders = ['fullname', 'email', 'position'];
+      // Auto-detect the delimiter (comma or semicolon)
+      const delimiter = headerLine.includes(';') ? ';' : ',';
+      console.log(`Detected delimiter: "${delimiter}" in member CSV file`);
+      
+      const headers = headerLine.split(delimiter).map(h => h.trim());
       
       console.log('CSV Headers found:', headers);
       
-      // Check for required headers
-      const missingHeaders = requiredHeaders.filter(rh => {
-        return !headers.includes(rh);
-      });
+      // Define the required headers with both English and Portuguese versions
+      const requiredHeadersMap = {
+        'fullname': ['fullname', 'full_name', 'full name', 'name', 'nomecompleto', 'nome_completo', 'nome completo', 'nome'],
+        'email': ['email', 'e-mail', 'correio'],
+        'position': ['position', 'role', 'job_title', 'job title', 'title', 'cargo', 'funcao', 'função', 'posicao', 'posição']
+      };
+      
+      // For each required header category, check if any variant exists in the file
+      const missingHeaders = [];
+      for (const [key, variants] of Object.entries(requiredHeadersMap)) {
+        const hasHeaderVariant = variants.some(variant => headers.includes(variant));
+        if (!hasHeaderVariant) {
+          missingHeaders.push(key);
+        }
+      }
       
       if (missingHeaders.length > 0) {
         setCsvValidationError(t('entities.import.error_missing_headers', { headers: missingHeaders.join(', ') }));
