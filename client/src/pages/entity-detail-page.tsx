@@ -14,6 +14,7 @@ import EditEntityDialog from "@/components/dialogs/edit-entity-dialog";
 import CreateMemberDialog from "@/components/dialogs/create-member-dialog";
 import EditMemberDialog from "@/components/dialogs/edit-member-dialog";
 import { useTranslation } from "react-i18next";
+import { fixEncoding, getEntityTypeDisplay } from "@/lib/utils";
 
 export default function EntityDetailPage() {
   const { t } = useTranslation();
@@ -101,9 +102,27 @@ export default function EntityDetailPage() {
     );
   }
   
-  // Function to get the translated entity type
+  // Fix encoding in entity data
+  const fixedEntity = entity ? {
+    ...entity,
+    name: fixEncoding(entity.name),
+    headName: fixEncoding(entity.headName),
+    headPosition: fixEncoding(entity.headPosition),
+    address: fixEncoding(entity.address),
+    socialMedia: fixEncoding(entity.socialMedia)
+  } : null;
+  
+  // Function to get the translated entity type with encoding fix
   const getTranslatedEntityType = (type: string) => {
-    return t(`entities.types.${type}`);
+    // Try using the translation first
+    const translatedType = t(`entities.types.${type}`);
+    
+    // If the translation key wasn't found (returns the key itself), use our utility function
+    if (translatedType === `entities.types.${type}`) {
+      return getEntityTypeDisplay(type);
+    }
+    
+    return translatedType;
   };
 
   return (
@@ -121,8 +140,8 @@ export default function EntityDetailPage() {
               </Link>
               
               <div>
-                <h1 className="text-2xl font-semibold text-neutral-800">{entity.name}</h1>
-                <p className="text-neutral-500">{getTranslatedEntityType(entity.type)}</p>
+                <h1 className="text-2xl font-semibold text-neutral-800">{fixedEntity?.name}</h1>
+                <p className="text-neutral-500">{getTranslatedEntityType(fixedEntity?.type || '')}</p>
               </div>
             </div>
             
@@ -150,14 +169,14 @@ export default function EntityDetailPage() {
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-sm font-medium text-neutral-500 mb-1">{t("entities.entity_type")}</h3>
-                      <Badge variant="outline">{getTranslatedEntityType(entity.type)}</Badge>
+                      <Badge variant="outline">{getTranslatedEntityType(fixedEntity?.type || '')}</Badge>
                     </div>
                     
-                    {entity.tags && entity.tags.length > 0 && (
+                    {fixedEntity?.tags && fixedEntity.tags.length > 0 && (
                       <div>
                         <h3 className="text-sm font-medium text-neutral-500 mb-1">{t("entities.tags")}</h3>
                         <div className="flex flex-wrap gap-1">
-                          {entity.tags.map((tag: string, index: number) => (
+                          {fixedEntity.tags.map((tag: string, index: number) => (
                             <Badge key={index} variant="secondary">{tag}</Badge>
                           ))}
                         </div>
@@ -168,29 +187,29 @@ export default function EntityDetailPage() {
                     
                     <div>
                       <h3 className="text-sm font-medium text-neutral-500 mb-1">{t("entities.contact_information")}</h3>
-                      {entity.phone && (
+                      {fixedEntity?.phone && (
                         <div className="flex items-center text-sm text-neutral-700 mb-2">
                           <Phone className="h-4 w-4 mr-2 text-neutral-500" />
-                          <span>{entity.phone}</span>
+                          <span>{fixedEntity.phone}</span>
                         </div>
                       )}
-                      {entity.website && (
+                      {fixedEntity?.website && (
                         <div className="flex items-center text-sm text-neutral-700 mb-2">
                           <Globe className="h-4 w-4 mr-2 text-neutral-500" />
                           <a 
-                            href={entity.website.startsWith('http') ? entity.website : `https://${entity.website}`} 
+                            href={fixedEntity.website.startsWith('http') ? fixedEntity.website : `https://${fixedEntity.website}`} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="text-primary hover:underline"
                           >
-                            {entity.website}
+                            {fixedEntity.website}
                           </a>
                         </div>
                       )}
-                      {entity.address && (
+                      {fixedEntity?.address && (
                         <div className="flex items-center text-sm text-neutral-700">
                           <MapPin className="h-4 w-4 mr-2 text-neutral-500" />
-                          <span>{entity.address}</span>
+                          <span>{fixedEntity.address}</span>
                         </div>
                       )}
                     </div>
@@ -209,22 +228,22 @@ export default function EntityDetailPage() {
                   <div className="flex items-center mb-4">
                     <Avatar className="h-10 w-10 mr-3">
                       <AvatarFallback className="bg-primary-100 text-primary">
-                        {entity.headName.charAt(0)}
+                        {fixedEntity?.headName?.charAt(0) || "?"}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium text-neutral-800">{entity.headName}</p>
-                      <p className="text-sm text-neutral-500">{entity.headPosition}</p>
+                      <p className="font-medium text-neutral-800">{fixedEntity?.headName}</p>
+                      <p className="text-sm text-neutral-500">{fixedEntity?.headPosition}</p>
                     </div>
                   </div>
                   
                   <div className="flex items-center text-sm text-neutral-700">
                     <Mail className="h-4 w-4 mr-2 text-neutral-500" />
                     <a 
-                      href={`mailto:${entity.headEmail}`} 
+                      href={`mailto:${fixedEntity?.headEmail}`} 
                       className="text-primary hover:underline"
                     >
-                      {entity.headEmail}
+                      {fixedEntity?.headEmail}
                     </a>
                   </div>
                 </CardContent>
@@ -397,7 +416,7 @@ export default function EntityDetailPage() {
         open={editEntityOpen} 
         onOpenChange={setEditEntityOpen} 
         entityId={Number(id)}
-        entity={entity}
+        entity={fixedEntity || entity}
       />
       
       {/* Create Member Dialog */}
