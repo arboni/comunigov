@@ -203,4 +203,64 @@ export function setupAuth(app: Express) {
     const { password, ...userWithoutPassword } = req.user;
     res.json(userWithoutPassword);
   });
+  
+  // Endpoint for checking if user needs to change their password
+  app.get("/api/user/password-status", (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    res.json({ requirePasswordChange: req.user.requirePasswordChange === true });
+  });
+  
+  // Endpoint for changing password on first login
+  app.post("/api/user/change-password", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      // Validate request
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Current password and new password are required" });
+      }
+      
+      // Get the user
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Verify current password
+      const isPasswordValid = await comparePasswords(currentPassword, user.password);
+      if (!isPasswordValid) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+      
+      // Hash new password
+      const hashedPassword = await hashPassword(newPassword);
+      
+      // Update password and clear requirePasswordChange flag
+      await storage.updateUser(user.id, { 
+        password: hashedPassword, 
+        requirePasswordChange: false 
+      });
+      
+      // Log the password change
+      try {
+        const ActivityLogger = (await import('./activity-logger')).ActivityLogger;
+        await ActivityLogger.logUpdate(
+          user.id,
+          'user',
+          user.id,
+          'User changed password'
+        );
+      } catch (logErr) {
+        console.error('Failed to log password change activity:', logErr);
+        // Continue even if logging fails
+      }
+      
+      res.status(200).json({ message: "Password changed successfully" });
+    } catch (error) {
+      console.error('Error changing password:', error);
+      res.status(500).json({ message: "Failed to change password" });
+    }
+  });
 }
