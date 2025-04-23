@@ -24,6 +24,7 @@ export const users = pgTable("users", {
   telegram: text("telegram"),
   position: text("position"),
   entityId: integer("entity_id").references(() => entities.id),
+  requirePasswordChange: boolean("require_password_change").default(false),
 });
 
 // Entities table

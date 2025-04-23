@@ -5,6 +5,7 @@ import { db } from './db';
 import { ActivityLogger } from './activity-logger';
 import { sql, eq } from 'drizzle-orm';
 import { hashPassword } from './auth';
+import { sendNewMemberWelcomeEmail } from './email-service';
 
 interface EntityMember {
   fullName: string;
@@ -654,7 +655,7 @@ fullName,email,position,phone,whatsapp,telegram
         const tempPassword = generateTemporaryPassword();
         const hashedPassword = await hashPassword(tempPassword);
         
-        // Create the entity member user
+        // Create the entity member user with requirePasswordChange flag set to true
         const [memberUser] = await db.insert(users).values({
           username: memberUsername,
           password: hashedPassword,
@@ -665,7 +666,8 @@ fullName,email,position,phone,whatsapp,telegram
           phone: member.phone || null,
           whatsapp: member.whatsapp || null,
           telegram: member.telegram || null,
-          entityId: entityId
+          entityId: entityId,
+          requirePasswordChange: true // Force password change on first login
         }).returning();
         
         console.log(`Created entity member user: ${memberUser.username} with temporary password`);
@@ -691,6 +693,27 @@ fullName,email,position,phone,whatsapp,telegram
           memberUser.id,
           `Created entity member user "${memberUser.username}" for entity "${entity.name}"`
         );
+        
+        // Send welcome email with temporary credentials
+        try {
+          console.log(`Sending welcome email to ${memberUser.email} for ${entity.name}`);
+          const emailSent = await sendNewMemberWelcomeEmail(
+            memberUser.email,
+            memberUser.fullName,
+            memberUser.username,
+            tempPassword,
+            entity.name
+          );
+          
+          if (emailSent) {
+            console.log(`Successfully sent welcome email to ${memberUser.email}`);
+          } else {
+            console.warn(`Failed to send welcome email to ${memberUser.email}`);
+          }
+        } catch (emailError) {
+          console.error(`Error sending welcome email to ${memberUser.email}:`, emailError);
+          // Don't throw the error, just log it - we still want to continue with the import
+        }
         
         results.successful++;
       } catch (error) {
