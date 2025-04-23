@@ -1425,6 +1425,97 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(meetings);
   }
 
+  async getMeetingsForUsers(userIds: number[]): Promise<Meeting[]> {
+    if (!userIds || userIds.length === 0) {
+      return [];
+    }
+    
+    try {
+      // First, get meetings where users are attendees
+      const meetingsAsAttendee = await db
+        .select({
+          id: meetings.id,
+          name: meetings.name,
+          date: meetings.date,
+          startTime: meetings.startTime,
+          endTime: meetings.endTime,
+          location: meetings.location,
+          description: meetings.description,
+          createdBy: meetings.createdBy,
+          isRegisteredSubject: meetings.isRegisteredSubject,
+          subjectId: meetings.subjectId,
+          customSubject: meetings.customSubject
+        })
+        .from(meetings)
+        .innerJoin(meetingAttendees, eq(meetings.id, meetingAttendees.meetingId))
+        .where(inArray(meetingAttendees.userId, userIds));
+      
+      // Next, get meetings created by these users
+      const meetingsAsCreator = await db
+        .select()
+        .from(meetings)
+        .where(inArray(meetings.createdBy, userIds));
+      
+      // Combine both sets and deduplicate by ID
+      const allMeetings = [...meetingsAsAttendee, ...meetingsAsCreator];
+      const uniqueMeetingIds = new Set();
+      const uniqueMeetings = allMeetings.filter(meeting => {
+        if (uniqueMeetingIds.has(meeting.id)) {
+          return false;
+        }
+        uniqueMeetingIds.add(meeting.id);
+        return true;
+      });
+      
+      return uniqueMeetings;
+    } catch (error) {
+      console.error("Error getting meetings for users:", error);
+      return [];
+    }
+  }
+  
+  async getUpcomingMeetingsForUsers(userIds: number[]): Promise<Meeting[]> {
+    if (!userIds || userIds.length === 0) {
+      return [];
+    }
+    
+    try {
+      const now = new Date();
+      
+      // Get all meetings for the users
+      const allMeetings = await this.getMeetingsForUsers(userIds);
+      
+      // Filter for only upcoming meetings
+      return allMeetings.filter(meeting => {
+        const meetingDate = new Date(meeting.date);
+        
+        // For same-day meetings, compare the time as well
+        if (meetingDate.toDateString() === now.toDateString()) {
+          const meetingTime = meeting.startTime ? meeting.startTime.split(':') : ['0', '0'];
+          const meetingHours = parseInt(meetingTime[0], 10);
+          const meetingMinutes = parseInt(meetingTime[1], 10);
+          
+          const currentHours = now.getHours();
+          const currentMinutes = now.getMinutes();
+          
+          // Compare hours first, then minutes
+          if (meetingHours > currentHours) {
+            return true;
+          } else if (meetingHours === currentHours && meetingMinutes > currentMinutes) {
+            return true;
+          }
+          return false;
+        }
+        
+        // For different days, just compare dates
+        return meetingDate > now;
+      });
+    } catch (error) {
+      console.error("Error getting upcoming meetings for users:", error);
+      return [];
+    }
+  }
+  
   async getUpcomingMeetings(): Promise<Meeting[]> {
     const now = new Date();
     const allMeetings = await db.select().from(meetings);

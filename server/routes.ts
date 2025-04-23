@@ -1117,8 +1117,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Tasks
   app.get("/api/tasks", isAuthenticated, async (req, res, next) => {
     try {
-      const tasks = await storage.getAllTasks();
-      res.json(tasks);
+      // Master implementers can see all tasks
+      if (req.user!.role === 'master_implementer') {
+        const tasks = await storage.getAllTasks();
+        return res.json(tasks);
+      }
+      
+      // Entity heads and members can only see tasks related to their entity
+      if (req.user!.entityId) {
+        const tasks = await storage.getTasksByEntity(req.user!.entityId);
+        return res.json(tasks);
+      }
+      
+      // If no entity is associated, return empty array
+      return res.json([]);
     } catch (error) {
       next(error);
     }
@@ -1242,8 +1254,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Subjects API
   app.get("/api/subjects", isAuthenticated, async (req, res, next) => {
     try {
-      const subjects = await storage.getAllSubjects();
-      res.json(subjects);
+      // Master implementers can see all subjects
+      if (req.user!.role === 'master_implementer') {
+        const subjects = await storage.getAllSubjects();
+        return res.json(subjects);
+      }
+      
+      // Entity heads and members can only see subjects related to their entity
+      if (req.user!.entityId) {
+        // Get users from the same entity
+        const entityUsers = await storage.getUsersByEntityId(req.user!.entityId);
+        const entityUserIds = entityUsers.map(user => user.id);
+        
+        // Get subjects created by any user in this entity
+        const allSubjects = await storage.getAllSubjects();
+        const entitySubjects = allSubjects.filter(subject => 
+          entityUserIds.includes(subject.createdBy)
+        );
+        
+        return res.json(entitySubjects);
+      }
+      
+      // If no entity is associated, return empty array
+      return res.json([]);
     } catch (error) {
       next(error);
     }
