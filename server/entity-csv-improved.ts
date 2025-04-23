@@ -129,7 +129,7 @@ function cleanHeaderField(header: string): string {
 }
 
 /**
- * Import entities from a CSV file
+ * Import entities from a CSV file with enhanced error handling and header detection
  * This function only imports entities without members
  * @param filePath Path to the CSV file
  * @param userId ID of the user performing the import
@@ -148,13 +148,8 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
     
     console.log(`Detected delimiter: "${delimiter}" in CSV file`);
     
-    // Preprocess headers if necessary (for semicolon delimited files with headers like "name;type;...")
-    const preprocessedContent = fileContent.startsWith('name;') || fileContent.startsWith('name,') 
-      ? fileContent 
-      : fileContent;
-    
     // Parse the CSV file with advanced options to handle complex fields
-    const records = parse(preprocessedContent, {
+    const records = parse(fileContent, {
       columns: (header) => {
         // If we have a single header item containing semicolons, split it into separate headers
         let processedHeader = header;
@@ -163,18 +158,13 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
           console.log("Split semicolon-separated header into separate columns");
         }
         
-        // Handle potential CSV export formats with quoted fields
-        processedHeader = processedHeader.map((col: string) => {
-          return col.replace(/^"(.*)"$/, '$1').trim(); // Remove quotes if present
-        });
+        // Clean and normalize headers using our helper function
+        processedHeader = processedHeader.map(cleanHeaderField);
         
         // Log processed headers
         console.log("CSV Headers found:", processedHeader);
         
         return processedHeader.map((column: string) => {
-          // Clean up column name and standardize
-          const cleaned = column.trim();
-          
           // Map to our expected case-sensitive field names - CASE INSENSITIVE matching
           const columnMap: Record<string, string> = {
             // English column names
@@ -229,12 +219,11 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
             'redes_sociais': 'socialMedia',
             'redes sociais': 'socialMedia',
             'etiquetas': 'tags'
-            // Note: 'members' field removed from entity import
           };
           
           // Get the standardized column name or keep original if not found
-          const standardized = columnMap[cleaned.toLowerCase()] || cleaned;
-          console.log(`Column mapping: "${cleaned}" -> "${standardized}"`);
+          const standardized = columnMap[column.toLowerCase()] || column;
+          console.log(`Column mapping: "${column}" -> "${standardized}"`);
           return standardized;
         });
       },
@@ -244,7 +233,8 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
       quote: '"', // Use double quotes for field enclosure
       escape: '"', // Use double quotes as escape character
       relax_quotes: true, // Handle inconsistent use of quotes
-      delimiter: delimiter // Use auto-detected delimiter
+      delimiter: delimiter, // Use auto-detected delimiter
+      comment: '#' // Skip lines that start with #
     });
     
     const results = {
@@ -274,6 +264,12 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
       try {
         // Check the record for debugging
         console.log(`Processing row ${rowIndex}, data: `, JSON.stringify(record));
+        
+        // Skip rows that look like comment rows or header rows
+        if (Object.keys(record).some(key => key.includes('CSV Template') || key.startsWith('#'))) {
+          console.log(`Skipping row ${rowIndex} - appears to be a comment row`);
+          continue;
+        }
         
         // Validate each required field separately for better error reporting
         const missingFields = [];
@@ -409,8 +405,6 @@ name,type,headName,headPosition,headEmail,address,phone,website,socialMedia,tags
           results.errors.push(`Row ${rowIndex}: Warning - Entity created but head user creation failed: ${(userError as Error).message}`);
         }
         
-        // Note: Members are now imported separately through a different endpoint
-        
         // Add to successful entities list
         results.newEntities.push(newEntity);
         results.successful++;
@@ -455,11 +449,8 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
     
     console.log(`Detected delimiter: "${delimiter}" in member CSV file`);
     
-    // Preprocess headers if necessary
-    const preprocessedContent = fileContent;
-    
     // Parse the CSV file with advanced options to handle complex fields
-    const records = parse(preprocessedContent, {
+    const records = parse(fileContent, {
       columns: (header) => {
         // If we have a single header item containing semicolons, split it into separate headers
         let processedHeader = header;
@@ -468,10 +459,8 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
           console.log("Split semicolon-separated header into separate columns");
         }
         
-        // Handle potential CSV export formats with quoted fields
-        processedHeader = processedHeader.map((col: string) => {
-          return col.replace(/^"(.*)"$/, '$1').trim(); // Remove quotes if present
-        });
+        // Clean and normalize headers using our helper function
+        processedHeader = processedHeader.map(cleanHeaderField);
         
         console.log("CSV Headers found:", processedHeader);
         
@@ -481,9 +470,6 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
         );
         
         return filteredHeader.map((column: string) => {
-          // Clean up column name and standardize
-          const cleaned = column.trim();
-          
           // Map to our expected case-sensitive field names for member imports - CASE INSENSITIVE
           const columnMap: Record<string, string> = {
             // English column names
@@ -531,8 +517,8 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
           };
           
           // Get the standardized column name or keep original if not found
-          const standardized = columnMap[cleaned.toLowerCase()] || cleaned;
-          console.log(`Column mapping: "${cleaned}" -> "${standardized}"`);
+          const standardized = columnMap[column.toLowerCase()] || column;
+          console.log(`Column mapping: "${column}" -> "${standardized}"`);
           return standardized;
         });
       },

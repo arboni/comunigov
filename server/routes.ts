@@ -21,7 +21,8 @@ import {
   hasAnalyticsAccess
 } from "./auth-middleware";
 import { ActivityLogger } from "./activity-logger";
-import { importEntitiesFromCSV, importEntityMembersFromCSV } from "./entity-csv-import";
+// Import the improved CSV import functions
+import { importEntitiesFromCSV, importEntityMembersFromCSV } from "./entity-csv-improved";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
