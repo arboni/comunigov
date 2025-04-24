@@ -69,7 +69,27 @@ export default function SubjectEditDialog({
   const { data: entities, isLoading: isLoadingEntities } = useQuery({
     queryKey: ["/api/entities"],
     enabled: open,
+    // Add a select function to sanitize entity names if needed
+    select: (data) => {
+      if (!data) return [];
+      
+      return data.map((entity: any) => ({
+        ...entity,
+        // Ensure entity name is properly decoded if it contains special characters
+        name: entity.name ? decodeEntities(entity.name) : entity.name,
+      }));
+    }
   });
+  
+  // Helper function to decode HTML entities and fix encoding issues
+  function decodeEntities(text: string): string {
+    if (!text) return '';
+    
+    // Replace common encoding issues with proper characters
+    return text
+      .replace(/Associa��o/g, 'Associação')
+      .replace(/��/g, 'ção');
+  }
 
   // Fetch entities currently associated with this subject
   const { data: subjectEntities, isLoading: isLoadingSubjectEntities } = useQuery({

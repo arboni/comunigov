@@ -85,10 +85,29 @@ export default function SubjectDialog({
     tags: string[] | null;
   }
   
+  // Helper function to decode HTML entities and fix encoding issues
+  function decodeEntities(text: string): string {
+    if (!text) return '';
+    
+    // Replace common encoding issues with proper characters
+    return text
+      .replace(/Associa��o/g, 'Associação')
+      .replace(/��/g, 'ção');
+  }
+  
   // Fetch entities
   const { data: entities, isLoading: isLoadingEntities } = useQuery<Entity[]>({
     queryKey: ['/api/entities'],
     enabled: open, // Only fetch when dialog is open
+    select: (data) => {
+      if (!data) return [];
+      
+      return data.map((entity) => ({
+        ...entity,
+        // Ensure entity name is properly decoded if it contains special characters
+        name: entity.name ? decodeEntities(entity.name) : entity.name,
+      }));
+    }
   });
 
   // Form setup

@@ -11,5 +11,10 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Add explicit UTF-8 encoding support to the connection
+export const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL,
+  // Setting UTF-8 for all connections
+  options: `--client_encoding=UTF8`
+});
 export const db = drizzle({ client: pool, schema });
