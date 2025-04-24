@@ -6,6 +6,7 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { useToast } from "@/hooks/use-toast";
+import { useAchievements } from "@/hooks/use-achievements";
 import { insertSubjectSchema, insertSubjectEntitySchema } from "@shared/schema";
 import { apiRequest, invalidateSubjects } from "@/lib/queryClient";
 import { reloadPage } from "@/lib/utils";
@@ -65,6 +66,7 @@ export default function SubjectDialog({
 }: SubjectDialogProps) {
   const { toast } = useToast();
   const { user } = useSimpleAuth();
+  const { triggerMilestone } = useAchievements();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedEntityIds, setSelectedEntityIds] = useState<number[]>([]);
@@ -165,6 +167,10 @@ export default function SubjectDialog({
     },
     onSuccess: (result) => {
       console.log("Mutation success with result:", result);
+      
+      // Trigger achievement milestone for creating a subject
+      triggerMilestone('subject_created');
+      
       toast({
         title: "Success",
         description: "Subject created successfully",
@@ -474,6 +480,9 @@ export default function SubjectDialog({
                           console.error("Error creating subject-entity relationships:", error);
                         }
                       }
+                      
+                      // Trigger achievement milestone for creating a subject
+                      triggerMilestone('subject_created');
                       
                       // Success handling
                       toast({
