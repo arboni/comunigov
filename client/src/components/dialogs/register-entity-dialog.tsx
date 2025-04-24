@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { apiRequest, queryClient, invalidateEntities, invalidateDashboardStats } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/hooks/use-translation";
+import { useAchievements } from "@/hooks/use-achievements";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -57,6 +58,7 @@ export default function RegisterEntityDialog({
 }: RegisterEntityDialogProps) {
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { triggerMilestone } = useAchievements();
   const [isUploading, setIsUploading] = useState(false);
   
   const form = useForm<FormValues>({
@@ -80,6 +82,9 @@ export default function RegisterEntityDialog({
       // Invalidate relevant queries to refresh the data
       invalidateEntities();
       invalidateDashboardStats();
+      
+      // Trigger achievement milestone for creating an entity
+      triggerMilestone('entity_created');
       
       toast({
         title: t("entity.registered"),
