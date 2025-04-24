@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
+import React, { useState, useEffect } from 'react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useTooltips, TooltipId } from '@/hooks/use-tooltips';
 import { Button } from '@/components/ui/button';
-import { Info, X, CheckCircle, Lightbulb } from 'lucide-react';
+import { X, HelpCircle, Check, XCircle } from 'lucide-react';
+import { useTooltips, TooltipId } from '@/hooks/use-tooltips';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface ContextualTooltipProps {
   id: TooltipId;
@@ -35,33 +36,38 @@ export function ContextualTooltip({
   forceShow = false,
   onDismiss,
   customText,
-  icon = <Lightbulb className="h-4 w-4 text-yellow-500" />,
+  icon = <HelpCircle className="h-4 w-4 text-yellow-500" />,
   showDismissButton = true,
   showDontShowAgainButton = true,
-  openDelay = 500
+  openDelay = 500,
 }: ContextualTooltipProps) {
-  const { shouldShowTooltip, markTooltipAsSeen, getTooltipText } = useTooltips();
-  const [open, setOpen] = useState(showOnMount && shouldShowTooltip(id));
+  const [open, setOpen] = useState(showOnMount);
+  const { shouldShowTooltip, markTooltipAsSeen } = useTooltips();
+  const { t } = useTranslation();
   
-  // Get the tooltip text from translation or custom text
-  const tooltipText = customText || getTooltipText(id);
+  // Determine if this tooltip should be shown based on user preferences
+  const shouldShow = forceShow || shouldShowTooltip(id);
   
-  // Show tooltip on mount with delay if configured
+  // Handle automatic opening after delay if showOnMount is true
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    
-    if (showOnMount && shouldShowTooltip(id)) {
-      timer = setTimeout(() => {
+    if (showOnMount && shouldShow) {
+      const timer = setTimeout(() => {
         setOpen(true);
       }, openDelay);
+      
+      return () => clearTimeout(timer);
     }
-    
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [showOnMount, id, shouldShowTooltip, openDelay]);
+  }, [showOnMount, shouldShow, openDelay]);
   
-  // Handle tooltip dismissal
+  // If the user has chosen not to see this tooltip, just render the children
+  if (!shouldShow) {
+    return <>{children}</>;
+  }
+  
+  // Get tooltip text from translation or use custom text
+  const tooltipText = customText || t(`tooltips.${id}`);
+  
+  // Handle tooltip dismiss and don't show again
   const handleDismiss = () => {
     setOpen(false);
     if (onDismiss) {
@@ -69,7 +75,6 @@ export function ContextualTooltip({
     }
   };
   
-  // Handle marking tooltip as seen
   const handleDontShowAgain = () => {
     markTooltipAsSeen(id);
     setOpen(false);
@@ -78,73 +83,56 @@ export function ContextualTooltip({
     }
   };
   
-  // Determine if tooltip should be visible
-  const shouldShow = forceShow || (shouldShowTooltip(id) && open);
-
   return (
     <TooltipProvider>
-      <Tooltip
-        open={shouldShow}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) {
-            handleDismiss();
-          } else if (!shouldShowTooltip(id) && !forceShow) {
-            setOpen(false);
-          } else {
-            setOpen(isOpen);
-          }
-        }}
-      >
+      <Tooltip open={open} onOpenChange={setOpen}>
         <TooltipTrigger asChild>
-          {children}
+          <div className="relative inline-flex">
+            {children}
+            {/* Small indicator dot to show there's a tooltip */}
+            <div className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-400 opacity-75"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-yellow-500"></span>
+            </div>
+          </div>
         </TooltipTrigger>
-        <TooltipContent
+        <TooltipContent 
           side={side}
           align={align}
-          className={`p-4 max-w-[280px] md:max-w-[320px] text-sm space-y-2 ${className}`}
+          className={`max-w-xs p-4 ${className}`}
         >
-          <div className="flex items-start space-x-2">
-            <span className="flex-shrink-0 mt-0.5">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-start gap-2">
               {icon}
-            </span>
-            <div className="flex-1">
-              <p className="text-sm">{tooltipText}</p>
-              
-              {(showDismissButton || showDontShowAgainButton) && (
-                <div className="flex justify-end mt-2 space-x-2">
-                  {showDismissButton && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={handleDismiss}
-                      className="h-7 px-2 text-xs"
-                    >
-                      Entendi
-                    </Button>
-                  )}
-                  
-                  {showDontShowAgainButton && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleDontShowAgain}
-                      className="h-7 px-2 text-xs"
-                    >
-                      Não mostrar novamente
-                    </Button>
-                  )}
-                </div>
+              <div className="flex-1">
+                <p className="text-sm">{tooltipText}</p>
+              </div>
+              {showDismissButton && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 -mr-1 -mt-1 text-muted-foreground"
+                  onClick={handleDismiss}
+                >
+                  <X className="h-3 w-3" />
+                  <span className="sr-only">Fechar</span>
+                </Button>
               )}
             </div>
             
-            {/* Close button in the top-right corner */}
-            <button
-              onClick={handleDismiss}
-              className="absolute top-1 right-1 p-1 rounded-full hover:bg-muted"
-              aria-label="Fechar dica"
-            >
-              <X className="h-3 w-3" />
-            </button>
+            {showDontShowAgainButton && (
+              <div className="flex justify-end gap-2 pt-1">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-7 px-2 text-xs text-muted-foreground"
+                  onClick={handleDontShowAgain}
+                >
+                  <XCircle className="h-3 w-3 mr-1" />
+                  Não mostrar novamente
+                </Button>
+              </div>
+            )}
           </div>
         </TooltipContent>
       </Tooltip>

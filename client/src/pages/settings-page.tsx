@@ -13,6 +13,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import { useTranslation } from "@/hooks/use-translation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TooltipSettings } from "@/components/settings/tooltip-settings";
 
 export default function SettingsPage() {
   const { user } = useSimpleAuth();
@@ -139,9 +140,10 @@ export default function SettingsPage() {
         </div>
         
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsList className="grid w-full max-w-md grid-cols-3">
+            <TabsTrigger value="profile">Perfil</TabsTrigger>
+            <TabsTrigger value="security">Segurança</TabsTrigger>
+            <TabsTrigger value="tooltips">Dicas</TabsTrigger>
           </TabsList>
           
           <TabsContent value="profile" className="mt-6 space-y-4">

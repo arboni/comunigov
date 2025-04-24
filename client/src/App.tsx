@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { Loader2 } from "lucide-react";
@@ -28,6 +28,8 @@ import { useTranslation } from "@/hooks/use-translation";
 import i18n from "./lib/i18n";
 import { I18nProvider } from "@/components/ui/i18n-provider";
 import { PasswordChangeRoute } from "@/components/password-change-route";
+import { TooltipsProvider } from "@/hooks/use-tooltips";
+import { WelcomeTour } from "@/components/onboarding/welcome-tour";
 
 // This is a simpler implementation that doesn't rely on the auth context
 function ProtectedRoute({ component: Component, path }: { component: () => JSX.Element, path: string }) {
@@ -139,8 +141,11 @@ function App() {
 
   return (
     <I18nProvider>
-      <Router />
-      <Toaster />
+      <TooltipsProvider>
+        <Router />
+        <WelcomeTour />
+        <Toaster />
+      </TooltipsProvider>
     </I18nProvider>
   );
 }
