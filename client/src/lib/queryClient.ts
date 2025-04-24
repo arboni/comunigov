@@ -33,15 +33,24 @@ export async function apiRequest(
       headers,
       body,
       credentials: "include",
+      cache: "no-cache", // Prevent caching issues
     });
 
     await throwIfResNotOk(res);
     return res;
   } catch (error) {
     console.error(`Network error for ${method} ${url}:`, error);
-    // Rethrow with more descriptive message
+    
+    // If it's a network error (e.g., server unreachable)
+    if (error instanceof TypeError && error.message.includes('network')) {
+      throw new Error(
+        `Network connection error. Please check your internet connection and try again.`
+      );
+    }
+    
+    // For other errors, provide a more user-friendly message
     throw new Error(
-      `Network error: Failed to ${method.toLowerCase()} ${url}. Please check your connection and try again. ${error instanceof Error ? error.message : ''}`
+      `Failed to ${method.toLowerCase()} data to server. ${error instanceof Error ? error.message : 'Please try again later.'}`
     );
   }
 }
@@ -55,18 +64,35 @@ export const getQueryFn: <T>(options: {
     try {
       const res = await fetch(queryKey[0] as string, {
         credentials: "include",
+        cache: "no-cache", // Prevent caching issues
       });
 
       if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        console.log(`Unauthorized access to ${queryKey[0]}, returning null as configured`);
         return null;
       }
 
       await throwIfResNotOk(res);
-      return await res.json();
+      
+      try {
+        return await res.json();
+      } catch (jsonError) {
+        console.error(`Error parsing JSON from ${queryKey[0]}:`, jsonError);
+        throw new Error(`Failed to parse response from server. Please try again.`);
+      }
     } catch (error) {
       console.error(`Network error for GET ${queryKey[0]}:`, error);
+      
+      // If it's a network error (e.g., server unreachable)
+      if (error instanceof TypeError && error.message.includes('network')) {
+        throw new Error(
+          `Network connection error. Please check your internet connection and try again.`
+        );
+      }
+      
+      // For other errors, provide a more user-friendly message
       throw new Error(
-        `Network error: Failed to fetch data from ${queryKey[0]}. Please check your connection and try again. ${error instanceof Error ? error.message : ''}`
+        `Failed to fetch data. ${error instanceof Error ? error.message : 'Please try again later.'}`
       );
     }
   };
