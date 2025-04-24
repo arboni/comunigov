@@ -1401,6 +1401,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Subject-Entity Relationships
+  app.get("/api/subjects/:id/entities", isAuthenticated, async (req, res, next) => {
+    try {
+      const subjectId = parseInt(req.params.id);
+      
+      // Check if the subject exists and if the user has access to it
+      const subject = await storage.getSubject(subjectId);
+      if (!subject) {
+        return res.status(404).json({ message: "Subject not found" });
+      }
+      
+      // Get the subject-entity relationships
+      const subjectEntities = await storage.getSubjectEntitiesBySubjectId(subjectId);
+      
+      // Get the entity details for each relationship
+      const entityIds = subjectEntities.map(se => se.entityId);
+      const entities = [];
+      
+      for (const entityId of entityIds) {
+        const entity = await storage.getEntity(entityId);
+        if (entity) {
+          entities.push(entity);
+        }
+      }
+      
+      res.json(entities);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/subjects/:id/entities", isAuthenticated, async (req, res, next) => {
+    try {
+      const subjectId = parseInt(req.params.id);
+      const { entityIds } = req.body;
+      
+      if (!Array.isArray(entityIds)) {
+        return res.status(400).json({ message: "Entity IDs must be an array" });
+      }
+      
+      // Check if the subject exists
+      const subject = await storage.getSubject(subjectId);
+      if (!subject) {
+        return res.status(404).json({ message: "Subject not found" });
+      }
+      
+      // Validate user has permission to modify the subject
+      if (req.user?.role !== 'master_implementer' && subject.createdBy !== req.user?.id) {
+        return res.status(403).json({ message: "You don't have permission to modify this subject" });
+      }
+      
+      const createdRelationships = [];
+      
+      // Create subject-entity relationships
+      for (const entityId of entityIds) {
+        // Check if the entity exists
+        const entity = await storage.getEntity(entityId);
+        if (!entity) {
+          continue; // Skip non-existent entities
+        }
+        
+        // Check if the relationship already exists
+        const existingRelationships = await storage.getSubjectEntitiesBySubjectId(subjectId);
+        const existingRelationship = existingRelationships.find(se => se.entityId === entityId);
+        
+        if (!existingRelationship) {
+          // Create new relationship
+          const relationship = await storage.createSubjectEntity({
+            subjectId,
+            entityId
+          });
+          
+          createdRelationships.push(relationship);
+        }
+      }
+      
+      res.status(201).json(createdRelationships);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.delete("/api/subjects/:subjectId/entities/:entityId", isAuthenticated, async (req, res, next) => {
+    try {
+      const subjectId = parseInt(req.params.subjectId);
+      const entityId = parseInt(req.params.entityId);
+      
+      // Check if the subject exists
+      const subject = await storage.getSubject(subjectId);
+      if (!subject) {
+        return res.status(404).json({ message: "Subject not found" });
+      }
+      
+      // Validate user has permission to modify the subject
+      if (req.user?.role !== 'master_implementer' && subject.createdBy !== req.user?.id) {
+        return res.status(403).json({ message: "You don't have permission to modify this subject" });
+      }
+      
+      // Delete the relationship
+      const deleted = await storage.deleteSubjectEntityByIds(subjectId, entityId);
+      
+      if (deleted) {
+        res.status(200).json({ message: "Entity removed from subject successfully" });
+      } else {
+        res.status(404).json({ message: "Relationship not found" });
+      }
+    } catch (error) {
+      next(error);
+    }
+  });
+
   // Communications
   app.get("/api/communications", isAuthenticated, async (req, res, next) => {
     try {

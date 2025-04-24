@@ -106,18 +106,11 @@ export default function SubjectDialog({
     mutationFn: async ({ subjectId, entityIds }: { subjectId: number; entityIds: number[] }) => {
       if (!entityIds.length) return { success: true };
       
-      // Create subject-entity relationships for each selected entity
-      const promises = entityIds.map(async (entityId) => {
-        const payload = {
-          subjectId,
-          entityId
-        };
-        const response = await apiRequest("POST", "/api/subject-entities", payload);
-        return response.json();
-      });
-      
-      const results = await Promise.all(promises);
-      return { success: true, results };
+      // Use the correct endpoint to create subject-entity relationships
+      const payload = { entityIds };
+      const response = await apiRequest("POST", `/api/subjects/${subjectId}/entities`, payload);
+      const result = await response.json();
+      return { success: true, result };
     }
   });
 

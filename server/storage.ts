@@ -623,6 +623,45 @@ export class MemStorage implements IStorage {
       (subject) => subject.createdBy === userId
     );
   }
+  
+  // Subject-Entity relationship methods
+  async createSubjectEntity(insertSubjectEntity: InsertSubjectEntity): Promise<SubjectEntity> {
+    const id = this.currentSubjectEntityId++;
+    const subjectEntity: SubjectEntity = { ...insertSubjectEntity, id };
+    this.subjectEntities.set(id, subjectEntity);
+    return subjectEntity;
+  }
+  
+  async getSubjectEntitiesBySubjectId(subjectId: number): Promise<SubjectEntity[]> {
+    return Array.from(this.subjectEntities.values()).filter(
+      (subjectEntity) => subjectEntity.subjectId === subjectId
+    );
+  }
+  
+  async getSubjectEntitiesByEntityId(entityId: number): Promise<SubjectEntity[]> {
+    return Array.from(this.subjectEntities.values()).filter(
+      (subjectEntity) => subjectEntity.entityId === entityId
+    );
+  }
+  
+  async deleteSubjectEntity(id: number): Promise<boolean> {
+    const exists = this.subjectEntities.has(id);
+    if (!exists) return false;
+    
+    this.subjectEntities.delete(id);
+    return true;
+  }
+  
+  async deleteSubjectEntityByIds(subjectId: number, entityId: number): Promise<boolean> {
+    const subjectEntity = Array.from(this.subjectEntities.values()).find(
+      (se) => se.subjectId === subjectId && se.entityId === entityId
+    );
+    
+    if (!subjectEntity) return false;
+    
+    this.subjectEntities.delete(subjectEntity.id);
+    return true;
+  }
 
   // Task methods
   async getTask(id: number): Promise<Task | undefined> {
