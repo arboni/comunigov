@@ -15,6 +15,7 @@ import { Subject } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import DashboardLayout from "@/components/layouts/dashboard-layout";
+import { useTranslation } from "@/hooks/use-translation";
 
 // Components
 import {
@@ -59,6 +60,7 @@ export default function SubjectsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useSimpleAuth();
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
@@ -81,14 +83,14 @@ export default function SubjectsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/subjects"] });
       toast({
-        title: "Subject deleted",
-        description: "The subject has been successfully deleted.",
+        title: t("subjects.delete_subject"),
+        description: t("notifications.success.deleted", { item: t("subjects.title").toLowerCase() }),
       });
       setDeleteDialogOpen(false);
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to delete subject",
+        title: t("notifications.error.delete", { item: t("subjects.title").toLowerCase() }),
         description: error.message,
         variant: "destructive",
       });

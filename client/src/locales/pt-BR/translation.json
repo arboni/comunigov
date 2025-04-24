@@ -652,7 +652,31 @@
     "created_at": "Criado em",
     "related_tasks": "Tarefas Relacionadas",
     "related_meetings": "Reuniões Relacionadas",
-    "no_subjects": "Nenhum assunto encontrado"
+    "no_subjects": "Nenhum assunto encontrado",
+    "manage_description": "Gerencie e organize assuntos para categorização de tarefas",
+    "new_subject": "Novo Assunto",
+    "search_sort": "Buscar e Ordenar Assuntos",
+    "search_description": "Encontre assuntos por nome ou descrição",
+    "search_placeholder": "Buscar assuntos...",
+    "sort_by_name": "Ordenar por Nome",
+    "order": "Ordem",
+    "ascending": "Crescente",
+    "descending": "Decrescente",
+    "subjects_found": "{{count}} assunto encontrado",
+    "subjects_found_plural": "{{count}} assuntos encontrados",
+    "no_subjects_found": "Nenhum assunto encontrado com os filtros atuais",
+    "clear_filters": "Limpar filtros",
+    "table_header": {
+      "name": "Nome",
+      "description": "Descrição",
+      "created_by": "Criado por",
+      "created_at": "Criado em",
+      "actions": "Ações"
+    },
+    "delete_confirmation": {
+      "title": "Tem certeza?",
+      "description": "Isso excluirá permanentemente o assunto \"{{name}}\". Esta ação não pode ser desfeita e pode afetar tarefas atribuídas a este assunto."
+    }
   },
   "users": {
     "title": "Usuários",
