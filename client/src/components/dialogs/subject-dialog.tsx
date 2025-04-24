@@ -2,11 +2,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { useToast } from "@/hooks/use-toast";
-import { insertSubjectSchema } from "@shared/schema";
+import { insertSubjectSchema, insertSubjectEntitySchema } from "@shared/schema";
 import { apiRequest, invalidateSubjects } from "@/lib/queryClient";
 import { reloadPage } from "@/lib/utils";
 
@@ -31,6 +31,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Extended schema with validations
 const formSchema = insertSubjectSchema
@@ -57,6 +67,13 @@ export default function SubjectDialog({
   const { user } = useSimpleAuth();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedEntityIds, setSelectedEntityIds] = useState<number[]>([]);
+  
+  // Fetch entities
+  const { data: entities, isLoading: isLoadingEntities } = useQuery({
+    queryKey: ['/api/entities'],
+    enabled: open, // Only fetch when dialog is open
+  });
 
   // Form setup
   const form = useForm<FormValues>({

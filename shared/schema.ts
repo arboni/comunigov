@@ -101,6 +101,17 @@ export const subjects = pgTable("subjects", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Subject-Entity junction table for many-to-many relationship
+export const subjectEntities = pgTable("subject_entities", {
+  id: serial("id").primaryKey(),
+  subjectId: integer("subject_id").references(() => subjects.id).notNull(),
+  entityId: integer("entity_id").references(() => entities.id).notNull(),
+}, (table) => {
+  return {
+    unq: unique().on(table.subjectId, table.entityId),
+  };
+});
+
 // Tasks table
 export const tasks = pgTable("tasks", {
   id: serial("id").primaryKey(),
@@ -210,6 +221,7 @@ export const insertMeetingAttendeeSchema = createInsertSchema(meetingAttendees).
 export const insertMeetingDocumentSchema = createInsertSchema(meetingDocuments).omit({ id: true, uploadedAt: true });
 export const insertMeetingReactionSchema = createInsertSchema(meetingReactions).omit({ id: true, createdAt: true });
 export const insertSubjectSchema = createInsertSchema(subjects).omit({ id: true, createdAt: true });
+export const insertSubjectEntitySchema = createInsertSchema(subjectEntities).omit({ id: true });
 export const insertTaskSchema = createInsertSchema(tasks).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertTaskCommentSchema = createInsertSchema(taskComments).omit({ id: true, createdAt: true });
 export const insertCommunicationSchema = createInsertSchema(communications).omit({ id: true, sentAt: true });
@@ -246,6 +258,9 @@ export type Task = typeof tasks.$inferSelect;
 
 export type InsertTaskComment = z.infer<typeof insertTaskCommentSchema>;
 export type TaskComment = typeof taskComments.$inferSelect;
+
+export type InsertSubjectEntity = z.infer<typeof insertSubjectEntitySchema>;
+export type SubjectEntity = typeof subjectEntities.$inferSelect;
 
 export type InsertCommunication = z.infer<typeof insertCommunicationSchema>;
 export type Communication = typeof communications.$inferSelect;
@@ -295,6 +310,7 @@ export const entitiesRelations = relations(entities, ({ many }) => ({
   users: many(users),
   tasks: many(tasks),
   communicationRecipients: many(communicationRecipients),
+  subjectLinks: many(subjectEntities),
 }));
 
 export const meetingsRelations = relations(meetings, ({ one, many }) => ({
@@ -352,6 +368,7 @@ export const subjectsRelations = relations(subjects, ({ one, many }) => ({
   }),
   tasks: many(tasks),
   meetings: many(meetings),
+  entities: many(subjectEntities),
 }));
 
 export const tasksRelations = relations(tasks, ({ one, many }) => ({
@@ -442,6 +459,18 @@ export const userActivityLogsRelations = relations(userActivityLogs, ({ one }) =
     fields: [userActivityLogs.userId],
     references: [users.id],
   }),
+}));
+
+// Junction table relations
+export const subjectEntitiesRelations = relations(subjectEntities, ({ one }) => ({
+  subject: one(subjects, {
+    fields: [subjectEntities.subjectId],
+    references: [subjects.id]
+  }),
+  entity: one(entities, {
+    fields: [subjectEntities.entityId],
+    references: [entities.id]
+  })
 }));
 
 // Utility types
