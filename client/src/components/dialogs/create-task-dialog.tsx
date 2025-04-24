@@ -148,9 +148,9 @@ export default function CreateTaskDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Create New Task</DialogTitle>
+          <DialogTitle>Criar Nova Tarefa</DialogTitle>
           <DialogDescription>
-            Add a new task with all the details needed.
+            Adicione uma nova tarefa com todos os detalhes necessários.
           </DialogDescription>
         </DialogHeader>
 
@@ -163,14 +163,14 @@ export default function CreateTaskDialog({
                 name="subjectId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subject Area</FormLabel>
+                    <FormLabel>Área de Assunto</FormLabel>
                     <Select
                       onValueChange={(value) => field.onChange(parseInt(value))}
                       defaultValue={field.value?.toString()}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select the subject area" />
+                          <SelectValue placeholder="Selecione a área do assunto" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -185,7 +185,7 @@ export default function CreateTaskDialog({
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      Choose the subject area this task belongs to
+                      Escolha a área de assunto a que esta tarefa pertence
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -198,9 +198,9 @@ export default function CreateTaskDialog({
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel>Título</FormLabel>
                     <FormControl>
-                      <Input placeholder="Task title" {...field} />
+                      <Input placeholder="Título da tarefa" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

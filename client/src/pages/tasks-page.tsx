@@ -394,35 +394,35 @@ export default function TasksPage() {
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm">
                                   <Filter className="h-4 w-4" />
-                                  <span className="sr-only">Actions</span>
+                                  <span className="sr-only">Ações</span>
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuLabel>Ações</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                   onClick={() => handleStatusChange(task.id, "pending")}
                                   disabled={task.status === "pending"}
                                 >
-                                  Mark as Pending
+                                  Marcar como Pendente
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleStatusChange(task.id, "in_progress")}
                                   disabled={task.status === "in_progress"}
                                 >
-                                  Mark as In Progress
+                                  Marcar como Em Andamento
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleStatusChange(task.id, "completed")}
                                   disabled={task.status === "completed"}
                                 >
-                                  Mark as Completed
+                                  Marcar como Concluída
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleStatusChange(task.id, "cancelled")}
                                   disabled={task.status === "cancelled"}
                                 >
-                                  Mark as Cancelled
+                                  Marcar como Cancelada
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
