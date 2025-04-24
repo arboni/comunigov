@@ -74,7 +74,7 @@ export default function UsersPage() {
     <DashboardLayout>
       <div className="flex flex-col gap-6 p-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">{t("users.title")}</h1>
+          <h1 className="text-3xl font-bold">Usuários</h1>
           
           {currentUser?.role === 'master_implementer' && (
             <AddUserDialog entities={entities} />
@@ -83,18 +83,15 @@ export default function UsersPage() {
         
         <Card>
           <CardHeader>
-            <CardTitle>TEMP: {t("users.all_users")}</CardTitle>
+            <CardTitle>Todos os Usuários</CardTitle>
             <CardDescription>
-              TEMP: {t("users.manage_description")}
+              Gerencie e visualize todos os usuários registrados no sistema
             </CardDescription>
-            <div className="text-xs mt-2 text-red-500">
-              Debug: {JSON.stringify({allUsers: t("users.all_users"), description: t("users.manage_description")})}
-            </div>
             
             <div className="relative mt-4">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={t("users.search_placeholder")}
+                placeholder="Buscar usuários por nome, email ou nome de usuário..."
                 className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -105,14 +102,14 @@ export default function UsersPage() {
           <CardContent>
             {isLoadingUsers ? (
               <div className="flex justify-center items-center h-40">
-                <p className="text-muted-foreground">{t("common.loading")}</p>
+                <p className="text-muted-foreground">Carregando...</p>
               </div>
             ) : filteredUsers.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-center">
                 <UserCircle className="h-12 w-12 text-muted-foreground mb-2" />
-                <h3 className="text-lg font-medium">{t("users.no_users_found")}</h3>
+                <h3 className="text-lg font-medium">Nenhum usuário encontrado</h3>
                 <p className="text-muted-foreground">
-                  {searchTerm ? t("users.try_different_search") : t("users.no_users_registered")}
+                  {searchTerm ? "Tente um termo de busca diferente" : "Não há usuários registrados no sistema"}
                 </p>
               </div>
             ) : (
@@ -120,13 +117,13 @@ export default function UsersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{t("users.full_name")}</TableHead>
-                      <TableHead>{t("users.username")}</TableHead>
-                      <TableHead>{t("users.email")}</TableHead>
-                      <TableHead>{t("users.role")}</TableHead>
-                      <TableHead>{t("users.entity")}</TableHead>
-                      <TableHead>{t("users.phone")}</TableHead>
-                      <TableHead>{t("common.actions")}</TableHead>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Nome de Usuário</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Função</TableHead>
+                      <TableHead>Entidade</TableHead>
+                      <TableHead>Telefone</TableHead>
+                      <TableHead>Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -162,7 +159,7 @@ export default function UsersPage() {
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>{t("users.view_details")}</p>
+                                  <p>Ver Detalhes</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -177,7 +174,7 @@ export default function UsersPage() {
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>{t("users.edit_user")}</p>
+                                  <p>Editar Usuário</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
