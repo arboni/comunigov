@@ -83,10 +83,13 @@ export default function UsersPage() {
         
         <Card>
           <CardHeader>
-            <CardTitle>{t("users.all_users")}</CardTitle>
+            <CardTitle>TEMP: {t("users.all_users")}</CardTitle>
             <CardDescription>
-              {t("users.manage_description")}
+              TEMP: {t("users.manage_description")}
             </CardDescription>
+            <div className="text-xs mt-2 text-red-500">
+              Debug: {JSON.stringify({allUsers: t("users.all_users"), description: t("users.manage_description")})}
+            </div>
             
             <div className="relative mt-4">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
