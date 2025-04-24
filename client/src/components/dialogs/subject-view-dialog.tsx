@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { Subject } from "@shared/schema";
-import { Loader2 } from "lucide-react";
+import { Building2, Loader2 } from "lucide-react";
 
 import {
   Dialog,
@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SubjectViewDialogProps {
   open: boolean;
@@ -50,6 +51,19 @@ export default function SubjectViewDialog({
       return response.json();
     },
     enabled: open && !!subject.createdBy,
+  });
+  
+  // Fetch entities related to this subject
+  const { data: relatedEntities = [], isLoading: isLoadingEntities } = useQuery({
+    queryKey: [`/api/subjects/${subject.id}/entities`],
+    queryFn: async () => {
+      const response = await fetch(`/api/subjects/${subject.id}/entities`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch related entities");
+      }
+      return response.json();
+    },
+    enabled: open && !!subject.id,
   });
 
   return (
@@ -93,6 +107,43 @@ export default function SubjectViewDialog({
             </div>
           </div>
 
+          {/* Related Entities */}
+          <Card className="mb-4">
+            <CardHeader className="py-3">
+              <CardTitle className="text-base flex items-center">
+                <Building2 className="h-4 w-4 mr-2" />
+                Linked Entities
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoadingEntities ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : relatedEntities.length === 0 ? (
+                <p className="text-neutral-500 text-sm">No entities linked to this subject.</p>
+              ) : (
+                <ScrollArea className="max-h-[200px]">
+                  <ul className="space-y-2">
+                    {relatedEntities.map((entity: any) => (
+                      <li key={entity.id} className="flex justify-between items-center p-2 border-b border-neutral-100 last:border-0">
+                        <div className="flex flex-col">
+                          <span className="font-medium">{entity.name}</span>
+                          <span className="text-xs text-neutral-500">
+                            {entity.type && entity.type.replace('_', ' ')}
+                          </span>
+                        </div>
+                        <Badge variant="outline">
+                          {entity.headName || "No head assigned"}
+                        </Badge>
+                      </li>
+                    ))}
+                  </ul>
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+          
           {/* Related Tasks */}
           <Card>
             <CardHeader className="py-3">
