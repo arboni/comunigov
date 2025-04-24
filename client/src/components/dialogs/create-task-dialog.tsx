@@ -213,10 +213,10 @@ export default function CreateTaskDialog({
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>Descrição</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Add a detailed description of the task"
+                        placeholder="Adicione uma descrição detalhada da tarefa"
                         {...field}
                       />
                     </FormControl>
@@ -231,7 +231,7 @@ export default function CreateTaskDialog({
                 name="deadline"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Deadline</FormLabel>
+                    <FormLabel>Prazo</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -245,7 +245,7 @@ export default function CreateTaskDialog({
                             {field.value ? (
                               format(field.value, "PPP")
                             ) : (
-                              <span>Pick a date</span>
+                              <span>Escolha uma data</span>
                             )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
@@ -278,14 +278,14 @@ export default function CreateTaskDialog({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
+                          <SelectValue placeholder="Selecione o status" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="in_progress">In Progress</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                        <SelectItem value="pending">Pendente</SelectItem>
+                        <SelectItem value="in_progress">Em Andamento</SelectItem>
+                        <SelectItem value="completed">Concluída</SelectItem>
+                        <SelectItem value="cancelled">Cancelada</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -309,9 +309,9 @@ export default function CreateTaskDialog({
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>Registered User</FormLabel>
+                      <FormLabel>Usuário Registrado</FormLabel>
                       <FormDescription>
-                        Is the task owner a registered user in the system?
+                        O responsável pela tarefa é um usuário registrado no sistema?
                       </FormDescription>
                     </div>
                   </FormItem>
@@ -326,7 +326,7 @@ export default function CreateTaskDialog({
                   name="assignedToUserId"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Assigned To</FormLabel>
+                      <FormLabel>Atribuído Para</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -342,15 +342,15 @@ export default function CreateTaskDialog({
                                 ? users.find(
                                     (user: any) => user.id === field.value
                                   )?.fullName
-                                : "Select user"}
+                                : "Selecione um usuário"}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-[300px] p-0">
                           <Command>
-                            <CommandInput placeholder="Search user..." />
-                            <CommandEmpty>No user found.</CommandEmpty>
+                            <CommandInput placeholder="Pesquisar usuário..." />
+                            <CommandEmpty>Nenhum usuário encontrado.</CommandEmpty>
                             <CommandGroup>
                               {users.map((user: any) => (
                                 <CommandItem
@@ -376,7 +376,7 @@ export default function CreateTaskDialog({
                         </PopoverContent>
                       </Popover>
                       <FormDescription>
-                        Select the user responsible for this task
+                        Selecione o usuário responsável por esta tarefa
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -390,9 +390,9 @@ export default function CreateTaskDialog({
                     name="ownerName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Owner Name</FormLabel>
+                        <FormLabel>Nome do Responsável</FormLabel>
                         <FormControl>
-                          <Input placeholder="Name" {...field} />
+                          <Input placeholder="Nome completo" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -404,11 +404,11 @@ export default function CreateTaskDialog({
                     name="ownerEmail"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Owner Email</FormLabel>
+                        <FormLabel>Email do Responsável</FormLabel>
                         <FormControl>
                           <Input
                             type="email"
-                            placeholder="Email"
+                            placeholder="Email para contato"
                             {...field}
                           />
                         </FormControl>
@@ -422,9 +422,9 @@ export default function CreateTaskDialog({
                     name="ownerPhone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Owner Phone</FormLabel>
+                        <FormLabel>Telefone do Responsável</FormLabel>
                         <FormControl>
-                          <Input placeholder="Phone number" {...field} />
+                          <Input placeholder="Número de telefone" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -440,7 +440,7 @@ export default function CreateTaskDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
-                Cancel
+                Cancelar
               </Button>
               <Button
                 type="submit"
@@ -449,7 +449,7 @@ export default function CreateTaskDialog({
                 {createTaskMutation.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Create Task
+                Criar Tarefa
               </Button>
             </DialogFooter>
           </form>
