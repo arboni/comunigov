@@ -253,7 +253,7 @@ export default function SubjectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[700px] md:max-w-[800px] max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Create New Subject</DialogTitle>
           <DialogDescription>

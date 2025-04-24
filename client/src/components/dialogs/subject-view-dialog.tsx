@@ -68,7 +68,7 @@ export default function SubjectViewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[700px] md:max-w-[800px] max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="text-xl">{subject.name}</DialogTitle>
           <DialogDescription>
