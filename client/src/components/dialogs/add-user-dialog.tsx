@@ -274,9 +274,9 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone</FormLabel>
+                    <FormLabel>Telefone</FormLabel>
                     <FormControl>
-                      <Input placeholder="+1 (555) 123-4567" {...field} value={field.value || ""} />
+                      <Input placeholder="+55 (11) 98765-4321" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -288,9 +288,9 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
                 name="position"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Position</FormLabel>
+                    <FormLabel>Cargo</FormLabel>
                     <FormControl>
-                      <Input placeholder="Director" {...field} value={field.value || ""} />
+                      <Input placeholder="Diretor" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -306,7 +306,7 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
                   <FormItem>
                     <FormLabel>WhatsApp</FormLabel>
                     <FormControl>
-                      <Input placeholder="WhatsApp number" {...field} value={field.value || ""} />
+                      <Input placeholder="Número WhatsApp" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -320,7 +320,7 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
                   <FormItem>
                     <FormLabel>Telegram</FormLabel>
                     <FormControl>
-                      <Input placeholder="Telegram ID" {...field} value={field.value || ""} />
+                      <Input placeholder="ID do Telegram" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -334,13 +334,13 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
                 variant="outline" 
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                Cancelar
               </Button>
               <Button 
                 type="submit" 
                 disabled={registerMutation.isPending}
               >
-                {registerMutation.isPending ? "Creating..." : "Create User"}
+                {registerMutation.isPending ? "Criando..." : "Criar Usuário"}
               </Button>
             </DialogFooter>
           </form>
