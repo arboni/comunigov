@@ -153,20 +153,19 @@ export default function SubjectsPage() {
           {/* Page header */}
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-2xl font-semibold text-neutral-800">Subjects</h1>
+              <h1 className="text-2xl font-semibold text-neutral-800">{t('subjects.title')}</h1>
               <p className="mt-1 text-sm text-neutral-500">
-                Manage and organize subjects for task categorization
+                {t('subjects.manage_description')}
               </p>
             </div>
             <div className="flex gap-2">
               <Button
                 onClick={() => {
-                  console.log("Opening create subject dialog");
                   setCreateSubjectOpen(true);
                 }}
                 className="gap-1"
               >
-                <Plus className="h-4 w-4" /> New Subject
+                <Plus className="h-4 w-4" /> {t('subjects.new_subject')}
               </Button>
             </div>
           </div>
@@ -174,9 +173,9 @@ export default function SubjectsPage() {
           {/* Search */}
           <Card className="mb-6">
             <CardHeader className="pb-3">
-              <CardTitle>Search & Sort Subjects</CardTitle>
+              <CardTitle>{t('subjects.search_sort')}</CardTitle>
               <CardDescription>
-                Find subjects by name or description
+                {t('subjects.search_description')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -185,7 +184,7 @@ export default function SubjectsPage() {
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="search"
-                    placeholder="Search subjects..."
+                    placeholder={t('subjects.search_placeholder')}
                     className="pl-8"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -198,7 +197,7 @@ export default function SubjectsPage() {
                     onClick={() => setSortField("name")}
                     className="w-full justify-between"
                   >
-                    Sort by Name
+                    {t('subjects.sort_by_name')}
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -209,7 +208,7 @@ export default function SubjectsPage() {
                     onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
                     className="w-full justify-between"
                   >
-                    Order: {sortDirection === "asc" ? "Ascending" : "Descending"}
+                    {t('subjects.order')}: {sortDirection === "asc" ? t('subjects.ascending') : t('subjects.descending')}
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -220,9 +219,9 @@ export default function SubjectsPage() {
           {/* Subjects List */}
           <Card>
             <CardHeader>
-              <CardTitle>Subjects</CardTitle>
+              <CardTitle>{t('subjects.title')}</CardTitle>
               <CardDescription>
-                {filteredSubjects.length} {filteredSubjects.length === 1 ? "subject" : "subjects"} found
+                {t('subjects.subjects_found', { count: filteredSubjects.length })}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -233,7 +232,7 @@ export default function SubjectsPage() {
               ) : filteredSubjects.length === 0 ? (
                 <div className="flex h-32 flex-col items-center justify-center rounded-md border border-dashed p-8 text-center">
                   <p className="text-sm text-muted-foreground">
-                    No subjects found with the current filters
+                    {t('subjects.no_subjects_found')}
                   </p>
                   <Button
                     variant="link"
@@ -241,7 +240,7 @@ export default function SubjectsPage() {
                       setSearchQuery("");
                     }}
                   >
-                    Clear filters
+                    {t('subjects.clear_filters')}
                   </Button>
                 </div>
               ) : (
@@ -249,11 +248,11 @@ export default function SubjectsPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[200px]">Name</TableHead>
-                        <TableHead className="w-[400px]">Description</TableHead>
-                        <TableHead>Created By</TableHead>
-                        <TableHead>Created At</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="w-[200px]">{t('subjects.table_header.name')}</TableHead>
+                        <TableHead className="w-[400px]">{t('subjects.table_header.description')}</TableHead>
+                        <TableHead>{t('subjects.table_header.created_by')}</TableHead>
+                        <TableHead>{t('subjects.table_header.created_at')}</TableHead>
+                        <TableHead className="text-right">{t('subjects.table_header.actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -288,7 +287,7 @@ export default function SubjectsPage() {
                                 onClick={() => handleViewSubject(subject)}
                               >
                                 <Eye className="h-4 w-4" />
-                                <span className="sr-only">View</span>
+                                <span className="sr-only">{t('common.view')}</span>
                               </Button>
                               <Button
                                 variant="ghost"
@@ -296,7 +295,7 @@ export default function SubjectsPage() {
                                 onClick={() => handleEditSubject(subject)}
                               >
                                 <PenSquare className="h-4 w-4" />
-                                <span className="sr-only">Edit</span>
+                                <span className="sr-only">{t('common.edit')}</span>
                               </Button>
                               <Button
                                 variant="ghost"
@@ -304,7 +303,7 @@ export default function SubjectsPage() {
                                 onClick={() => handleDeleteSubject(subject)}
                               >
                                 <Trash2 className="h-4 w-4" />
-                                <span className="sr-only">Delete</span>
+                                <span className="sr-only">{t('common.delete')}</span>
                               </Button>
                             </div>
                           </TableCell>
@@ -345,19 +344,18 @@ export default function SubjectsPage() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t('subjects.delete_confirmation.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the subject "{selectedSubject?.name}". 
-              This action cannot be undone and may affect tasks that are assigned to this subject.
+              {t('subjects.delete_confirmation.description', { name: selectedSubject?.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDeleteSubject}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
