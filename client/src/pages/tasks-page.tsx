@@ -265,11 +265,11 @@ export default function TasksPage() {
                   <SelectValue placeholder="Filtrar por Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="all">Todos os Status</SelectItem>
+                  <SelectItem value="pending">Pendente</SelectItem>
+                  <SelectItem value="in_progress">Em Andamento</SelectItem>
+                  <SelectItem value="completed">Concluída</SelectItem>
+                  <SelectItem value="cancelled">Cancelada</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -278,10 +278,10 @@ export default function TasksPage() {
                 onValueChange={setSubjectFilter}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Filter by Subject" />
+                  <SelectValue placeholder="Filtrar por Assunto" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Subjects</SelectItem>
+                  <SelectItem value="all">Todos os Assuntos</SelectItem>
                   {subjects.map((subject: Subject) => (
                     <SelectItem key={subject.id} value={subject.id.toString()}>
                       {subject.name}
@@ -296,11 +296,11 @@ export default function TasksPage() {
                   onValueChange={setSortField}
                 >
                   <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Sort by" />
+                    <SelectValue placeholder="Ordenar por" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="title">Title</SelectItem>
-                    <SelectItem value="deadline">Deadline</SelectItem>
+                    <SelectItem value="title">Título</SelectItem>
+                    <SelectItem value="deadline">Prazo</SelectItem>
                     <SelectItem value="status">Status</SelectItem>
                   </SelectContent>
                 </Select>
@@ -322,16 +322,16 @@ export default function TasksPage() {
         {/* Task List */}
         <Card>
           <CardHeader>
-            <CardTitle>Tasks</CardTitle>
+            <CardTitle>Tarefas</CardTitle>
             <CardDescription>
-              {filteredTasks.length} {filteredTasks.length === 1 ? "task" : "tasks"} found
+              {filteredTasks.length} {filteredTasks.length === 1 ? "tarefa" : "tarefas"} encontrada{filteredTasks.length !== 1 ? "s" : ""}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {filteredTasks.length === 0 ? (
               <div className="flex h-32 flex-col items-center justify-center rounded-md border border-dashed p-8 text-center">
                 <p className="text-sm text-muted-foreground">
-                  No tasks found with the current filters
+                  Nenhuma tarefa encontrada com os filtros atuais
                 </p>
                 <Button
                   variant="link"
@@ -341,7 +341,7 @@ export default function TasksPage() {
                     setSubjectFilter("all");
                   }}
                 >
-                  Clear filters
+                  Limpar filtros
                 </Button>
               </div>
             ) : (
@@ -349,12 +349,12 @@ export default function TasksPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Subject</TableHead>
-                      <TableHead>Owner</TableHead>
-                      <TableHead>Deadline</TableHead>
+                      <TableHead>Título</TableHead>
+                      <TableHead>Assunto</TableHead>
+                      <TableHead>Responsável</TableHead>
+                      <TableHead>Prazo</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -366,13 +366,13 @@ export default function TasksPage() {
                       return (
                         <TableRow key={task.id}>
                           <TableCell className="font-medium">{task.title}</TableCell>
-                          <TableCell>{subject?.name || "Unknown"}</TableCell>
+                          <TableCell>{subject?.name || "Desconhecido"}</TableCell>
                           <TableCell>
                             {task.isRegisteredUser
                               ? task.assignedToUserId
-                                ? `[User ID: ${task.assignedToUserId}]`  // This would normally show the user name from a join
-                                : "Unassigned"
-                              : task.ownerName || "External User"}
+                                ? `[ID do Usuário: ${task.assignedToUserId}]`  // This would normally show the user name from a join
+                                : "Não Atribuído"
+                              : task.ownerName || "Usuário Externo"}
                           </TableCell>
                           <TableCell>
                             <TooltipProvider>
