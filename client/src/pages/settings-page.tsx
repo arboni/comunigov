@@ -360,6 +360,10 @@ export default function SettingsPage() {
             </Card>
           </TabsContent>
           
+          <TabsContent value="tooltips" className="mt-6 space-y-4">
+            <TooltipSettings />
+          </TabsContent>
+          
           <TabsContent value="security" className="mt-6 space-y-4">
             <Card>
               <CardHeader>
