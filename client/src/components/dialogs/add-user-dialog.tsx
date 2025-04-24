@@ -132,15 +132,15 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
         {children || (
           <Button>
             <Plus className="h-4 w-4 mr-2" />
-            Add New User
+            Adicionar Usuário
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add New User</DialogTitle>
+          <DialogTitle>Adicionar Novo Usuário</DialogTitle>
           <DialogDescription>
-            Create a new user account in the system
+            Crie uma nova conta de usuário no sistema
           </DialogDescription>
         </DialogHeader>
         
@@ -152,9 +152,9 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>Nome de Usuário</FormLabel>
                     <FormControl>
-                      <Input placeholder="username" {...field} />
+                      <Input placeholder="nome_usuario" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -166,7 +166,7 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Senha</FormLabel>
                     <FormControl>
                       <Input type="password" placeholder="••••••" {...field} />
                     </FormControl>
@@ -181,9 +181,9 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
               name="fullName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>Nome Completo</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="João Silva" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -197,7 +197,7 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="user@example.com" {...field} />
+                    <Input type="email" placeholder="usuario@exemplo.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -210,20 +210,20 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
                 name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Role</FormLabel>
+                    <FormLabel>Função</FormLabel>
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a role" />
+                          <SelectValue placeholder="Selecione uma função" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="master_implementer">Master Implementer</SelectItem>
-                        <SelectItem value="entity_head">Entity Head</SelectItem>
-                        <SelectItem value="entity_member">Entity Member</SelectItem>
+                        <SelectItem value="master_implementer">Implementador Master</SelectItem>
+                        <SelectItem value="entity_head">Chefe de Entidade</SelectItem>
+                        <SelectItem value="entity_member">Membro de Entidade</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -237,14 +237,14 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
                   name="entityId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Entity</FormLabel>
+                      <FormLabel>Entidade</FormLabel>
                       <Select 
                         onValueChange={(value) => field.onChange(parseInt(value))}
                         value={field.value?.toString() || ""}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select an entity" />
+                            <SelectValue placeholder="Selecione uma entidade" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -256,7 +256,7 @@ export function AddUserDialog({ children, entities = [] }: AddUserDialogProps) {
                             ))
                           ) : (
                             <SelectItem value="no-entities-available" disabled>
-                              No entities available
+                              Nenhuma entidade disponível
                             </SelectItem>
                           )}
                         </SelectContent>
