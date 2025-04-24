@@ -432,14 +432,13 @@ export default function SubjectDialog({
                       if (selectedEntityIds.length > 0) {
                         console.log(`Creating subject-entity relationships for subject ${result.id} with entities:`, selectedEntityIds);
                         
-                        // Create relationships for each entity
-                        const entityPromises = selectedEntityIds.map(async (entityId) => {
-                          const entityPayload = {
-                            subjectId: result.id,
-                            entityId
-                          };
-                          
-                          const entityResponse = await fetch("/api/subject-entities", {
+                        // Use the correct endpoint to create relationships
+                        const entityPayload = {
+                          entityIds: selectedEntityIds
+                        };
+                        
+                        try {
+                          const entityResponse = await fetch(`/api/subjects/${result.id}/entities`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify(entityPayload),
@@ -447,15 +446,14 @@ export default function SubjectDialog({
                           });
                           
                           if (!entityResponse.ok) {
-                            console.warn(`Failed to create subject-entity relationship for entity ${entityId}`);
-                            return null;
+                            console.warn(`Failed to create subject-entity relationships: ${entityResponse.status}`);
+                          } else {
+                            const entityResults = await entityResponse.json();
+                            console.log("Created subject-entity relationships:", entityResults);
                           }
-                          
-                          return entityResponse.json();
-                        });
-                        
-                        const entityResults = await Promise.all(entityPromises);
-                        console.log("Created subject-entity relationships:", entityResults);
+                        } catch (error) {
+                          console.error("Error creating subject-entity relationships:", error);
+                        }
                       }
                       
                       // Success handling
