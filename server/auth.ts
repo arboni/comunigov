@@ -57,27 +57,49 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        console.log(`[AUTH] Login attempt for username: ${username}`);
         const user = await storage.getUserByUsername(username);
-        if (!user || !(await comparePasswords(password, user.password))) {
+        
+        if (!user) {
+          console.log(`[AUTH] User not found: ${username}`);
           return done(null, false, { message: 'Invalid username or password' });
         }
+        
+        const passwordValid = await comparePasswords(password, user.password);
+        console.log(`[AUTH] Password validation result for ${username}: ${passwordValid ? 'valid' : 'invalid'}`);
+        
+        if (!passwordValid) {
+          return done(null, false, { message: 'Invalid username or password' });
+        }
+        
+        console.log(`[AUTH] Login successful for ${username} (id: ${user.id}, role: ${user.role})`);
         return done(null, user);
       } catch (error) {
+        console.error(`[AUTH] Error during authentication:`, error);
         return done(error);
       }
     }),
   );
 
   passport.serializeUser((user, done) => {
+    console.log(`[AUTH] Serializing user: ${user.username} (id: ${user.id})`);
     done(null, user.id);
   });
   
   passport.deserializeUser(async (id: number, done) => {
     try {
+      console.log(`[AUTH] Deserializing user with id: ${id}`);
       const user = await storage.getUser(id);
-      done(null, user);
+      if (user) {
+        console.log(`[AUTH] Successfully deserialized user: ${user.username}`);
+        done(null, user);
+      } else {
+        console.log(`[AUTH] Failed to deserialize user - user not found with id: ${id}`);
+        done(new Error('User not found'), null);
+      }
     } catch (error) {
-      done(error);
+      console.error(`[AUTH] Error deserializing user:`, error);
+      done(error, null);
     }
   });
 
