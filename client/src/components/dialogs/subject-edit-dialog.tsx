@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { insertSubjectSchema, Subject } from "@shared/schema";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
+import { useTranslation } from "@/hooks/use-translation";
 
 import {
   Dialog,
@@ -28,6 +29,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Extended schema with validations
 // Type to hold only the fields we want to edit
@@ -58,7 +62,29 @@ export default function SubjectEditDialog({
   const { user } = useSimpleAuth();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedEntityIds, setSelectedEntityIds] = useState<number[]>([]);
+  const { t } = useTranslation();
 
+  // Fetch all entities for selection
+  const { data: entities, isLoading: isLoadingEntities } = useQuery({
+    queryKey: ["/api/entities"],
+    enabled: open,
+  });
+
+  // Fetch entities currently associated with this subject
+  const { data: subjectEntities, isLoading: isLoadingSubjectEntities } = useQuery({
+    queryKey: [`/api/subjects/${subject.id}/entities`],
+    enabled: open && !!subject.id,
+  });
+
+  // Initialize selected entities when data loads
+  useEffect(() => {
+    if (subjectEntities && Array.isArray(subjectEntities)) {
+      const entityIds = subjectEntities.map((entity: any) => entity.id);
+      setSelectedEntityIds(entityIds);
+    }
+  }, [subjectEntities]);
+  
   // Form setup
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
