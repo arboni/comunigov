@@ -103,6 +103,7 @@ export interface IStorage {
   createSubject(subject: InsertSubject): Promise<Subject>;
   updateSubject(id: number, subjectData: Partial<Subject>): Promise<Subject | undefined>;
   getAllSubjects(): Promise<Subject[]>;
+  getAllSubjectsWithCreators(): Promise<(Subject & { creatorName?: string })[]>;
   getSubjectsByCreator(userId: number): Promise<Subject[]>;
   
   // Subject-Entity relationships
@@ -1378,6 +1379,29 @@ export class DatabaseStorage implements IStorage {
 
   async getAllSubjects(): Promise<Subject[]> {
     return await db.select().from(subjects);
+  }
+  
+  async getAllSubjectsWithCreators(): Promise<(Subject & { creatorName?: string })[]> {
+    // First get all subjects
+    const allSubjects = await db.select().from(subjects);
+    
+    // Create a map of user IDs to user data
+    const userIds = new Set(allSubjects.map(subject => subject.createdBy));
+    const usersResults = await db.select().from(users).where(inArray(users.id, Array.from(userIds)));
+    
+    const userMap = new Map();
+    for (const user of usersResults) {
+      userMap.set(user.id, user);
+    }
+    
+    // Combine subject data with creator information
+    return allSubjects.map(subject => {
+      const creator = userMap.get(subject.createdBy);
+      return {
+        ...subject,
+        creatorName: creator ? creator.fullName : undefined
+      };
+    });
   }
 
   async getSubjectsByCreator(userId: number): Promise<Subject[]> {
