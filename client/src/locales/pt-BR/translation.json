@@ -163,6 +163,28 @@
     "settings": "Configurações",
     "analytics": "Análises"
   },
+  "users": {
+    "title": "Usuários",
+    "all_users": "Todos os Usuários",
+    "manage_description": "Gerencie e visualize todos os usuários registrados no sistema",
+    "search_placeholder": "Buscar usuários por nome, email ou nome de usuário...",
+    "no_users_found": "Nenhum usuário encontrado",
+    "try_different_search": "Tente um termo de busca diferente",
+    "no_users_registered": "Não há usuários registrados no sistema",
+    "full_name": "Nome",
+    "username": "Nome de Usuário",
+    "email": "Email",
+    "role": "Função",
+    "entity": "Entidade",
+    "phone": "Telefone",
+    "view_details": "Ver Detalhes",
+    "edit_user": "Editar Usuário",
+    "roles": {
+      "master_implementer": "Implementador Mestre",
+      "entity_head": "Responsável de Entidade",
+      "entity_member": "Membro de Entidade"
+    }
+  },
   "dashboard": {
     "title": "Painel",
     "welcome": "Bem-vindo",

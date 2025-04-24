@@ -10,6 +10,7 @@ import { UserCircle, Search, Eye, Pencil } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { AddUserDialog } from "@/components/dialogs/add-user-dialog";
+import { useTranslation } from "@/hooks/use-translation";
 import {
   Tooltip,
   TooltipContent,
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function UsersPage() {
+  const { t } = useTranslation();
   const { user: currentUser } = useSimpleAuth();
   const [searchTerm, setSearchTerm] = useState("");
   
@@ -58,11 +60,11 @@ export default function UsersPage() {
   const formatRoleName = (role: string) => {
     switch (role) {
       case 'master_implementer':
-        return "Master Implementer";
+        return t("users.roles.master_implementer");
       case 'entity_head':
-        return "Entity Head";
+        return t("users.roles.entity_head");
       case 'entity_member':
-        return "Entity Member";
+        return t("users.roles.entity_member");
       default:
         return role;
     }
@@ -72,7 +74,7 @@ export default function UsersPage() {
     <DashboardLayout>
       <div className="flex flex-col gap-6 p-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Users</h1>
+          <h1 className="text-3xl font-bold">{t("users.title")}</h1>
           
           {currentUser?.role === 'master_implementer' && (
             <AddUserDialog entities={entities} />
@@ -81,15 +83,15 @@ export default function UsersPage() {
         
         <Card>
           <CardHeader>
-            <CardTitle>All Users</CardTitle>
+            <CardTitle>{t("users.all_users")}</CardTitle>
             <CardDescription>
-              Manage and view all registered users in the system.
+              {t("users.manage_description")}
             </CardDescription>
             
             <div className="relative mt-4">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search users by name, email or username..."
+                placeholder={t("users.search_placeholder")}
                 className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -100,14 +102,14 @@ export default function UsersPage() {
           <CardContent>
             {isLoadingUsers ? (
               <div className="flex justify-center items-center h-40">
-                <p className="text-muted-foreground">Loading users...</p>
+                <p className="text-muted-foreground">{t("common.loading")}</p>
               </div>
             ) : filteredUsers.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-center">
                 <UserCircle className="h-12 w-12 text-muted-foreground mb-2" />
-                <h3 className="text-lg font-medium">No users found</h3>
+                <h3 className="text-lg font-medium">{t("users.no_users_found")}</h3>
                 <p className="text-muted-foreground">
-                  {searchTerm ? "Try a different search term" : "There are no users registered in the system"}
+                  {searchTerm ? t("users.try_different_search") : t("users.no_users_registered")}
                 </p>
               </div>
             ) : (
@@ -115,13 +117,13 @@ export default function UsersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Username</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Entity</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t("users.full_name")}</TableHead>
+                      <TableHead>{t("users.username")}</TableHead>
+                      <TableHead>{t("users.email")}</TableHead>
+                      <TableHead>{t("users.role")}</TableHead>
+                      <TableHead>{t("users.entity")}</TableHead>
+                      <TableHead>{t("users.phone")}</TableHead>
+                      <TableHead>{t("common.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -157,7 +159,7 @@ export default function UsersPage() {
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>View User Details</p>
+                                  <p>{t("users.view_details")}</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -172,7 +174,7 @@ export default function UsersPage() {
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>Edit User</p>
+                                  <p>{t("users.edit_user")}</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
