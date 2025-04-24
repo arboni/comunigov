@@ -139,7 +139,9 @@ export function invalidateDashboardStats() {
 }
 
 export function invalidateSubjects() {
-  return queryClient.invalidateQueries({ queryKey: ['/api/subjects'] });
+  // Invalidate both regular subjects and subjects with creators
+  queryClient.invalidateQueries({ queryKey: ['/api/subjects'] });
+  return queryClient.invalidateQueries({ queryKey: ['/api/subjects-with-creators'] });
 }
 
 // Invalidate all data (useful after major changes)

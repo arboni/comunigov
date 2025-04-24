@@ -140,8 +140,9 @@ export default function SubjectEditDialog({
       return result;
     },
     onSuccess: () => {
-      // Invalidate subjects query to refresh data
+      // Invalidate both subjects queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["/api/subjects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/subjects-with-creators"] });
       toast({
         title: "Success",
         description: "Subject updated successfully",
@@ -185,6 +186,8 @@ export default function SubjectEditDialog({
     onSuccess: () => {
       // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: [`/api/subjects/${subject.id}/entities`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/subjects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/subjects-with-creators"] });
       toast({
         title: "Success",
         description: "Subject entities updated successfully",
