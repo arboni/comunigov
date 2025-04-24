@@ -69,8 +69,24 @@ export default function SubjectDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedEntityIds, setSelectedEntityIds] = useState<number[]>([]);
   
+  // Define entity interface
+  interface Entity {
+    id: number;
+    name: string;
+    type: string;
+    headName: string;
+    headPosition: string;
+    address: string;
+    phone: string | null;
+    email: string | null;
+    website: string | null;
+    headEmail: string | null;
+    socialMedia: string | null;
+    tags: string[] | null;
+  }
+  
   // Fetch entities
-  const { data: entities, isLoading: isLoadingEntities } = useQuery({
+  const { data: entities, isLoading: isLoadingEntities } = useQuery<Entity[]>({
     queryKey: ['/api/entities'],
     enabled: open, // Only fetch when dialog is open
   });
@@ -82,6 +98,27 @@ export default function SubjectDialog({
       name: "",
       description: "",
     },
+  });
+
+  // Create subject mutation
+  // Create subject-entity relationship mutation
+  const createSubjectEntityMutation = useMutation({
+    mutationFn: async ({ subjectId, entityIds }: { subjectId: number; entityIds: number[] }) => {
+      if (!entityIds.length) return { success: true };
+      
+      // Create subject-entity relationships for each selected entity
+      const promises = entityIds.map(async (entityId) => {
+        const payload = {
+          subjectId,
+          entityId
+        };
+        const response = await apiRequest("POST", "/api/subject-entities", payload);
+        return response.json();
+      });
+      
+      const results = await Promise.all(promises);
+      return { success: true, results };
+    }
   });
 
   // Create subject mutation
@@ -103,6 +140,15 @@ export default function SubjectDialog({
       const response = await apiRequest("POST", "/api/subjects", payload);
       const result = await response.json();
       console.log("Subject created successfully:", result);
+      
+      // If we have selected entities, create the subject-entity relationships
+      if (selectedEntityIds.length > 0) {
+        await createSubjectEntityMutation.mutateAsync({ 
+          subjectId: result.id, 
+          entityIds: selectedEntityIds 
+        });
+      }
+      
       return result;
     },
     onSuccess: (result) => {
@@ -114,6 +160,7 @@ export default function SubjectDialog({
       // Use the helper function to invalidate subjects cache
       invalidateSubjects();
       form.reset();
+      setSelectedEntityIds([]);
       onOpenChange(false);
       
       // Reload page to show updated subjects
@@ -249,6 +296,80 @@ export default function SubjectDialog({
                   )}
                 />
                 
+                {/* Entity Selection */}
+                <FormItem>
+                  <FormLabel>Involved Entities</FormLabel>
+                  <FormDescription>
+                    Select entities that are involved with this subject
+                  </FormDescription>
+                  
+                  {isLoadingEntities ? (
+                    <div className="flex items-center justify-center p-4">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : !entities || entities.length === 0 ? (
+                    <div className="text-sm text-muted-foreground p-2 bg-slate-50 rounded-md">
+                      No entities available.
+                    </div>
+                  ) : (
+                    <div className="border rounded-md">
+                      <ScrollArea className="h-[200px] p-2">
+                        <div className="space-y-2">
+                          {entities.map((entity) => (
+                            <div key={entity.id} className="flex items-center space-x-2 p-2 hover:bg-slate-50 rounded-md">
+                              <Checkbox 
+                                id={`entity-${entity.id}`}
+                                checked={selectedEntityIds.includes(entity.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedEntityIds([...selectedEntityIds, entity.id]);
+                                  } else {
+                                    setSelectedEntityIds(selectedEntityIds.filter(id => id !== entity.id));
+                                  }
+                                }}
+                              />
+                              <label 
+                                htmlFor={`entity-${entity.id}`}
+                                className="flex-1 text-sm cursor-pointer"
+                              >
+                                <span className="font-medium">{entity.name}</span>
+                                <div className="text-xs text-slate-500">
+                                  {entity.type} • {entity.headName && `Head: ${entity.headName}`}
+                                </div>
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  )}
+                  
+                  {/* Selected entities badges */}
+                  {selectedEntityIds.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {selectedEntityIds.map(entityId => {
+                        const entity = entities?.find(e => e.id === entityId);
+                        return entity ? (
+                          <Badge 
+                            key={entityId} 
+                            variant="outline"
+                            className="flex items-center gap-1"
+                          >
+                            {entity.name}
+                            <button 
+                              onClick={() => setSelectedEntityIds(selectedEntityIds.filter(id => id !== entityId))}
+                              className="h-3 w-3 rounded-full bg-slate-200 text-slate-700 hover:bg-slate-300 flex items-center justify-center"
+                            >
+                              <span className="sr-only">Remove</span>
+                              ×
+                            </button>
+                          </Badge>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
+                </FormItem>
+                
                 {/* Authentication info - for debugging */}
                 <div className="p-2 bg-blue-50 border border-blue-100 rounded-md text-sm">
                   <p className="font-medium text-blue-700">Authentication Status:</p>
@@ -313,6 +434,36 @@ export default function SubjectDialog({
                       
                       const result = await response.json();
                       console.log("Subject created with direct fetch:", result);
+                      
+                      // Create subject-entity relationships if there are selected entities
+                      if (selectedEntityIds.length > 0) {
+                        console.log(`Creating subject-entity relationships for subject ${result.id} with entities:`, selectedEntityIds);
+                        
+                        // Create relationships for each entity
+                        const entityPromises = selectedEntityIds.map(async (entityId) => {
+                          const entityPayload = {
+                            subjectId: result.id,
+                            entityId
+                          };
+                          
+                          const entityResponse = await fetch("/api/subject-entities", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(entityPayload),
+                            credentials: "include",
+                          });
+                          
+                          if (!entityResponse.ok) {
+                            console.warn(`Failed to create subject-entity relationship for entity ${entityId}`);
+                            return null;
+                          }
+                          
+                          return entityResponse.json();
+                        });
+                        
+                        const entityResults = await Promise.all(entityPromises);
+                        console.log("Created subject-entity relationships:", entityResults);
+                      }
                       
                       // Success handling
                       toast({
