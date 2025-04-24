@@ -38,6 +38,36 @@
     "continue": "Continuar",
     "close": "Fechar"
   },
+  "tooltips": {
+    "dashboard-first-visit": "Bem-vindo ao ComuniGov! Este é o seu painel inicial onde você pode visualizar informações importantes e acessar rapidamente as principais funcionalidades.",
+    "dashboard-sidebar-navigation": "Use a barra lateral para navegar entre as diferentes seções do sistema: Dashboard, Entidades, Assuntos, Reuniões, Tarefas e Comunicações.",
+    "dashboard-user-menu": "Acesse seu perfil, configurações e opções de logout através deste menu de usuário.",
+    
+    "entities-overview": "Nesta página, você pode gerenciar todas as entidades do sistema. Aqui você encontra organizações, secretarias e outros órgãos cadastrados.",
+    "entity-creation": "Use este formulário para criar uma nova entidade. Preencha os campos obrigatórios e adicione informações como endereço, telefone e site.",
+    "entity-import": "Importe várias entidades de uma só vez usando um arquivo CSV. Verifique o formato correto antes de fazer upload.",
+    "entity-members": "Gerencie os membros desta entidade. Você pode adicionar, editar e remover membros, assim como definir suas funções.",
+    
+    "subjects-overview": "Assuntos são temas ou categorias que ajudam a organizar reuniões e tarefas. Use esta página para gerenciar todos os assuntos do sistema.",
+    "subject-creation": "Crie um novo assunto preenchendo o nome e a descrição. Você também pode associar entidades a este assunto.",
+    "subject-entity-relationship": "Vincule entidades a este assunto para facilitar a criação de reuniões e tarefas relacionadas.",
+    
+    "meetings-overview": "Visualize e gerencie todas as reuniões agendadas no sistema. Filtre por data, assunto ou entidade participante.",
+    "meeting-creation": "Agende uma nova reunião definindo data, hora, local e participantes. Você pode associar a reunião a um assunto específico.",
+    "meeting-attendees": "Selecione os participantes da reunião. Você pode convidar entidades completas ou membros específicos.",
+    "meeting-reactions": "Use reações para dar feedback rápido sobre a reunião, como confirmação de presença ou sugestão de reagendamento.",
+    
+    "tasks-overview": "Gerencie todas as tarefas do sistema. Visualize por status, responsável ou prazo de entrega.",
+    "task-creation": "Crie uma nova tarefa definindo título, descrição, prazo e responsável. Associe a um assunto para melhor organização.",
+    "task-assignment": "Atribua a tarefa a um usuário específico ou deixe sem atribuição para que qualquer pessoa possa assumi-la.",
+    
+    "communications-overview": "Visualize e gerencie todas as comunicações enviadas pelo sistema. Filtre por canal de comunicação ou destinatário.",
+    "communication-channels": "Escolha entre diferentes canais para enviar sua mensagem: Email, WhatsApp, Telegram ou notificação do sistema.",
+    "communication-attachments": "Adicione arquivos à sua comunicação. Você pode anexar documentos, imagens e outros arquivos relevantes.",
+    
+    "user-profile": "Gerencie suas informações pessoais, como nome, email, telefone e preferências do sistema.",
+    "notification-settings": "Configure quais tipos de notificações você deseja receber e por quais canais (email, WhatsApp, etc.)."
+  },
   "password": {
     "change": {
       "title": "Alterar Senha",
