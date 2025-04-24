@@ -95,17 +95,50 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     },
   });
 
+  // Function to determine if the current user has access to a specific section
+  const hasAccessToSection = (section: string): boolean => {
+    if (!user) return false;
+
+    // Master implementer has access to everything
+    if (user.role === 'master_implementer') return true;
+
+    switch (section) {
+      case 'dashboard':
+        return true; // Everyone has access to dashboard
+      case 'entities':
+        return true; // Everyone has access to entities view (they'll see only their entities)
+      case 'entities_import':
+        return user.role === 'master_implementer'; // Only admin can import entities
+      case 'communications':
+        return true; // Everyone has access to communications (they'll see only their communications)
+      case 'meetings':
+        return true; // Everyone has access to meetings (they'll see only their meetings)
+      case 'tasks':
+        return true; // Everyone has access to tasks (they'll see only their tasks)
+      case 'subjects':
+        return true; // Everyone has access to subjects (they'll see only their subjects)
+      case 'analytics':
+        return user.role === 'master_implementer' || user.role === 'entity_head'; // Only admin and entity heads have access to analytics
+      case 'users':
+        return user.role === 'master_implementer' || user.role === 'entity_head'; // Only admin and entity heads can manage users
+      case 'settings':
+        return true; // Everyone has access to settings page
+      default:
+        return false;
+    }
+  };
+
   const navigationItems = [
-    { name: "Dashboard", href: "/", icon: LayoutDashboard },
-    { name: t('navigation.entities'), href: "/entities", icon: Building2 },
-    { name: t('entities.import.title'), href: "/entities/import", icon: FileText, adminOnly: true },
-    { name: t('navigation.communications'), href: "/communications", icon: SendHorizonal },
-    { name: t('navigation.meetings'), href: "/meetings", icon: Calendar },
-    { name: t('navigation.tasks'), href: "/tasks", icon: ListChecks },
-    { name: t('navigation.subjects'), href: "/subjects", icon: FileText },
-    { name: t('navigation.analytics'), href: "/analytics", icon: BarChart3 },
-    { name: t('navigation.users'), href: "/users", icon: Users },
-    { name: t('navigation.settings'), href: "/settings", icon: Settings },
+    { name: "Dashboard", href: "/", icon: LayoutDashboard, section: 'dashboard' },
+    { name: t('navigation.entities'), href: "/entities", icon: Building2, section: 'entities' },
+    { name: t('entities.import.title'), href: "/entities/import", icon: FileText, section: 'entities_import' },
+    { name: t('navigation.communications'), href: "/communications", icon: SendHorizonal, section: 'communications' },
+    { name: t('navigation.meetings'), href: "/meetings", icon: Calendar, section: 'meetings' },
+    { name: t('navigation.tasks'), href: "/tasks", icon: ListChecks, section: 'tasks' },
+    { name: t('navigation.subjects'), href: "/subjects", icon: FileText, section: 'subjects' },
+    { name: t('navigation.analytics'), href: "/analytics", icon: BarChart3, section: 'analytics' },
+    { name: t('navigation.users'), href: "/users", icon: Users, section: 'users' },
+    { name: t('navigation.settings'), href: "/settings", icon: Settings, section: 'settings' },
   ];
 
   const handleLogout = () => {
@@ -117,10 +150,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     setIsMobileSidebarOpen(false);
   }, [location]);
 
+  // Filter navigation items based on user access
+  const accessibleNavigationItems = navigationItems.filter(item => 
+    hasAccessToSection(item.section)
+  );
+
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Desktop Sidebar */}
-      <Sidebar items={navigationItems} user={user} onLogout={handleLogout} />
+      <Sidebar items={accessibleNavigationItems} user={user} onLogout={handleLogout} />
       
       {/* Mobile Sidebar */}
       <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
@@ -159,29 +197,27 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               
               {/* Navigation */}
               <nav className="mt-2 px-2 space-y-1">
-                {navigationItems
-                  .filter(item => !item.adminOnly || user?.role === 'master_implementer')
-                  .map(item => (
-                    <Link 
-                      key={item.name} 
-                      href={item.href}
+                {accessibleNavigationItems.map(item => (
+                  <Link 
+                    key={item.name} 
+                    href={item.href}
+                  >
+                    <a 
+                      className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                        location === item.href
+                          ? "border-l-4 border-primary bg-primary-50 text-primary"
+                          : "text-neutral-600 hover:bg-neutral-50"
+                      }`}
                     >
-                      <a 
-                        className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
-                          location === item.href
-                            ? "border-l-4 border-primary bg-primary-50 text-primary"
-                            : "text-neutral-600 hover:bg-neutral-50"
-                        }`}
-                      >
-                        <item.icon 
-                          className={`mr-3 h-5 w-5 ${
-                            location === item.href ? "text-primary" : "text-neutral-400"
-                          }`} 
-                        />
-                        {item.name}
-                      </a>
-                    </Link>
-                  ))}
+                      <item.icon 
+                        className={`mr-3 h-5 w-5 ${
+                          location === item.href ? "text-primary" : "text-neutral-400"
+                        }`} 
+                      />
+                      {item.name}
+                    </a>
+                  </Link>
+                ))}
               </nav>
             </div>
             

@@ -11,7 +11,7 @@ type SidebarItem = {
   name: string;
   href: string;
   icon: LucideIcon;
-  adminOnly?: boolean;
+  section: string;
 };
 
 type SidebarProps = {
@@ -53,9 +53,7 @@ export function Sidebar({ items, user, onLogout }: SidebarProps) {
           
           {/* Navigation */}
           <nav className="mt-2 px-2 space-y-1">
-            {items
-              .filter(item => !item.adminOnly || user?.role === 'master_implementer')
-              .map(item => (
+            {items.map(item => (
                 <Link 
                   key={item.name} 
                   href={item.href}
