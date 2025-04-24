@@ -1385,23 +1385,37 @@ export class DatabaseStorage implements IStorage {
     // First get all subjects
     const allSubjects = await db.select().from(subjects);
     
-    // Create a map of user IDs to user data
-    const userIds = new Set(allSubjects.map(subject => subject.createdBy));
-    const usersResults = await db.select().from(users).where(inArray(users.id, Array.from(userIds)));
-    
-    const userMap = new Map();
-    for (const user of usersResults) {
-      userMap.set(user.id, user);
+    // If no subjects found, return an empty array
+    if (!allSubjects || allSubjects.length === 0) {
+      return [];
     }
     
-    // Combine subject data with creator information
-    return allSubjects.map(subject => {
-      const creator = userMap.get(subject.createdBy);
-      return {
+    try {
+      // Create a map of user IDs to user data
+      const userIds = new Set(allSubjects.map(subject => subject.createdBy));
+      const usersResults = await db.select().from(users).where(inArray(users.id, Array.from(userIds)));
+      
+      const userMap = new Map();
+      for (const user of usersResults) {
+        userMap.set(user.id, user);
+      }
+      
+      // Combine subject data with creator information
+      return allSubjects.map(subject => {
+        const creator = userMap.get(subject.createdBy);
+        return {
+          ...subject,
+          creatorName: creator ? creator.fullName : undefined
+        };
+      });
+    } catch (error) {
+      console.error("Error getting subjects with creators:", error);
+      // If there's an error looking up creators, just return subjects without creator names
+      return allSubjects.map(subject => ({
         ...subject,
-        creatorName: creator ? creator.fullName : undefined
-      };
-    });
+        creatorName: undefined
+      }));
+    }
   }
 
   async getSubjectsByCreator(userId: number): Promise<Subject[]> {

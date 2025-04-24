@@ -70,9 +70,14 @@ export default function SubjectsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
 
-  // Fetch subjects
-  const { data: subjects = [], isLoading: isLoadingSubjects } = useQuery({
-    queryKey: ["/api/subjects"],
+  // Define interface for subjects with creator names 
+  interface SubjectWithCreator extends Subject {
+    creatorName?: string;
+  }
+  
+  // Fetch subjects with creator information
+  const { data: subjects = [], isLoading: isLoadingSubjects } = useQuery<SubjectWithCreator[]>({
+    queryKey: ["/api/subjects-with-creators"],
   });
 
   // Delete subject mutation
@@ -81,7 +86,9 @@ export default function SubjectsPage() {
       await apiRequest("DELETE", `/api/subjects/${id}`);
     },
     onSuccess: () => {
+      // Invalidate both regular subjects and subjects with creators
       queryClient.invalidateQueries({ queryKey: ["/api/subjects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/subjects-with-creators"] });
       toast({
         title: t("subjects.delete_subject"),
         description: t("notifications.success.deleted", { item: t("subjects.title").toLowerCase() }),
@@ -263,7 +270,11 @@ export default function SubjectsPage() {
                             {subject.description || "-"}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline">ID: {subject.createdBy}</Badge>
+                            {(subject as SubjectWithCreator).creatorName ? (
+                              <Badge variant="outline">{(subject as SubjectWithCreator).creatorName}</Badge>
+                            ) : (
+                              <Badge variant="outline">ID: {subject.createdBy}</Badge>
+                            )}
                           </TableCell>
                           <TableCell>
                             <TooltipProvider>

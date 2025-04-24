@@ -1299,6 +1299,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
+  
+  // Get subjects with creator full names
+  app.get("/api/subjects-with-creators", isAuthenticated, async (req, res, next) => {
+    try {
+      // First get subjects with creator information
+      const subjectsWithCreators = await storage.getAllSubjectsWithCreators();
+      
+      // Filter based on user role and entity
+      if (req.user!.role === 'master_implementer') {
+        return res.json(subjectsWithCreators);
+      }
+      
+      // Entity heads and members can only see subjects related to their entity
+      if (req.user!.entityId) {
+        // Get users from the same entity
+        const entityUsers = await storage.getUsersByEntityId(req.user!.entityId);
+        const entityUserIds = entityUsers.map(user => user.id);
+        
+        // Filter subjects created by any user in this entity
+        const entitySubjects = subjectsWithCreators.filter(subject => 
+          entityUserIds.includes(subject.createdBy)
+        );
+        
+        return res.json(entitySubjects);
+      }
+      
+      // If no entity is associated, return empty array
+      return res.json([]);
+    } catch (error) {
+      next(error);
+    }
+  });
 
   app.get("/api/subjects/:id", isAuthenticated, async (req, res, next) => {
     try {
