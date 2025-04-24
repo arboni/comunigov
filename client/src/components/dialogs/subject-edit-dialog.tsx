@@ -139,11 +139,67 @@ export default function SubjectEditDialog({
     },
   });
 
+  // Update subject entities mutation
+  const updateSubjectEntitiesMutation = useMutation({
+    mutationFn: async (entityIds: number[]) => {
+      if (!user) {
+        throw new Error("You must be logged in to update subject entities");
+      }
+      
+      console.log("Updating subject entities with:", entityIds);
+      
+      const response = await fetch(`/api/subjects/${subject.id}/entities`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entityIds }),
+        credentials: "include",
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server error: ${response.status} - ${errorText}`);
+      }
+      
+      return await response.json();
+    },
+    onSuccess: () => {
+      // Invalidate related queries
+      queryClient.invalidateQueries({ queryKey: [`/api/subjects/${subject.id}/entities`] });
+      toast({
+        title: "Success",
+        description: "Subject entities updated successfully",
+      });
+    },
+    onError: (error: Error) => {
+      console.error("Update subject entities mutation error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update subject entities. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle entity selection toggle
+  const toggleEntitySelection = (entityId: number) => {
+    setSelectedEntityIds(prev => {
+      if (prev.includes(entityId)) {
+        return prev.filter(id => id !== entityId);
+      } else {
+        return [...prev, entityId];
+      }
+    });
+  };
+
   // Handle form submission
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
+      // First update the subject
       await updateSubjectMutation.mutateAsync(data);
+      
+      // Then update the related entities
+      await updateSubjectEntitiesMutation.mutateAsync(selectedEntityIds);
     } catch (error) {
       console.error("Error submitting form:", error);
     } finally {
@@ -207,6 +263,75 @@ export default function SubjectEditDialog({
                     </FormItem>
                   )}
                 />
+
+                {/* Entity selection */}
+                <FormItem>
+                  <FormLabel>
+                    {t('subjects.linkedEntities', 'Linked Entities')}
+                  </FormLabel>
+                  <FormDescription>
+                    {t('subjects.selectEntitiesDescription', 'Select entities that should be associated with this subject')}
+                  </FormDescription>
+                  
+                  {/* Selected entities */}
+                  {selectedEntityIds.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {selectedEntityIds.map(id => {
+                        const entity = entities?.find((e: any) => e.id === id);
+                        return entity ? (
+                          <Badge 
+                            key={id} 
+                            variant="secondary"
+                            className="flex items-center gap-1"
+                          >
+                            {entity.name}
+                            <button 
+                              type="button"
+                              className="text-xs rounded-full hover:bg-accent hover:text-accent-foreground p-0.5"
+                              onClick={() => toggleEntitySelection(id)}
+                            >
+                              ×
+                            </button>
+                          </Badge>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
+                  
+                  {/* Entity checkboxes */}
+                  <ScrollArea className="h-[200px] border rounded-md p-2">
+                    {isLoadingEntities ? (
+                      <div className="flex justify-center py-4">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : entities && entities.length > 0 ? (
+                      <div className="space-y-2">
+                        {entities.map((entity: any) => (
+                          <div key={entity.id} className="flex items-center space-x-2">
+                            <Checkbox 
+                              id={`entity-${entity.id}`}
+                              checked={selectedEntityIds.includes(entity.id)}
+                              onCheckedChange={() => toggleEntitySelection(entity.id)}
+                            />
+                            <label
+                              htmlFor={`entity-${entity.id}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            >
+                              {entity.name}
+                              <span className="text-xs text-muted-foreground ml-1">
+                                ({entity.type})
+                              </span>
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-center py-4 text-muted-foreground">
+                        {t('subjects.noEntitiesAvailable', 'No entities available')}
+                      </p>
+                    )}
+                  </ScrollArea>
+                </FormItem>
               </div>
 
               <DialogFooter>
