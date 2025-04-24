@@ -205,9 +205,9 @@ export default function TasksPage() {
       <div className="container mx-auto py-6">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Task Management</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Gerenciamento de Tarefas</h1>
             <p className="text-muted-foreground">
-              Manage and track all tasks across different subjects
+              Gerencie e acompanhe todas as tarefas em diferentes assuntos
             </p>
           </div>
           <div className="flex gap-2">
@@ -225,13 +225,13 @@ export default function TasksPage() {
               variant="outline"
               className="gap-1"
             >
-              <Plus className="h-4 w-4" /> Subject
+              <Plus className="h-4 w-4" /> Assunto
             </Button>
             <Button
               onClick={() => setCreateTaskOpen(true)}
               className="gap-1"
             >
-              <Plus className="h-4 w-4" /> Task
+              <Plus className="h-4 w-4" /> Tarefa
             </Button>
           </div>
         </div>
@@ -239,9 +239,9 @@ export default function TasksPage() {
         {/* Filters and Search */}
         <Card className="mb-6">
           <CardHeader className="pb-3">
-            <CardTitle>Filters & Search</CardTitle>
+            <CardTitle>Filtros e Pesquisa</CardTitle>
             <CardDescription>
-              Find tasks by title, description, status, or subject
+              Encontre tarefas por título, descrição, status ou assunto
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -250,7 +250,7 @@ export default function TasksPage() {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Search tasks..."
+                  placeholder="Pesquisar tarefas..."
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -262,7 +262,7 @@ export default function TasksPage() {
                 onValueChange={setStatusFilter}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Filter by Status" />
+                  <SelectValue placeholder="Filtrar por Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
