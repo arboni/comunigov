@@ -422,14 +422,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Users Management
   app.get("/api/users", isAuthenticated, async (req, res, next) => {
     try {
-      const users = await storage.getAllUsers();
+      // Get all users with their entity information
+      const users = await db.query.users.findMany({
+        with: {
+          entity: true
+        }
+      });
+      
       // Remove passwords from the response
       const sanitizedUsers = users.map(user => {
         const { password, ...userWithoutPassword } = user;
         return userWithoutPassword;
       });
+      
       res.json(sanitizedUsers);
     } catch (error) {
+      console.error("Error fetching users:", error);
       next(error);
     }
   });

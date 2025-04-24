@@ -119,6 +119,7 @@ export default function UsersPage() {
                       <TableHead>Username</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
+                      <TableHead>Entity</TableHead>
                       <TableHead>Phone</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -133,6 +134,15 @@ export default function UsersPage() {
                           <Badge className={getRoleBadgeColor(user.role)}>
                             {formatRoleName(user.role)}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {user.entity ? (
+                            <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/20">
+                              {user.entity.name}
+                            </Badge>
+                          ) : (
+                            "—"
+                          )}
                         </TableCell>
                         <TableCell>{user.phone || "—"}</TableCell>
                         <TableCell>
