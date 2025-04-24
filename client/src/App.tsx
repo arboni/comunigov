@@ -30,6 +30,7 @@ import { I18nProvider } from "@/components/ui/i18n-provider";
 import { PasswordChangeRoute } from "@/components/password-change-route";
 import { TooltipsProvider } from "@/hooks/use-tooltips";
 import { WelcomeTour } from "@/components/onboarding/welcome-tour";
+import { AchievementsProvider } from "@/hooks/use-achievements";
 
 // This is a simpler implementation that doesn't rely on the auth context
 function ProtectedRoute({ component: Component, path }: { component: () => JSX.Element, path: string }) {
@@ -142,9 +143,11 @@ function App() {
   return (
     <I18nProvider>
       <TooltipsProvider>
-        <Router />
-        <WelcomeTour />
-        <Toaster />
+        <AchievementsProvider>
+          <Router />
+          <WelcomeTour />
+          <Toaster />
+        </AchievementsProvider>
       </TooltipsProvider>
     </I18nProvider>
   );
