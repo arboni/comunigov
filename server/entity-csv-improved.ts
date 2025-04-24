@@ -141,6 +141,25 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
     // Read the CSV file
     const fileContent = fs.readFileSync(filePath, 'utf8');
     
+    // Check if the file content appears to be HTML or XML instead of CSV
+    if (fileContent.trim().startsWith('<!DOCTYPE') || 
+        fileContent.trim().startsWith('<html') || 
+        fileContent.trim().includes('<?xml')) {
+      throw new Error(`
+O arquivo enviado parece estar em formato HTML ou XML, não um arquivo CSV válido.
+
+Por favor, certifique-se de enviar um arquivo CSV válido com os seguintes cabeçalhos:
+- Obrigatórios: name (ou nome), type (ou tipo), headName (ou nomeResponsavel), 
+  headPosition (ou cargoResponsavel), headEmail (ou emailResponsavel)
+- Opcionais: address (ou endereco), phone (ou telefone), website (ou site), 
+  socialMedia (ou redesSociais), tags (ou etiquetas)
+
+Exemplo de conteúdo de arquivo CSV válido:
+nome;tipo;nomeResponsavel;cargoResponsavel;emailResponsavel;endereco;telefone;site;redesSociais;etiquetas
+"Entidade A";"secretariat";"João Silva";"Diretor";"joao@entidade.org";"Rua X";"5588990011";"entidade.org";"@entidade";"público,saúde"
+      `);
+    }
+    
     // Determine delimiter used in the file (comma or semicolon)
     const firstLine = fileContent.split('\n')[0];
     const hasSemicolon = firstLine.includes(';');
@@ -148,6 +167,26 @@ export async function importEntitiesFromCSV(filePath: string, userId: number) {
     const delimiter = hasSemicolon ? ';' : (hasComma ? ',' : ','); // Default to comma if neither found
     
     console.log(`Detected delimiter: "${delimiter}" in CSV file`);
+    
+    // Check if the first line contains any expected header keywords to confirm it's likely a CSV
+    const possibleHeaders = ['nome', 'name', 'tipo', 'type', 'responsavel', 'head', 'email'];
+    const lowerFirstLine = firstLine.toLowerCase();
+    const hasExpectedHeaders = possibleHeaders.some(header => lowerFirstLine.includes(header));
+    
+    if (!hasExpectedHeaders) {
+      throw new Error(`
+O arquivo enviado não parece ter cabeçalhos CSV válidos.
+
+Por favor, certifique-se de que seu arquivo CSV tem estes cabeçalhos obrigatórios:
+- name (ou nome)
+- type (ou tipo)
+- headName (ou nomeResponsavel)
+- headPosition (ou cargoResponsavel)
+- headEmail (ou emailResponsavel)
+
+Cabeçalhos opcionais incluem: address, phone, website, socialMedia, tags
+      `);
+    }
     
     // Parse the CSV file with advanced options to handle complex fields
     const records = parse(fileContent, {
@@ -442,6 +481,24 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
     // Read the CSV file
     const fileContent = fs.readFileSync(filePath, 'utf8');
     
+    // Check if the file content appears to be HTML or XML instead of CSV
+    if (fileContent.trim().startsWith('<!DOCTYPE') || 
+        fileContent.trim().startsWith('<html') || 
+        fileContent.trim().includes('<?xml')) {
+      throw new Error(`
+The uploaded file appears to be in HTML or XML format, not a valid CSV file.
+
+Please ensure you're uploading a valid CSV file with the following column headers:
+- Required: fullName (or nome), email, position (or cargo/posicao)
+- Optional: phone (or telefone), whatsapp, telegram
+
+Example of a valid CSV file content:
+fullName,email,position,phone,whatsapp,telegram
+"João Silva","joao@example.com","Coordenador","55667788","55667788","@joao_silva"
+"Maria Santos","maria@example.com","Analista","55123456","55123456","@maria_santos"
+      `);
+    }
+    
     // Determine delimiter used in the file (comma or semicolon)
     const firstLine = fileContent.split('\n')[0];
     const hasSemicolon = firstLine.includes(';');
@@ -449,6 +506,24 @@ export async function importEntityMembersFromCSV(filePath: string, entityId: num
     const delimiter = hasSemicolon ? ';' : (hasComma ? ',' : ','); // Default to comma if neither found
     
     console.log(`Detected delimiter: "${delimiter}" in member CSV file`);
+    
+    // Check if the first line contains any expected header keywords to confirm it's likely a CSV
+    const possibleHeaders = ['nome', 'name', 'email', 'cargo', 'position', 'posicao', 'posição', 'fullname', 'full_name'];
+    const lowerFirstLine = firstLine.toLowerCase();
+    const hasExpectedHeaders = possibleHeaders.some(header => lowerFirstLine.includes(header));
+    
+    if (!hasExpectedHeaders) {
+      throw new Error(`
+The uploaded file does not appear to have valid CSV headers.
+
+Please ensure your CSV file has these required headers:
+- fullName (or nome/nomeCompleto)
+- email
+- position (or cargo/posicao)
+
+Optional headers include: phone, whatsapp, telegram
+      `);
+    }
     
     // Parse the CSV file with advanced options to handle complex fields
     const records = parse(fileContent, {

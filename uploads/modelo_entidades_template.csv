@@ -1,0 +1,3 @@
+nome,tipo,nomeResponsavel,cargoResponsavel,emailResponsavel,endereco,telefone,site,redesSociais,etiquetas
+Secretaria de Educação,secretariat,João Silva,Secretário,joao@prefeitura.gov.br,"Rua Principal, 123",5566778899,prefeitura.gov.br/educacao,@sec_educacao,"educação,escolas"
+Associação Comercial,association,Maria Santos,Presidente,maria@associacao.org.br,"Avenida Central, 456",5599887766,associacao.org.br,@assoc_comercial,"comércio,empresas"
