@@ -6,6 +6,7 @@ import {
   MeetingDocument, InsertMeetingDocument,
   MeetingReaction, InsertMeetingReaction,
   Subject, InsertSubject,
+  SubjectEntity, InsertSubjectEntity,
   Task, InsertTask,
   TaskComment, InsertTaskComment,
   Communication, InsertCommunication,
@@ -27,8 +28,8 @@ import {
   CommunicationWithFiles,
   CommunicationWithRecipientsAndFiles,
   UserWithBadges,
-  users, entities, meetings, meetingAttendees, meetingDocuments, meetingReactions, subjects, tasks, taskComments, 
-  communications, communicationRecipients, communicationFiles, achievementBadges, userBadges
+  users, entities, meetings, meetingAttendees, meetingDocuments, meetingReactions, subjects, subjectEntities,
+  tasks, taskComments, communications, communicationRecipients, communicationFiles, achievementBadges, userBadges
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -104,6 +105,13 @@ export interface IStorage {
   getAllSubjects(): Promise<Subject[]>;
   getSubjectsByCreator(userId: number): Promise<Subject[]>;
   
+  // Subject-Entity relationships
+  createSubjectEntity(subjectEntity: InsertSubjectEntity): Promise<SubjectEntity>;
+  getSubjectEntitiesBySubjectId(subjectId: number): Promise<SubjectEntity[]>;
+  getSubjectEntitiesByEntityId(entityId: number): Promise<SubjectEntity[]>;
+  deleteSubjectEntity(id: number): Promise<boolean>;
+  deleteSubjectEntityByIds(subjectId: number, entityId: number): Promise<boolean>;
+  
   // Tasks
   getTask(id: number): Promise<Task | undefined>;
   getTaskWithAssignee(id: number): Promise<TaskWithAssignee | undefined>;
@@ -170,6 +178,7 @@ export class MemStorage implements IStorage {
   private meetingDocuments: Map<number, MeetingDocument>;
   private meetingReactions: Map<number, MeetingReaction>;
   private subjects: Map<number, Subject>;
+  private subjectEntities: Map<number, SubjectEntity>;
   private tasks: Map<number, Task>;
   private taskComments: Map<number, TaskComment>;
   private communications: Map<number, Communication>;
@@ -184,6 +193,7 @@ export class MemStorage implements IStorage {
   currentMeetingDocumentId: number;
   currentMeetingReactionId: number;
   currentSubjectId: number;
+  currentSubjectEntityId: number;
   currentTaskId: number;
   currentTaskCommentId: number;
   currentCommunicationId: number;
@@ -202,6 +212,7 @@ export class MemStorage implements IStorage {
     this.meetingDocuments = new Map();
     this.meetingReactions = new Map();
     this.subjects = new Map();
+    this.subjectEntities = new Map();
     this.tasks = new Map();
     this.taskComments = new Map();
     this.communications = new Map();
@@ -218,6 +229,7 @@ export class MemStorage implements IStorage {
     this.currentMeetingDocumentId = 1;
     this.currentMeetingReactionId = 1;
     this.currentSubjectId = 1;
+    this.currentSubjectEntityId = 1;
     this.currentTaskId = 1;
     this.currentTaskCommentId = 1;
     this.currentCommunicationId = 1;
