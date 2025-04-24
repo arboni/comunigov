@@ -211,16 +211,16 @@ export default function SubjectEditDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Edit Subject</DialogTitle>
+          <DialogTitle>Editar Assunto</DialogTitle>
           <DialogDescription>
-            Update the subject information
+            Atualize as informações do assunto
           </DialogDescription>
         </DialogHeader>
 
         {!user ? (
           <div className="p-4 text-center">
-            <p className="text-red-500 mb-4">You must be logged in to edit a subject.</p>
-            <Button onClick={() => onOpenChange(false)}>Close</Button>
+            <p className="text-red-500 mb-4">Você precisa estar logado para editar um assunto.</p>
+            <Button onClick={() => onOpenChange(false)}>Fechar</Button>
           </div>
         ) : (
           <Form {...form}>
@@ -232,12 +232,12 @@ export default function SubjectEditDialog({
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Subject Name</FormLabel>
+                      <FormLabel>Nome do Assunto</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter subject name" {...field} />
+                        <Input placeholder="Digite o nome do assunto" {...field} />
                       </FormControl>
                       <FormDescription>
-                        The name for this category of tasks
+                        O nome para esta categoria de tarefas
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -250,10 +250,10 @@ export default function SubjectEditDialog({
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>Descrição</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Briefly describe this subject area"
+                          placeholder="Descreva brevemente este assunto"
                           className="min-h-[100px]"
                           {...field}
                           value={field.value || ""}
@@ -267,10 +267,10 @@ export default function SubjectEditDialog({
                 {/* Entity selection */}
                 <FormItem>
                   <FormLabel>
-                    {t('subjects.linkedEntities', 'Linked Entities')}
+                    {t('subjects.linkedEntities', 'Entidades Vinculadas')}
                   </FormLabel>
                   <FormDescription>
-                    {t('subjects.selectEntitiesDescription', 'Select entities that should be associated with this subject')}
+                    {t('subjects.selectEntitiesDescription', 'Selecione as entidades que devem ser associadas a este assunto')}
                   </FormDescription>
                   
                   {/* Selected entities */}
@@ -327,7 +327,7 @@ export default function SubjectEditDialog({
                       </div>
                     ) : (
                       <p className="text-center py-4 text-muted-foreground">
-                        {t('subjects.noEntitiesAvailable', 'No entities available')}
+                        {t('subjects.noEntitiesAvailable', 'Nenhuma entidade disponível')}
                       </p>
                     )}
                   </ScrollArea>
@@ -341,7 +341,7 @@ export default function SubjectEditDialog({
                   onClick={() => onOpenChange(false)}
                   disabled={isSubmitting}
                 >
-                  Cancel
+                  Cancelar
                 </Button>
                 <Button
                   type="submit"
@@ -350,7 +350,7 @@ export default function SubjectEditDialog({
                   {isSubmitting && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Save Changes
+                  Salvar Alterações
                 </Button>
               </DialogFooter>
             </form>
