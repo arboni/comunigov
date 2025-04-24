@@ -1384,6 +1384,67 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(subjects).where(eq(subjects.createdBy, userId));
   }
 
+  // Subject-Entity relationship methods
+  async createSubjectEntity(insertSubjectEntity: InsertSubjectEntity): Promise<SubjectEntity> {
+    try {
+      console.log("Creating subject-entity relationship with data:", JSON.stringify(insertSubjectEntity));
+      const [subjectEntity] = await db
+        .insert(subjectEntities)
+        .values(insertSubjectEntity)
+        .returning();
+      console.log("Created subject-entity relationship:", JSON.stringify(subjectEntity));
+      return subjectEntity;
+    } catch (error) {
+      console.error("Error creating subject-entity relationship:", error);
+      throw error;
+    }
+  }
+
+  async getSubjectEntitiesBySubjectId(subjectId: number): Promise<SubjectEntity[]> {
+    return await db
+      .select()
+      .from(subjectEntities)
+      .where(eq(subjectEntities.subjectId, subjectId));
+  }
+
+  async getSubjectEntitiesByEntityId(entityId: number): Promise<SubjectEntity[]> {
+    return await db
+      .select()
+      .from(subjectEntities)
+      .where(eq(subjectEntities.entityId, entityId));
+  }
+
+  async deleteSubjectEntity(id: number): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(subjectEntities)
+        .where(eq(subjectEntities.id, id))
+        .returning();
+      return result.length > 0;
+    } catch (error) {
+      console.error("Error deleting subject-entity relationship:", error);
+      return false;
+    }
+  }
+
+  async deleteSubjectEntityByIds(subjectId: number, entityId: number): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(subjectEntities)
+        .where(
+          and(
+            eq(subjectEntities.subjectId, subjectId),
+            eq(subjectEntities.entityId, entityId)
+          )
+        )
+        .returning();
+      return result.length > 0;
+    } catch (error) {
+      console.error("Error deleting subject-entity relationship by IDs:", error);
+      return false;
+    }
+  }
+
   // Meeting methods
   async getMeeting(id: number): Promise<Meeting | undefined> {
     const [meeting] = await db.select().from(meetings).where(eq(meetings.id, id));
