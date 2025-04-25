@@ -470,7 +470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Update a specific user
+  // Update a specific user (PATCH method)
   app.patch("/api/users/:id", isAuthenticated, async (req, res, next) => {
     try {
       const userId = parseInt(req.params.id);
@@ -495,6 +495,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password, ...userWithoutPassword } = updatedUser;
       res.json(userWithoutPassword);
     } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Update a specific user (PUT method)
+  app.put("/api/users/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Only allow users to update their own profile or master implementers to update anyone
+      if (req.user!.id !== userId && req.user!.role !== 'master_implementer' && req.user!.role !== 'entity_head') {
+        return res.status(403).json({ message: "Forbidden: You can only update your own profile" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // For security, don't allow updates to sensitive fields unless you're a master implementer
+      let updateData;
+      if (req.user!.role === 'master_implementer') {
+        // Master implementers can update all fields except password (that has a dedicated route)
+        const { password, ...allowedUpdates } = req.body;
+        updateData = allowedUpdates;
+      } else {
+        // Entity heads or normal users have more restricted update capabilities
+        const { password, username, role, ...allowedUpdates } = req.body;
+        updateData = allowedUpdates;
+      }
+      
+      console.log(`Updating user ${userId} with data:`, updateData);
+      
+      // Update the user
+      const updatedUser = await storage.updateUser(userId, updateData);
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update user" });
+      }
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error(`Error updating user:`, error);
       next(error);
     }
   });
