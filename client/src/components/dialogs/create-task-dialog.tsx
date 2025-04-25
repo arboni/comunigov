@@ -75,6 +75,8 @@ export default function CreateTaskDialog({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isRegisteredUser, setIsRegisteredUser] = useState(true);
+  const [subjectSearch, setSubjectSearch] = useState("");
+  const [userSearch, setUserSearch] = useState("");
   
   // Debug logs
   useEffect(() => {
@@ -95,7 +97,7 @@ export default function CreateTaskDialog({
     enabled: open && isRegisteredUser,
   });
 
-  // Form setup
+  // Form setup with properly initialized values
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -107,6 +109,8 @@ export default function CreateTaskDialog({
       ownerName: "",
       ownerEmail: "",
       ownerPhone: "",
+      subjectId: undefined, // Will be set by user selection
+      assignedToUserId: undefined, // Will be set by user selection
     },
   });
 
@@ -148,7 +152,15 @@ export default function CreateTaskDialog({
   });
 
   function onSubmit(data: TaskFormValues) {
-    createTaskMutation.mutate(data);
+    console.log("Submitting form data:", data);
+    // Ensure data is properly typed before mutation
+    const formattedData = {
+      ...data,
+      ownerName: data.ownerName || "",
+      ownerEmail: data.ownerEmail || "",
+      ownerPhone: data.ownerPhone || "",
+    };
+    createTaskMutation.mutate(formattedData);
   }
 
   // Log rendering for debugging
@@ -167,33 +179,69 @@ export default function CreateTaskDialog({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 gap-4 py-4">
-              {/* Subject Selection */}
+              {/* Subject Selection - Searchable */}
               <FormField
                 control={form.control}
                 name="subjectId"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Área de Assunto</FormLabel>
-                    <Select
-                      onValueChange={(value) => field.onChange(parseInt(value))}
-                      defaultValue={field.value?.toString()}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione a área do assunto" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {subjects.map((subject: any) => (
-                          <SelectItem
-                            key={subject.id}
-                            value={subject.id.toString()}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
                           >
-                            {subject.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                            {field.value
+                              ? subjects.find(
+                                  (subject: any) => subject.id === field.value
+                                )?.name
+                              : "Selecione a área do assunto"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[300px] p-0">
+                        <Command>
+                          <CommandInput 
+                            placeholder="Pesquisar assunto..." 
+                            value={subjectSearch}
+                            onValueChange={setSubjectSearch}
+                          />
+                          <CommandEmpty>Nenhum assunto encontrado.</CommandEmpty>
+                          <CommandGroup>
+                            {subjects
+                              .filter((subject: any) => 
+                                subject.name.toLowerCase().includes(subjectSearch.toLowerCase()))
+                              .map((subject: any) => (
+                                <CommandItem
+                                  value={subject.name}
+                                  key={subject.id}
+                                  onSelect={() => {
+                                    form.setValue("subjectId", subject.id);
+                                    setSubjectSearch("");
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === subject.id
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {subject.name}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <FormDescription>
                       Escolha a área de assunto a que esta tarefa pertence
                     </FormDescription>
@@ -284,7 +332,8 @@ export default function CreateTaskDialog({
                     <FormLabel>Status</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
+                      defaultValue="pending"
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -359,28 +408,36 @@ export default function CreateTaskDialog({
                         </PopoverTrigger>
                         <PopoverContent className="w-[300px] p-0">
                           <Command>
-                            <CommandInput placeholder="Pesquisar usuário..." />
+                            <CommandInput 
+                              placeholder="Pesquisar usuário..." 
+                              value={userSearch}
+                              onValueChange={setUserSearch}
+                            />
                             <CommandEmpty>Nenhum usuário encontrado.</CommandEmpty>
                             <CommandGroup>
-                              {users.map((user: any) => (
-                                <CommandItem
-                                  value={user.fullName}
-                                  key={user.id}
-                                  onSelect={() => {
-                                    form.setValue("assignedToUserId", user.id);
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      field.value === user.id
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                  {user.fullName}
-                                </CommandItem>
-                              ))}
+                              {users
+                                .filter((user: any) => 
+                                  (user.fullName || user.username || "").toLowerCase().includes(userSearch.toLowerCase()))
+                                .map((user: any) => (
+                                  <CommandItem
+                                    value={user.fullName || user.username}
+                                    key={user.id}
+                                    onSelect={() => {
+                                      form.setValue("assignedToUserId", user.id);
+                                      setUserSearch("");
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === user.id
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    {user.fullName || user.username}
+                                  </CommandItem>
+                                ))}
                             </CommandGroup>
                           </Command>
                         </PopoverContent>
@@ -393,16 +450,21 @@ export default function CreateTaskDialog({
                   )}
                 />
               ) : (
-                // Fields for non-registered users
+                // Fields for non-registered users with explicit string type handling
                 <>
                   <FormField
                     control={form.control}
                     name="ownerName"
-                    render={({ field }) => (
+                    render={({ field: { value, onChange, ...field } }) => (
                       <FormItem>
                         <FormLabel>Nome do Responsável</FormLabel>
                         <FormControl>
-                          <Input placeholder="Nome completo" {...field} />
+                          <Input 
+                            placeholder="Nome completo" 
+                            value={value || ""} 
+                            onChange={onChange} 
+                            {...field} 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -412,13 +474,15 @@ export default function CreateTaskDialog({
                   <FormField
                     control={form.control}
                     name="ownerEmail"
-                    render={({ field }) => (
+                    render={({ field: { value, onChange, ...field } }) => (
                       <FormItem>
                         <FormLabel>Email do Responsável</FormLabel>
                         <FormControl>
                           <Input
                             type="email"
                             placeholder="Email para contato"
+                            value={value || ""} 
+                            onChange={onChange}
                             {...field}
                           />
                         </FormControl>
@@ -430,11 +494,16 @@ export default function CreateTaskDialog({
                   <FormField
                     control={form.control}
                     name="ownerPhone"
-                    render={({ field }) => (
+                    render={({ field: { value, onChange, ...field } }) => (
                       <FormItem>
                         <FormLabel>Telefone do Responsável</FormLabel>
                         <FormControl>
-                          <Input placeholder="Número de telefone" {...field} />
+                          <Input 
+                            placeholder="Número de telefone" 
+                            value={value || ""} 
+                            onChange={onChange}
+                            {...field} 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
