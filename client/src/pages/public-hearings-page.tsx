@@ -26,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import DashboardLayout from "@/components/layouts/dashboard-layout";
 import CreatePublicHearingDialog from "@/components/dialogs/create-public-hearing-dialog";
 
 // Helper function to get status color
@@ -254,6 +255,7 @@ const PublicHearingsPage = () => {
   const canCreateHearings = user?.role === "master_implementer" || user?.role === "entity_head";
 
   return (
+    <DashboardLayout>
     <div className="container mx-auto py-6 px-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Audiências Públicas</h1>
@@ -380,6 +382,7 @@ const PublicHearingsPage = () => {
         onSuccess={refetch}
       />
     </div>
+    </DashboardLayout>
   );
 };
 
