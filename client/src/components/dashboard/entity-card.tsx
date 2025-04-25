@@ -1,12 +1,13 @@
 import { Building, User, Mail, Users, PenSquare, Eye } from "lucide-react";
 import { Entity } from "@shared/schema";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { useState } from "react";
 import EditEntityDialog from "@/components/dialogs/edit-entity-dialog";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { fixEncoding, getEntityTypeDisplay } from "@/lib/utils";
+import { fixEncoding, getEntityTypeDisplay, getEntityTypeColors } from "@/lib/utils";
 
 interface EntityCardProps {
   entity: Entity;
@@ -54,7 +55,11 @@ export default function EntityCard({ entity }: EntityCardProps) {
           </div>
           <div>
             <h3 className="text-base font-medium text-neutral-900">{fixedName}</h3>
-            <p className="text-sm text-neutral-500">{getTranslatedEntityType(entity.type)}</p>
+            <div className="mt-1">
+              <Badge className={`${getEntityTypeColors(entity.type).bg} ${getEntityTypeColors(entity.type).text} border ${getEntityTypeColors(entity.type).border}`}>
+                {getTranslatedEntityType(entity.type)}
+              </Badge>
+            </div>
           </div>
         </div>
         

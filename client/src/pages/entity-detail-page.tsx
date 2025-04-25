@@ -14,7 +14,7 @@ import EditEntityDialog from "@/components/dialogs/edit-entity-dialog";
 import CreateMemberDialog from "@/components/dialogs/create-member-dialog";
 import EditMemberDialog from "@/components/dialogs/edit-member-dialog";
 import { useTranslation } from "react-i18next";
-import { fixEncoding, getEntityTypeDisplay } from "@/lib/utils";
+import { fixEncoding, getEntityTypeDisplay, getEntityTypeColors } from "@/lib/utils";
 import { queryClient } from "@/lib/queryClient";
 
 export default function EntityDetailPage() {
