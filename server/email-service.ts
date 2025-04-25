@@ -2,7 +2,7 @@ import { MailService } from '@sendgrid/mail';
 import * as fs from 'fs';
 import * as path from 'path';
 import { storage } from './storage';
-import { Meeting, MeetingAttendee, User, meetingDocuments } from '@shared/schema';
+import { Meeting, MeetingAttendee, User, meetingDocuments, PublicHearing, publicHearingFiles } from '@shared/schema';
 import { format } from 'date-fns';
 import { db } from './db';
 import { eq } from 'drizzle-orm';
