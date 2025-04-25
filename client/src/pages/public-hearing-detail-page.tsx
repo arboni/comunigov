@@ -82,8 +82,9 @@ const PublicHearingDetailPage = () => {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["/api/public-hearings", publicHearingId],
+    queryKey: [`/api/public-hearings/${publicHearingId}`],
     enabled: !!publicHearingId,
+    refetchOnWindowFocus: false,
   });
 
   if (error) {
@@ -203,6 +204,7 @@ const PublicHearingDetailPage = () => {
         method: "POST",
         body: formData,
         // Don't add Content-Type header - browser will add it with the boundary
+        credentials: 'include', // Important for auth
       });
 
       console.log("Upload response status:", response.status);
@@ -223,6 +225,11 @@ const PublicHearingDetailPage = () => {
       
       // Clear files and refetch hearing data to show the new files
       setFiles(null);
+      
+      // Invalidate the query to force a refetch with the new files
+      queryClient.invalidateQueries({
+        queryKey: [`/api/public-hearings/${publicHearingId}`]
+      });
       
       // Add a small delay before refetching to ensure the server has processed the files
       setTimeout(() => {
@@ -425,7 +432,10 @@ const PublicHearingDetailPage = () => {
             </Card>
           )}
 
-          {publicHearing.files && publicHearing.files.length > 0 ? (
+          {/* Add debugging for files array */}
+          {console.log("Files from API:", publicHearing.files)}
+          
+          {publicHearing.files && Array.isArray(publicHearing.files) && publicHearing.files.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {publicHearing.files.map((file) => (
                 <Card key={file.id} className="flex flex-col h-full">
