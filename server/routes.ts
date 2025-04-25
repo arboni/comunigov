@@ -1870,10 +1870,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Configure multer for file uploads
   const uploadsDir = path.join(process.cwd(), 'uploads');
+  const publicHearingsUploadsDir = path.join(uploadsDir, 'public-hearings');
   
-  // Create uploads directory if it doesn't exist
+  // Create uploads directories if they don't exist
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  
+  if (!fs.existsSync(publicHearingsUploadsDir)) {
+    fs.mkdirSync(publicHearingsUploadsDir, { recursive: true });
   }
   
   const storage_config = multer.diskStorage({
@@ -1887,10 +1892,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   });
   
+  const publicHearingsStorage_config = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, publicHearingsUploadsDir);
+    },
+    filename: (req, file, cb) => {
+      // Generate a unique filename with original extension
+      const uniqueFilename = `${uuidv4()}${path.extname(file.originalname)}`;
+      cb(null, uniqueFilename);
+    },
+  });
+  
   const upload = multer({ 
     storage: storage_config,
     limits: {
       fileSize: 5 * 1024 * 1024, // 5MB file size limit
+    }
+  });
+  
+  const publicHearingsUpload = multer({
+    storage: publicHearingsStorage_config,
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB file size limit for public hearings
     }
   });
   
@@ -2118,6 +2141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const entities = await storage.getAllEntities();
       const users = await storage.getAllUsers();
       const upcomingMeetings = await storage.getUpcomingMeetings();
+      const upcomingHearings = await storage.getUpcomingPublicHearings();
       
       // Count tasks that are not completed
       const allTasks = await storage.getAllTasks();
@@ -2127,6 +2151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entityCount: entities.length,
         userCount: users.length,
         upcomingMeetings: upcomingMeetings.length,
+        upcomingHearings: upcomingHearings.length,
         pendingTasks
       });
     } catch (error) {
@@ -3339,6 +3364,341 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Error importing entity members",
         error: (error as Error).message
       });
+    }
+  });
+
+  // AUDIÊNCIAS PÚBLICAS (PUBLIC HEARINGS) API ROUTES
+
+  // Get all public hearings
+  app.get("/api/public-hearings", isAuthenticated, async (req, res, next) => {
+    try {
+      const publicHearings = await storage.getAllPublicHearings();
+      
+      // Enhance with entity data
+      const enhancedHearings = await Promise.all(
+        publicHearings.map(async (hearing) => {
+          const entity = await storage.getEntity(hearing.entityId);
+          return {
+            ...hearing,
+            entity
+          };
+        })
+      );
+      
+      res.json(enhancedHearings);
+    } catch (error) {
+      console.error("Error fetching public hearings:", error);
+      next(error);
+    }
+  });
+  
+  // Get upcoming public hearings
+  app.get("/api/public-hearings/upcoming", isAuthenticated, async (req, res, next) => {
+    try {
+      const upcomingHearings = await storage.getUpcomingPublicHearings();
+      
+      // Enhance with entity data
+      const enhancedHearings = await Promise.all(
+        upcomingHearings.map(async (hearing) => {
+          const entity = await storage.getEntity(hearing.entityId);
+          return {
+            ...hearing,
+            entity
+          };
+        })
+      );
+      
+      res.json(enhancedHearings);
+    } catch (error) {
+      console.error("Error fetching upcoming public hearings:", error);
+      next(error);
+    }
+  });
+  
+  // Get a public hearing by ID
+  app.get("/api/public-hearings/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid public hearing ID" });
+      }
+      
+      const hearing = await storage.getPublicHearingWithEntityAndFiles(id);
+      if (!hearing) {
+        return res.status(404).json({ message: "Public hearing not found" });
+      }
+      
+      res.json(hearing);
+    } catch (error) {
+      console.error(`Error fetching public hearing with ID ${req.params.id}:`, error);
+      next(error);
+    }
+  });
+  
+  // Create a new public hearing
+  app.post("/api/public-hearings", isAuthenticated, async (req, res, next) => {
+    try {
+      let hearingData = req.body;
+      
+      // Validate data
+      if (!hearingData.title || !hearingData.date || !hearingData.startTime || !hearingData.endTime || !hearingData.entityId) {
+        return res.status(400).json({ message: "Missing required fields for public hearing" });
+      }
+      
+      // Verify entity exists
+      const entity = await storage.getEntity(hearingData.entityId);
+      if (!entity) {
+        return res.status(404).json({ message: "Entity not found" });
+      }
+      
+      // Ensure the user has permission to create a public hearing for this entity
+      if (req.user.role === 'entity_head' && req.user.entityId !== entity.id) {
+        return res.status(403).json({ message: "You can only create public hearings for your own entity" });
+      }
+      
+      // Set creator and default status
+      hearingData.createdBy = req.user.id;
+      hearingData.status = hearingData.status || 'scheduled';
+      
+      // Create the public hearing
+      const newHearing = await storage.createPublicHearing(hearingData);
+      
+      // Get entity members to notify them about the public hearing
+      const entityMembers = await storage.getUsersByEntityId(entity.id);
+      
+      if (entityMembers.length > 0) {
+        // Prepare email notification data
+        const organizer = await storage.getUser(req.user.id);
+        const organizerName = organizer ? (organizer.fullName || organizer.username) : 'Public Hearing Organizer';
+        
+        try {
+          // Collect member email addresses
+          const memberEmails = entityMembers
+            .filter(member => member.email) // Only members with email
+            .map(member => ({
+              userId: member.id,
+              name: member.fullName || member.username,
+              email: member.email
+            }));
+            
+          if (memberEmails.length > 0) {
+            // Send notifications to all members
+            // This is a placeholder for the actual email sending function
+            // You should implement a function similar to sendMeetingInvitationsToAllAttendees
+            console.log(`Would send email notifications to ${memberEmails.length} entity members about new public hearing`);
+            
+            // Add activity log
+            ActivityLogger.log(
+              req.user.id,
+              'create',
+              `Created public hearing: ${newHearing.title}`,
+              'public_hearing',
+              newHearing.id,
+              req
+            );
+          }
+        } catch (notifyError) {
+          console.error("Error notifying entity members about new public hearing:", notifyError);
+          // Continue with the response even if notification fails
+        }
+      }
+      
+      res.status(201).json(newHearing);
+    } catch (error) {
+      console.error("Error creating public hearing:", error);
+      next(error);
+    }
+  });
+  
+  // Update a public hearing
+  app.put("/api/public-hearings/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid public hearing ID" });
+      }
+      
+      // Get the existing public hearing
+      const existingHearing = await storage.getPublicHearing(id);
+      if (!existingHearing) {
+        return res.status(404).json({ message: "Public hearing not found" });
+      }
+      
+      // Check permissions
+      if (req.user.role === 'entity_head' && req.user.entityId !== existingHearing.entityId) {
+        return res.status(403).json({ message: "You can only update public hearings for your own entity" });
+      }
+      
+      // Update the public hearing
+      const updatedHearing = await storage.updatePublicHearing(id, req.body);
+      
+      if (updatedHearing) {
+        // Log the activity
+        ActivityLogger.log(
+          req.user.id,
+          'update',
+          `Updated public hearing: ${updatedHearing.title}`,
+          'public_hearing',
+          updatedHearing.id,
+          req
+        );
+        
+        res.json(updatedHearing);
+      } else {
+        res.status(404).json({ message: "Failed to update public hearing" });
+      }
+    } catch (error) {
+      console.error(`Error updating public hearing with ID ${req.params.id}:`, error);
+      next(error);
+    }
+  });
+  
+  // Cancel a public hearing
+  app.post("/api/public-hearings/:id/cancel", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid public hearing ID" });
+      }
+      
+      // Get the existing public hearing
+      const existingHearing = await storage.getPublicHearing(id);
+      if (!existingHearing) {
+        return res.status(404).json({ message: "Public hearing not found" });
+      }
+      
+      // Check permissions
+      if (req.user.role === 'entity_head' && req.user.entityId !== existingHearing.entityId) {
+        return res.status(403).json({ message: "You can only cancel public hearings for your own entity" });
+      }
+      
+      // Update the status to cancelled
+      const updatedHearing = await storage.updatePublicHearing(id, { status: 'cancelled' });
+      
+      if (updatedHearing) {
+        // Log the activity
+        ActivityLogger.log(
+          req.user.id,
+          'update',
+          `Cancelled public hearing: ${updatedHearing.title}`,
+          'public_hearing',
+          updatedHearing.id,
+          req
+        );
+        
+        res.json(updatedHearing);
+      } else {
+        res.status(404).json({ message: "Failed to cancel public hearing" });
+      }
+    } catch (error) {
+      console.error(`Error cancelling public hearing with ID ${req.params.id}:`, error);
+      next(error);
+    }
+  });
+  
+  // File upload for public hearings
+  app.post("/api/public-hearing-files", isAuthenticated, publicHearingsUpload.array('files', 10), async (req, res, next) => {
+    try {
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
+      
+      const publicHearingId = parseInt(req.body.publicHearingId);
+      if (isNaN(publicHearingId)) {
+        return res.status(400).json({ message: "Invalid public hearing ID" });
+      }
+      
+      // Verify the public hearing exists
+      const publicHearing = await storage.getPublicHearing(publicHearingId);
+      if (!publicHearing) {
+        return res.status(404).json({ message: "Public hearing not found" });
+      }
+      
+      // Check permissions
+      if (req.user.role === 'entity_head' && req.user.entityId !== publicHearing.entityId) {
+        return res.status(403).json({ message: "You can only upload files for public hearings of your own entity" });
+      }
+      
+      // Add each file to the database
+      const uploadedFiles = [];
+      
+      for (const file of req.files as Express.Multer.File[]) {
+        const fileData = {
+          name: file.originalname,
+          type: file.mimetype,
+          publicHearingId: publicHearingId,
+          filePath: file.path,
+          uploadedBy: req.user.id,
+        };
+        
+        const savedFile = await storage.createPublicHearingFile(fileData);
+        uploadedFiles.push(savedFile);
+      }
+      
+      // Log the activity
+      ActivityLogger.log(
+        req.user.id,
+        'upload',
+        `Uploaded ${uploadedFiles.length} files to public hearing: ${publicHearing.title}`,
+        'public_hearing',
+        publicHearingId,
+        req
+      );
+      
+      res.status(201).json(uploadedFiles);
+    } catch (error) {
+      console.error("Error uploading public hearing files:", error);
+      next(error);
+    }
+  });
+  
+  // Download a public hearing file
+  app.get("/api/public-hearing-files/:fileId", isAuthenticated, async (req, res, next) => {
+    try {
+      const fileId = parseInt(req.params.fileId);
+      if (isNaN(fileId)) {
+        return res.status(400).json({ message: "Invalid file ID" });
+      }
+      
+      // Get the file
+      const file = await storage.getPublicHearingFile(fileId);
+      if (!file || !file.filePath) {
+        return res.status(404).json({ message: "File not found" });
+      }
+      
+      // Check if file exists
+      if (!fs.existsSync(file.filePath)) {
+        return res.status(404).json({ message: "File not found on disk" });
+      }
+      
+      // Check if this is an embed request (for in-browser viewing) or a download
+      const isEmbed = req.query.embed === 'true';
+      
+      // Set appropriate headers based on request type
+      if (!isEmbed) {
+        // Force download with original filename
+        res.set('Content-Disposition', `attachment; filename="${file.name}"`);
+      } else {
+        // Try to set content type for browser viewing
+        res.set('Content-Type', file.type || 'application/octet-stream');
+      }
+      
+      // Log the download activity
+      ActivityLogger.log(
+        req.user.id,
+        'download',
+        `Downloaded public hearing file: ${file.name}`,
+        'public_hearing_file',
+        file.id,
+        req
+      );
+      
+      // Stream the file to the response
+      const fileStream = fs.createReadStream(file.filePath);
+      fileStream.pipe(res);
+    } catch (error) {
+      console.error(`Error downloading public hearing file with ID ${req.params.fileId}:`, error);
+      next(error);
     }
   });
 
