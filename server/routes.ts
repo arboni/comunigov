@@ -1143,20 +1143,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Tasks
   app.get("/api/tasks", isAuthenticated, async (req, res, next) => {
     try {
+      let tasks = [];
+      
       // Master implementers can see all tasks
       if (req.user!.role === 'master_implementer') {
-        const tasks = await storage.getAllTasks();
-        return res.json(tasks);
+        tasks = await storage.getAllTasks();
       }
-      
       // Entity heads and members can only see tasks related to their entity
-      if (req.user!.entityId) {
-        const tasks = await storage.getTasksByEntity(req.user!.entityId);
-        return res.json(tasks);
+      else if (req.user!.entityId) {
+        tasks = await storage.getTasksByEntity(req.user!.entityId);
       }
       
-      // If no entity is associated, return empty array
-      return res.json([]);
+      // If no tasks found, return empty array
+      if (!tasks.length) {
+        return res.json([]);
+      }
+      
+      // Fetch users to include in the response
+      const users = await storage.getAllUsers();
+      
+      // Add user data to tasks
+      const tasksWithUsers = tasks.map(task => {
+        if (task.isRegisteredUser && task.assignedToUserId) {
+          const assignedUser = users.find(user => user.id === task.assignedToUserId);
+          if (assignedUser) {
+            // Remove password from user data
+            const { password, ...userWithoutPassword } = assignedUser;
+            return {
+              ...task,
+              assignedToUser: userWithoutPassword
+            };
+          }
+        }
+        return task;
+      });
+      
+      return res.json(tasksWithUsers);
     } catch (error) {
       next(error);
     }

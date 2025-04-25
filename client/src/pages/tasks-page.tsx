@@ -386,7 +386,7 @@ export default function TasksPage() {
                           <TableCell>
                             {task.isRegisteredUser
                               ? task.assignedToUserId
-                                ? `[ID do Usuário: ${task.assignedToUserId}]`  // This would normally show the user name from a join
+                                ? (task.assignedToUser?.fullName || task.assignedToUser?.username || `Usuário ID: ${task.assignedToUserId}`)
                                 : "Não Atribuído"
                               : task.ownerName || "Usuário Externo"}
                           </TableCell>
