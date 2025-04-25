@@ -14,7 +14,7 @@ import EditEntityDialog from "@/components/dialogs/edit-entity-dialog";
 import CreateMemberDialog from "@/components/dialogs/create-member-dialog";
 import EditMemberDialog from "@/components/dialogs/edit-member-dialog";
 import { useTranslation } from "react-i18next";
-import { fixEncoding, getEntityTypeDisplay, getEntityTypeColors } from "@/lib/utils";
+import { fixEncoding, getEntityTypeDisplay, getEntityTypeColors, getTagColors } from "@/lib/utils";
 import { queryClient } from "@/lib/queryClient";
 
 export default function EntityDetailPage() {
@@ -192,9 +192,17 @@ export default function EntityDetailPage() {
                       <div>
                         <h3 className="text-sm font-medium text-neutral-500 mb-1">{t("entities.tags")}</h3>
                         <div className="flex flex-wrap gap-1">
-                          {fixedEntity.tags.map((tag: string, index: number) => (
-                            <Badge key={index} variant="secondary">{tag}</Badge>
-                          ))}
+                          {fixedEntity.tags.map((tag: string, index: number) => {
+                            const tagColors = getTagColors(tag);
+                            return (
+                              <Badge 
+                                key={index} 
+                                className={`${tagColors.bg} ${tagColors.text} border ${tagColors.border}`}
+                              >
+                                {tag}
+                              </Badge>
+                            );
+                          })}
                         </div>
                       </div>
                     )}

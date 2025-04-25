@@ -171,3 +171,130 @@ export function getEntityTypeColors(type: string): {
     hoverText: 'hover:text-neutral-900'
   };
 }
+
+/**
+ * Get color classes for entity tags
+ * @param tag The tag to get colors for
+ * @returns An object with background, text, and border classes
+ */
+export function getTagColors(tag: string): {
+  bg: string;
+  text: string;
+  border: string;
+} {
+  // Normalize the tag to handle casing and encoding issues
+  const normalizedTag = tag.toLowerCase().trim();
+  
+  // Development and programming related tags - blue colors
+  if (
+    normalizedTag.includes('desenvolvimento') || 
+    normalizedTag.includes('programacao') || 
+    normalizedTag.includes('programação') || 
+    normalizedTag.includes('code') || 
+    normalizedTag.includes('coding')
+  ) {
+    return {
+      bg: 'bg-blue-100',
+      text: 'text-blue-800',
+      border: 'border-blue-200'
+    };
+  }
+  
+  // Systems related tags - indigo colors
+  if (
+    normalizedTag.includes('sistema') || 
+    normalizedTag.includes('software') || 
+    normalizedTag.includes('app') || 
+    normalizedTag.includes('aplicativo') || 
+    normalizedTag.includes('aplicativos')
+  ) {
+    return {
+      bg: 'bg-indigo-100',
+      text: 'text-indigo-800',
+      border: 'border-indigo-200'
+    };
+  }
+  
+  // Database related tags - cyan colors
+  if (
+    normalizedTag.includes('banco') || 
+    normalizedTag.includes('database') || 
+    normalizedTag.includes('dado') || 
+    normalizedTag.includes('dados') || 
+    normalizedTag.includes('db')
+  ) {
+    return {
+      bg: 'bg-cyan-100',
+      text: 'text-cyan-800',
+      border: 'border-cyan-200'
+    };
+  }
+  
+  // Web related tags - purple colors
+  if (
+    normalizedTag.includes('web') || 
+    normalizedTag.includes('site') || 
+    normalizedTag.includes('portal') || 
+    normalizedTag.includes('online') || 
+    normalizedTag.includes('internet') ||
+    normalizedTag.includes('intranet')
+  ) {
+    return {
+      bg: 'bg-purple-100',
+      text: 'text-purple-800',
+      border: 'border-purple-200'
+    };
+  }
+  
+  // Automation related tags - amber colors
+  if (
+    normalizedTag.includes('automacao') || 
+    normalizedTag.includes('automação') || 
+    normalizedTag.includes('automatizado') || 
+    normalizedTag.includes('automatizada') || 
+    normalizedTag.includes('processo')
+  ) {
+    return {
+      bg: 'bg-amber-100',
+      text: 'text-amber-800',
+      border: 'border-amber-200'
+    };
+  }
+  
+  // Infrastructure related tags - emerald colors
+  if (
+    normalizedTag.includes('infra') || 
+    normalizedTag.includes('estrutura') || 
+    normalizedTag.includes('servidor') || 
+    normalizedTag.includes('rede') || 
+    normalizedTag.includes('cloud')
+  ) {
+    return {
+      bg: 'bg-emerald-100',
+      text: 'text-emerald-800',
+      border: 'border-emerald-200'
+    };
+  }
+  
+  // Security and privacy related tags - rose colors
+  if (
+    normalizedTag.includes('seguranca') || 
+    normalizedTag.includes('segurança') || 
+    normalizedTag.includes('privacidade') || 
+    normalizedTag.includes('protecao') || 
+    normalizedTag.includes('proteção')
+  ) {
+    return {
+      bg: 'bg-rose-100',
+      text: 'text-rose-800',
+      border: 'border-rose-200'
+    };
+  }
+  
+  // Default - gray colors
+  return {
+    bg: 'bg-neutral-100',
+    text: 'text-neutral-800',
+    border: 'border-neutral-200'
+  };
+}

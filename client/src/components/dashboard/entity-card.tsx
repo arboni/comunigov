@@ -7,7 +7,7 @@ import { useState } from "react";
 import EditEntityDialog from "@/components/dialogs/edit-entity-dialog";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { fixEncoding, getEntityTypeDisplay, getEntityTypeColors } from "@/lib/utils";
+import { fixEncoding, getEntityTypeDisplay, getEntityTypeColors, getTagColors } from "@/lib/utils";
 
 interface EntityCardProps {
   entity: Entity;
@@ -55,10 +55,28 @@ export default function EntityCard({ entity }: EntityCardProps) {
           </div>
           <div>
             <h3 className="text-base font-medium text-neutral-900">{fixedName}</h3>
-            <div className="mt-1">
+            <div className="mt-1 flex flex-wrap gap-1">
               <Badge className={`${getEntityTypeColors(entity.type).bg} ${getEntityTypeColors(entity.type).text} border ${getEntityTypeColors(entity.type).border}`}>
                 {getTranslatedEntityType(entity.type)}
               </Badge>
+              
+              {entity.tags && entity.tags.length > 0 && entity.tags.slice(0, 2).map((tag, index) => {
+                const tagColors = getTagColors(tag);
+                return (
+                  <Badge 
+                    key={index} 
+                    className={`${tagColors.bg} ${tagColors.text} border ${tagColors.border}`}
+                  >
+                    {tag}
+                  </Badge>
+                );
+              })}
+              
+              {entity.tags && entity.tags.length > 2 && (
+                <Badge variant="outline" className="text-xs">
+                  +{entity.tags.length - 2}
+                </Badge>
+              )}
             </div>
           </div>
         </div>
