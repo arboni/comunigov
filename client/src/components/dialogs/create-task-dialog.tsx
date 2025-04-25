@@ -151,10 +151,12 @@ export default function CreateTaskDialog({
     createTaskMutation.mutate(data);
   }
 
+  // Log rendering for debugging
+  console.log("Rendering CreateTaskDialog, open state:", open);
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        {console.log("Rendering CreateTaskDialog content")}
         <DialogHeader>
           <DialogTitle>Criar Nova Tarefa</DialogTitle>
           <DialogDescription>

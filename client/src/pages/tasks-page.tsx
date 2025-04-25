@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
@@ -112,6 +112,11 @@ export default function TasksPage() {
   const [createSubjectOpen, setCreateSubjectOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Debug createTaskOpen state changes
+  useEffect(() => {
+    console.log("createTaskOpen state changed to:", createTaskOpen);
+  }, [createTaskOpen]);
 
   // Fetch tasks and subjects
   const { data: tasks = [], isLoading: isLoadingTasks } = useQuery({
@@ -232,7 +237,13 @@ export default function TasksPage() {
             <Button
               onClick={() => {
                 console.log("Create task button clicked");
-                setCreateTaskOpen(true);
+                // Force close first in case it's somehow still open
+                setCreateTaskOpen(false);
+                // Then set timeout to open it again
+                setTimeout(() => {
+                  console.log("Setting task dialog to open state");
+                  setCreateTaskOpen(true);
+                }, 100);
               }}
               className="gap-1"
             >
