@@ -32,6 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
+import DashboardLayout from "@/components/layouts/dashboard-layout";
 
 // Helper to get status color
 const getStatusColor = (status: string) => {
@@ -255,32 +256,35 @@ const PublicHearingDetailPage = () => {
   // If the hearing is not found, show a not found message
   if (publicHearingId && !isLoading && !publicHearing) {
     return (
-      <div className="container mx-auto py-12 px-4">
-        <Button variant="ghost" onClick={() => navigate("/public-hearings")} className="mb-8">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar para Audiências Públicas
-        </Button>
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">Audiência Pública não encontrada</h2>
-          <p className="text-muted-foreground mb-6">
-            A audiência pública que você está procurando não foi encontrada ou foi removida.
-          </p>
-          <Button onClick={() => navigate("/public-hearings")}>
-            Ver todas as audiências
+      <DashboardLayout>
+        <div className="container mx-auto py-12 px-4">
+          <Button variant="ghost" onClick={() => navigate("/public-hearings")} className="mb-8">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Voltar para Audiências Públicas
           </Button>
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold mb-4">Audiência Pública não encontrada</h2>
+            <p className="text-muted-foreground mb-6">
+              A audiência pública que você está procurando não foi encontrada ou foi removida.
+            </p>
+            <Button onClick={() => navigate("/public-hearings")}>
+              Ver todas as audiências
+            </Button>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 px-4">
-      <Button variant="ghost" onClick={() => navigate("/public-hearings")} className="mb-6">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Voltar para Audiências Públicas
-      </Button>
+    <DashboardLayout>
+      <div className="container mx-auto py-6 px-4">
+        <Button variant="ghost" onClick={() => navigate("/public-hearings")} className="mb-6">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar para Audiências Públicas
+        </Button>
 
-      {isLoading ? (
+        {isLoading ? (
         <div className="space-y-4">
           <Skeleton className="h-12 w-2/3" />
           <Skeleton className="h-6 w-1/3" />
@@ -488,6 +492,7 @@ const PublicHearingDetailPage = () => {
         </>
       ) : null}
     </div>
+    </DashboardLayout>
   );
 };
 
