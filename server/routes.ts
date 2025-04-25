@@ -529,6 +529,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updateData = allowedUpdates;
       }
       
+      // Verificar se o e-mail está sendo alterado e se já existe
+      if (updateData.email && updateData.email !== user.email) {
+        const existingUserWithEmail = await storage.getUserByEmail(updateData.email);
+        if (existingUserWithEmail && existingUserWithEmail.id !== userId) {
+          return res.status(400).json({ 
+            message: "Este e-mail já está sendo usado por outro usuário. Por favor, escolha um e-mail diferente." 
+          });
+        }
+      }
+      
       console.log(`Updating user ${userId} with data:`, updateData);
       
       // Update the user
@@ -543,6 +553,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(userWithoutPassword);
     } catch (error) {
       console.error(`Error updating user:`, error);
+      
+      // Capturar erros específicos de restrição de chave única
+      if (error.code === '23505' && error.constraint === 'users_email_unique') {
+        return res.status(400).json({ 
+          message: "Este e-mail já está sendo usado por outro usuário. Por favor, escolha um e-mail diferente."
+        });
+      }
+      
       next(error);
     }
   });
