@@ -12,6 +12,8 @@ import {
   Communication, InsertCommunication,
   CommunicationRecipient, InsertCommunicationRecipient,
   CommunicationFile, InsertCommunicationFile,
+  PublicHearing, InsertPublicHearing,
+  PublicHearingFile, InsertPublicHearingFile,
   AchievementBadge, InsertAchievementBadge,
   UserBadge, InsertUserBadge,
   UserWithEntity,
@@ -27,9 +29,13 @@ import {
   CommunicationWithRecipients,
   CommunicationWithFiles,
   CommunicationWithRecipientsAndFiles,
+  PublicHearingWithEntity,
+  PublicHearingWithFiles,
+  PublicHearingWithEntityAndFiles,
   UserWithBadges,
   users, entities, meetings, meetingAttendees, meetingDocuments, meetingReactions, subjects, subjectEntities,
-  tasks, taskComments, communications, communicationRecipients, communicationFiles, achievementBadges, userBadges
+  tasks, taskComments, communications, communicationRecipients, communicationFiles, publicHearings, publicHearingFiles,
+  achievementBadges, userBadges
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -166,6 +172,22 @@ export interface IStorage {
   getFeaturedBadgesByUserId(userId: number): Promise<(UserBadge & { badge: AchievementBadge })[]>;
   markUserBadgesAsSeen(badgeIds: number[]): Promise<void>;
   
+  // Public Hearings
+  getPublicHearing(id: number): Promise<PublicHearing | undefined>;
+  getPublicHearingWithEntity(id: number): Promise<PublicHearingWithEntity | undefined>;
+  getPublicHearingWithFiles(id: number): Promise<PublicHearingWithFiles | undefined>;
+  getPublicHearingWithEntityAndFiles(id: number): Promise<PublicHearingWithEntityAndFiles | undefined>;
+  createPublicHearing(publicHearing: InsertPublicHearing): Promise<PublicHearing>;
+  updatePublicHearing(id: number, publicHearingData: Partial<PublicHearing>): Promise<PublicHearing | undefined>;
+  getAllPublicHearings(): Promise<PublicHearing[]>;
+  getPublicHearingsByEntityId(entityId: number): Promise<PublicHearing[]>;
+  getUpcomingPublicHearings(): Promise<PublicHearing[]>;
+  
+  // Public Hearing Files
+  getPublicHearingFile(id: number): Promise<PublicHearingFile | undefined>;
+  createPublicHearingFile(file: InsertPublicHearingFile): Promise<PublicHearingFile>;
+  getPublicHearingFilesByPublicHearingId(publicHearingId: number): Promise<PublicHearingFile[]>;
+  
   // Session Store
   sessionStore: any; // Fix type issue with SessionStore
 }
@@ -185,6 +207,10 @@ export class MemStorage implements IStorage {
   private communications: Map<number, Communication>;
   private communicationRecipients: Map<number, CommunicationRecipient>;
   private communicationFiles: Map<number, CommunicationFile>;
+  private publicHearings: Map<number, PublicHearing>;
+  private publicHearingFiles: Map<number, PublicHearingFile>;
+  private achievementBadges: Map<number, AchievementBadge>;
+  private userBadges: Map<number, UserBadge>;
   
   // Auto-increment IDs
   currentUserId: number;
@@ -200,6 +226,10 @@ export class MemStorage implements IStorage {
   currentCommunicationId: number;
   currentCommunicationRecipientId: number;
   currentCommunicationFileId: number;
+  currentPublicHearingId: number;
+  currentPublicHearingFileId: number;
+  currentAchievementBadgeId: number;
+  currentUserBadgeId: number;
   
   // Session store
   sessionStore: any; // Use any type for sessionStore
@@ -219,6 +249,8 @@ export class MemStorage implements IStorage {
     this.communications = new Map();
     this.communicationRecipients = new Map();
     this.communicationFiles = new Map();
+    this.publicHearings = new Map();
+    this.publicHearingFiles = new Map();
     this.achievementBadges = new Map();
     this.userBadges = new Map();
     
@@ -236,6 +268,8 @@ export class MemStorage implements IStorage {
     this.currentCommunicationId = 1;
     this.currentCommunicationRecipientId = 1;
     this.currentCommunicationFileId = 1;
+    this.currentPublicHearingId = 1;
+    this.currentPublicHearingFileId = 1;
     this.currentAchievementBadgeId = 1;
     this.currentUserBadgeId = 1;
     
