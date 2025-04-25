@@ -421,7 +421,14 @@ const PublicHearingDetailPage = () => {
                       {file.type}
                     </div>
                     <div className="text-sm text-muted-foreground mt-1">
-                      Enviado em {format(new Date(file.uploadedAt), "dd/MM/yyyy HH:mm")}
+                      Enviado em {format(
+                        typeof file.uploadedAt === 'string' 
+                          ? new Date(file.uploadedAt) 
+                          : file.uploadedAt instanceof Date 
+                            ? file.uploadedAt 
+                            : new Date(), 
+                        "dd/MM/yyyy HH:mm"
+                      )}
                     </div>
                   </CardContent>
                   <div className="p-4 pt-0 mt-auto">
