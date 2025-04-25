@@ -1188,7 +1188,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.userId);
       const tasks = await storage.getTasksByUserId(userId);
-      res.json(tasks);
+      
+      // Fetch users to include in the response
+      const users = await storage.getAllUsers();
+      
+      // Add user data to tasks
+      const tasksWithUsers = tasks.map(task => {
+        if (task.isRegisteredUser && task.assignedToUserId) {
+          const assignedUser = users.find(user => user.id === task.assignedToUserId);
+          if (assignedUser) {
+            // Remove password from user data
+            const { password, ...userWithoutPassword } = assignedUser;
+            return {
+              ...task,
+              assignedToUser: userWithoutPassword
+            };
+          }
+        }
+        return task;
+      });
+      
+      res.json(tasksWithUsers);
     } catch (error) {
       next(error);
     }
@@ -1198,7 +1218,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const meetingId = parseInt(req.params.meetingId);
       const tasks = await storage.getTasksByMeeting(meetingId);
-      res.json(tasks);
+      
+      // Fetch users to include in the response
+      const users = await storage.getAllUsers();
+      
+      // Add user data to tasks
+      const tasksWithUsers = tasks.map(task => {
+        if (task.isRegisteredUser && task.assignedToUserId) {
+          const assignedUser = users.find(user => user.id === task.assignedToUserId);
+          if (assignedUser) {
+            // Remove password from user data
+            const { password, ...userWithoutPassword } = assignedUser;
+            return {
+              ...task,
+              assignedToUser: userWithoutPassword
+            };
+          }
+        }
+        return task;
+      });
+      
+      res.json(tasksWithUsers);
     } catch (error) {
       next(error);
     }
@@ -1208,7 +1248,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const entityId = parseInt(req.params.entityId);
       const tasks = await storage.getTasksByEntity(entityId);
-      res.json(tasks);
+      
+      // Fetch users to include in the response
+      const users = await storage.getAllUsers();
+      
+      // Add user data to tasks
+      const tasksWithUsers = tasks.map(task => {
+        if (task.isRegisteredUser && task.assignedToUserId) {
+          const assignedUser = users.find(user => user.id === task.assignedToUserId);
+          if (assignedUser) {
+            // Remove password from user data
+            const { password, ...userWithoutPassword } = assignedUser;
+            return {
+              ...task,
+              assignedToUser: userWithoutPassword
+            };
+          }
+        }
+        return task;
+      });
+      
+      res.json(tasksWithUsers);
     } catch (error) {
       next(error);
     }
@@ -1447,7 +1507,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const subjectId = parseInt(req.params.id);
       const tasks = await storage.getTasksBySubject(subjectId);
-      res.json(tasks);
+      
+      // Fetch users to include in the response
+      const users = await storage.getAllUsers();
+      
+      // Add user data to tasks
+      const tasksWithUsers = tasks.map(task => {
+        if (task.isRegisteredUser && task.assignedToUserId) {
+          const assignedUser = users.find(user => user.id === task.assignedToUserId);
+          if (assignedUser) {
+            // Remove password from user data
+            const { password, ...userWithoutPassword } = assignedUser;
+            return {
+              ...task,
+              assignedToUser: userWithoutPassword
+            };
+          }
+        }
+        return task;
+      });
+      
+      res.json(tasksWithUsers);
     } catch (error) {
       next(error);
     }
