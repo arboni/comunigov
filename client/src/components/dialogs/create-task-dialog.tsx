@@ -222,7 +222,11 @@ export default function CreateTaskDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={(e) => {
+              e.preventDefault();
+              console.log("Form submitted directly");
+              form.handleSubmit(onSubmit)(e);
+            }} className="space-y-6">
             <div className="grid grid-cols-1 gap-4 py-4">
               {/* Subject Selection - Searchable */}
               <FormField
@@ -579,11 +583,55 @@ export default function CreateTaskDialog({
                 Cancelar
               </Button>
               <Button
-                type="submit"
+                type="button"
                 disabled={createTaskMutation.isPending}
                 onClick={() => {
-                  console.log("Submit button clicked");
-                  form.handleSubmit(onSubmit)();
+                  console.log("Submit button clicked manually");
+                  
+                  // Get form values
+                  const data = form.getValues();
+                  console.log("Form data:", data);
+                  
+                  // Manual validation
+                  if (isRegisteredUser && !data.assignedToUserId) {
+                    toast({
+                      title: "Erro",
+                      description: "Por favor, selecione um usuário responsável",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  
+                  if (!data.subjectId) {
+                    toast({
+                      title: "Erro",
+                      description: "Por favor, selecione uma área de assunto",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  
+                  if (!data.title || data.title.trim() === "") {
+                    toast({
+                      title: "Erro",
+                      description: "Por favor, preencha o título da tarefa",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  
+                  // Submit directly
+                  const formattedData = {
+                    ...data,
+                    ownerName: data.ownerName || "",
+                    ownerEmail: data.ownerEmail || "",
+                    ownerPhone: data.ownerPhone || "",
+                    title: data.title.trim(),
+                    description: data.description?.trim() || "",
+                  };
+                  
+                  console.log("Submitting formatted data manually:", formattedData);
+                  createTaskMutation.mutate(formattedData);
                 }}
               >
                 {createTaskMutation.isPending && (
