@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, FileUp, Loader2 } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +38,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
+import { useToast } from "@/hooks/use-toast";
 
 interface CreatePublicHearingDialogProps {
   open: boolean;
@@ -78,7 +79,10 @@ const CreatePublicHearingDialog = ({
   onSuccess,
 }: CreatePublicHearingDialogProps) => {
   const { user } = useSimpleAuth();
+  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [files, setFiles] = useState<FileList | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Query to fetch entities
   const { data: entities, isLoading: isLoadingEntities } = useQuery({
@@ -102,6 +106,50 @@ const CreatePublicHearingDialog = ({
     defaultValues,
   });
 
+  // File upload handler
+  const uploadFiles = async (hearingId: number) => {
+    if (!files || files.length === 0) {
+      return; // No files to upload
+    }
+
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("publicHearingId", hearingId.toString());
+      
+      for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+      }
+
+      const response = await fetch("/api/public-hearing-files", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao fazer upload dos arquivos");
+      }
+
+      toast({
+        title: "Upload concluído",
+        description: `${files.length} arquivo(s) enviado(s) com sucesso.`,
+      });
+      
+      // Clear files
+      setFiles(null);
+    } catch (error) {
+      console.error("Erro no upload de arquivos:", error);
+      toast({
+        title: "Erro no upload",
+        description: "Ocorreu um erro ao fazer upload dos arquivos. Por favor, tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // Handle form submission
   const createPublicHearingMutation = useMutation({
     mutationFn: async (data: FormValues) => {
@@ -111,7 +159,12 @@ const CreatePublicHearingDialog = ({
       });
       return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: async (createdHearing) => {
+      // If we have files to upload, upload them now
+      if (files && files.length > 0) {
+        await uploadFiles(createdHearing.id);
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/public-hearings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/public-hearings/upcoming"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
@@ -123,6 +176,11 @@ const CreatePublicHearingDialog = ({
     onError: (error) => {
       console.error("Error creating public hearing:", error);
       setIsSubmitting(false);
+      toast({
+        title: "Erro ao criar audiência pública",
+        description: "Ocorreu um erro ao criar a audiência pública. Por favor, tente novamente.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -306,6 +364,32 @@ const CreatePublicHearingDialog = ({
                 </FormItem>
               )}
             />
+
+            {/* File Upload Section */}
+            <div className="space-y-2">
+              <FormLabel>Documentos (opcional)</FormLabel>
+              <div className="flex flex-col gap-2 border rounded-md p-4">
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    className="flex-1"
+                    onChange={(e) => setFiles(e.target.files)}
+                    multiple
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                  />
+                  {files && files.length > 0 && (
+                    <div className="text-sm text-muted-foreground">
+                      {files.length} arquivo(s) selecionado(s)
+                    </div>
+                  )}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Você pode enviar até 10 arquivos (PDFs, documentos, planilhas, imagens).
+                  <br />
+                  Tamanho máximo por arquivo: 10MB
+                </div>
+              </div>
+            </div>
 
             <DialogFooter>
               <Button
