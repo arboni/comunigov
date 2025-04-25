@@ -149,7 +149,11 @@ export default function EntityDetailPage() {
               
               <div>
                 <h1 className="text-2xl font-semibold text-neutral-800">{fixedEntity?.name}</h1>
-                <p className="text-neutral-500">{getTranslatedEntityType(fixedEntity?.type || '')}</p>
+                <Badge 
+                  className={`mt-1 ${getEntityTypeColors(fixedEntity?.type || '').bg} ${getEntityTypeColors(fixedEntity?.type || '').text} border ${getEntityTypeColors(fixedEntity?.type || '').border}`}
+                >
+                  {getTranslatedEntityType(fixedEntity?.type || '')}
+                </Badge>
               </div>
             </div>
             
@@ -177,7 +181,11 @@ export default function EntityDetailPage() {
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-sm font-medium text-neutral-500 mb-1">{t("entities.entity_type")}</h3>
-                      <Badge variant="outline">{getTranslatedEntityType(fixedEntity?.type || '')}</Badge>
+                      <Badge 
+                        className={`${getEntityTypeColors(fixedEntity?.type || '').bg} ${getEntityTypeColors(fixedEntity?.type || '').text} border ${getEntityTypeColors(fixedEntity?.type || '').border}`}
+                      >
+                        {getTranslatedEntityType(fixedEntity?.type || '')}
+                      </Badge>
                     </div>
                     
                     {fixedEntity?.tags && fixedEntity.tags.length > 0 && (

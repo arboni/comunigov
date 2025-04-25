@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { insertSubjectSchema, Subject } from "@shared/schema";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import { useTranslation } from "@/hooks/use-translation";
+import { getEntityTypeColors, getEntityTypeDisplay } from "@/lib/utils";
 
 import {
   Dialog,
@@ -304,8 +305,7 @@ export default function SubjectEditDialog({
                         return entity ? (
                           <Badge 
                             key={id} 
-                            variant="secondary"
-                            className="flex items-center gap-1"
+                            className={`flex items-center gap-1 ${getEntityTypeColors(entity.type).bg} ${getEntityTypeColors(entity.type).text} border ${getEntityTypeColors(entity.type).border}`}
                           >
                             {entity.name}
                             <button 
@@ -341,9 +341,11 @@ export default function SubjectEditDialog({
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                             >
                               {entity.name}
-                              <span className="text-xs text-muted-foreground ml-1">
-                                ({entity.type})
-                              </span>
+                              <Badge 
+                                className={`ml-2 text-xs ${getEntityTypeColors(entity.type).bg} ${getEntityTypeColors(entity.type).text} border ${getEntityTypeColors(entity.type).border}`}
+                              >
+                                {getEntityTypeDisplay(entity.type)}
+                              </Badge>
                             </label>
                           </div>
                         ))}
