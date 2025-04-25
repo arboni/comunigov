@@ -198,8 +198,8 @@ const CardSkeleton = () => (
 const PublicHearingsPage = () => {
   const { user } = useSimpleAuth();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [entityFilter, setEntityFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [entityFilter, setEntityFilter] = useState("all");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
 
@@ -243,9 +243,9 @@ const PublicHearingsPage = () => {
                           hearing.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           hearing.location.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter ? hearing.status === statusFilter : true;
+    const matchesStatus = statusFilter && statusFilter !== "all" ? hearing.status === statusFilter : true;
     
-    const matchesEntity = entityFilter ? hearing.entityId === parseInt(entityFilter) : true;
+    const matchesEntity = entityFilter && entityFilter !== "all" ? hearing.entityId === parseInt(entityFilter) : true;
     
     return matchesSearch && matchesStatus && matchesEntity;
   });
@@ -302,7 +302,7 @@ const PublicHearingsPage = () => {
                 </span>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os status</SelectItem>
+                <SelectItem value="all">Todos os status</SelectItem>
                 <SelectItem value="scheduled">Agendada</SelectItem>
                 <SelectItem value="in_progress">Em Andamento</SelectItem>
                 <SelectItem value="completed">Concluída</SelectItem>
@@ -322,7 +322,7 @@ const PublicHearingsPage = () => {
                 </span>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as entidades</SelectItem>
+                <SelectItem value="all">Todas as entidades</SelectItem>
                 {entities?.map((entity: any) => (
                   <SelectItem key={entity.id} value={entity.id.toString()}>
                     {entity.name}
@@ -354,7 +354,7 @@ const PublicHearingsPage = () => {
         <div className="text-center py-12 border border-dashed rounded-lg">
           <h3 className="text-lg font-medium">Nenhuma audiência pública encontrada</h3>
           <p className="text-muted-foreground mt-2">
-            {searchTerm || statusFilter || entityFilter
+            {searchTerm || (statusFilter !== "all") || (entityFilter !== "all")
               ? "Tente remover os filtros ou alterar os termos de busca."
               : activeTab === "upcoming"
               ? "Não há audiências públicas agendadas para o futuro."
