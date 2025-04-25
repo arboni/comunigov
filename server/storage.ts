@@ -1048,6 +1048,132 @@ export class MemStorage implements IStorage {
       }
     }
   }
+  
+  // Public Hearing methods
+  async getPublicHearing(id: number): Promise<PublicHearing | undefined> {
+    return this.publicHearings.get(id);
+  }
+
+  async getPublicHearingWithEntity(id: number): Promise<PublicHearingWithEntity | undefined> {
+    const publicHearing = await this.getPublicHearing(id);
+    if (!publicHearing) return undefined;
+
+    const entity = await this.getEntity(publicHearing.entityId);
+    if (!entity) return undefined;
+
+    return {
+      ...publicHearing,
+      entity
+    };
+  }
+
+  async getPublicHearingWithFiles(id: number): Promise<PublicHearingWithFiles | undefined> {
+    const publicHearing = await this.getPublicHearing(id);
+    if (!publicHearing) return undefined;
+
+    const files = await this.getPublicHearingFilesByPublicHearingId(id);
+
+    return {
+      ...publicHearing,
+      files
+    };
+  }
+
+  async getPublicHearingWithEntityAndFiles(id: number): Promise<PublicHearingWithEntityAndFiles | undefined> {
+    const publicHearing = await this.getPublicHearing(id);
+    if (!publicHearing) return undefined;
+
+    const entity = await this.getEntity(publicHearing.entityId);
+    if (!entity) return undefined;
+
+    const files = await this.getPublicHearingFilesByPublicHearingId(id);
+
+    return {
+      ...publicHearing,
+      entity,
+      files
+    };
+  }
+
+  async createPublicHearing(publicHearing: InsertPublicHearing): Promise<PublicHearing> {
+    const id = this.currentPublicHearingId++;
+    const now = new Date();
+    const newPublicHearing: PublicHearing = { 
+      ...publicHearing, 
+      id,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.publicHearings.set(id, newPublicHearing);
+    return newPublicHearing;
+  }
+
+  async updatePublicHearing(id: number, publicHearingData: Partial<PublicHearing>): Promise<PublicHearing | undefined> {
+    const publicHearing = this.publicHearings.get(id);
+    if (!publicHearing) return undefined;
+
+    const now = new Date();
+    const updatedPublicHearing = { 
+      ...publicHearing, 
+      ...publicHearingData,
+      updatedAt: now
+    };
+    this.publicHearings.set(id, updatedPublicHearing);
+    return updatedPublicHearing;
+  }
+
+  async getAllPublicHearings(): Promise<PublicHearing[]> {
+    return Array.from(this.publicHearings.values());
+  }
+
+  async getPublicHearingsByEntityId(entityId: number): Promise<PublicHearing[]> {
+    return Array.from(this.publicHearings.values()).filter(
+      (hearing) => hearing.entityId === entityId
+    );
+  }
+
+  async getUpcomingPublicHearings(): Promise<PublicHearing[]> {
+    const now = new Date();
+    return Array.from(this.publicHearings.values())
+      .filter(hearing => {
+        const hearingDate = new Date(hearing.date);
+        // Convert time strings to hours and minutes
+        const startTimeParts = hearing.startTime.split(':').map(Number);
+        const hearingDateTime = new Date(
+          hearingDate.getFullYear(),
+          hearingDate.getMonth(),
+          hearingDate.getDate(),
+          startTimeParts[0],  // Hours from startTime
+          startTimeParts[1]   // Minutes from startTime
+        );
+        
+        return hearingDateTime > now && hearing.status !== 'cancelled';
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }
+
+  // Public Hearing File methods
+  async getPublicHearingFile(id: number): Promise<PublicHearingFile | undefined> {
+    return this.publicHearingFiles.get(id);
+  }
+
+  async createPublicHearingFile(file: InsertPublicHearingFile): Promise<PublicHearingFile> {
+    const id = this.currentPublicHearingFileId++;
+    const now = new Date();
+    const newFile: PublicHearingFile = { 
+      ...file, 
+      id,
+      uploadedAt: now
+    };
+    this.publicHearingFiles.set(id, newFile);
+    return newFile;
+  }
+
+  async getPublicHearingFilesByPublicHearingId(publicHearingId: number): Promise<PublicHearingFile[]> {
+    return Array.from(this.publicHearingFiles.values()).filter(
+      (file) => file.publicHearingId === publicHearingId
+    );
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1179,6 +1305,168 @@ export class DatabaseStorage implements IStorage {
       .update(userBadges)
       .set({ seen: true })
       .where(inArray(userBadges.id, badgeIds));
+  }
+  
+  // Public Hearings methods
+  async getPublicHearing(id: number): Promise<PublicHearing | undefined> {
+    const [publicHearing] = await db
+      .select()
+      .from(publicHearings)
+      .where(eq(publicHearings.id, id));
+    return publicHearing || undefined;
+  }
+
+  async getPublicHearingWithEntity(id: number): Promise<PublicHearingWithEntity | undefined> {
+    const [result] = await db
+      .select({
+        id: publicHearings.id,
+        title: publicHearings.title,
+        description: publicHearings.description,
+        date: publicHearings.date,
+        startTime: publicHearings.startTime,
+        endTime: publicHearings.endTime,
+        location: publicHearings.location,
+        entityId: publicHearings.entityId,
+        createdBy: publicHearings.createdBy,
+        status: publicHearings.status,
+        createdAt: publicHearings.createdAt,
+        updatedAt: publicHearings.updatedAt,
+        entity: entities
+      })
+      .from(publicHearings)
+      .leftJoin(entities, eq(publicHearings.entityId, entities.id))
+      .where(eq(publicHearings.id, id));
+
+    if (!result) return undefined;
+    return result as unknown as PublicHearingWithEntity;
+  }
+
+  async getPublicHearingWithFiles(id: number): Promise<PublicHearingWithFiles | undefined> {
+    const [publicHearing] = await db
+      .select()
+      .from(publicHearings)
+      .where(eq(publicHearings.id, id));
+      
+    if (!publicHearing) return undefined;
+    
+    const files = await db
+      .select()
+      .from(publicHearingFiles)
+      .where(eq(publicHearingFiles.publicHearingId, id));
+      
+    return {
+      ...publicHearing,
+      files
+    };
+  }
+
+  async getPublicHearingWithEntityAndFiles(id: number): Promise<PublicHearingWithEntityAndFiles | undefined> {
+    const [result] = await db
+      .select({
+        id: publicHearings.id,
+        title: publicHearings.title,
+        description: publicHearings.description,
+        date: publicHearings.date,
+        startTime: publicHearings.startTime,
+        endTime: publicHearings.endTime,
+        location: publicHearings.location,
+        entityId: publicHearings.entityId,
+        createdBy: publicHearings.createdBy,
+        status: publicHearings.status,
+        createdAt: publicHearings.createdAt,
+        updatedAt: publicHearings.updatedAt,
+        entity: entities
+      })
+      .from(publicHearings)
+      .leftJoin(entities, eq(publicHearings.entityId, entities.id))
+      .where(eq(publicHearings.id, id));
+
+    if (!result) return undefined;
+    
+    const files = await db
+      .select()
+      .from(publicHearingFiles)
+      .where(eq(publicHearingFiles.publicHearingId, id));
+      
+    return {
+      ...result,
+      files
+    } as unknown as PublicHearingWithEntityAndFiles;
+  }
+
+  async createPublicHearing(publicHearing: InsertPublicHearing): Promise<PublicHearing> {
+    const [newPublicHearing] = await db
+      .insert(publicHearings)
+      .values({
+        ...publicHearing,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    return newPublicHearing;
+  }
+
+  async updatePublicHearing(id: number, publicHearingData: Partial<PublicHearing>): Promise<PublicHearing | undefined> {
+    const [updatedPublicHearing] = await db
+      .update(publicHearings)
+      .set({
+        ...publicHearingData,
+        updatedAt: new Date()
+      })
+      .where(eq(publicHearings.id, id))
+      .returning();
+    return updatedPublicHearing || undefined;
+  }
+
+  async getAllPublicHearings(): Promise<PublicHearing[]> {
+    return await db.select().from(publicHearings);
+  }
+
+  async getPublicHearingsByEntityId(entityId: number): Promise<PublicHearing[]> {
+    return await db
+      .select()
+      .from(publicHearings)
+      .where(eq(publicHearings.entityId, entityId));
+  }
+
+  async getUpcomingPublicHearings(): Promise<PublicHearing[]> {
+    const now = new Date();
+    
+    return await db
+      .select()
+      .from(publicHearings)
+      .where(and(
+        gt(publicHearings.date, now),
+        ne(publicHearings.status, 'cancelled')
+      ))
+      .orderBy(publicHearings.date);
+  }
+
+  // Public Hearing Files methods
+  async getPublicHearingFile(id: number): Promise<PublicHearingFile | undefined> {
+    const [file] = await db
+      .select()
+      .from(publicHearingFiles)
+      .where(eq(publicHearingFiles.id, id));
+    return file || undefined;
+  }
+
+  async createPublicHearingFile(file: InsertPublicHearingFile): Promise<PublicHearingFile> {
+    const [newFile] = await db
+      .insert(publicHearingFiles)
+      .values({
+        ...file,
+        uploadedAt: new Date()
+      })
+      .returning();
+    return newFile;
+  }
+
+  async getPublicHearingFilesByPublicHearingId(publicHearingId: number): Promise<PublicHearingFile[]> {
+    return await db
+      .select()
+      .from(publicHearingFiles)
+      .where(eq(publicHearingFiles.publicHearingId, publicHearingId));
   }
 
   // User methods

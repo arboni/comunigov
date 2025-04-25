@@ -40,6 +40,8 @@ import {
   insertCommunicationRecipientSchema,
   insertAchievementBadgeSchema,
   insertUserBadgeSchema,
+  insertPublicHearingSchema,
+  insertPublicHearingFileSchema,
   // Add table references for analytics and logging
   users as usersTable,
   entities as entitiesTable,
@@ -51,7 +53,10 @@ import {
   meetingAttendees as meetingAttendeesTable,
   meetingDocuments as meetingDocumentsTable,
   taskComments as taskCommentsTable,
-  userActivityLogs
+  publicHearings as publicHearingsTable,
+  publicHearingFiles as publicHearingFilesTable,
+  userActivityLogs,
+  publicHearingStatusEnum
 } from "@shared/schema";
 
 // Import auth middleware from auth-middleware.ts instead of using local definitions
