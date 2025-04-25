@@ -75,6 +75,13 @@ export default function CreateTaskDialog({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isRegisteredUser, setIsRegisteredUser] = useState(true);
+  
+  // Debug logs
+  useEffect(() => {
+    if (open) {
+      console.log("CreateTaskDialog opened");
+    }
+  }, [open]);
 
   // Load subjects for dropdown
   const { data: subjects = [] } = useQuery({
@@ -146,7 +153,8 @@ export default function CreateTaskDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        {console.log("Rendering CreateTaskDialog content")}
         <DialogHeader>
           <DialogTitle>Criar Nova Tarefa</DialogTitle>
           <DialogDescription>

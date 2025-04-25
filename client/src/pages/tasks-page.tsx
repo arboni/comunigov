@@ -72,13 +72,15 @@ function getTaskStatusBadge(status: string) {
         </Badge>
       );
     case "in_progress":
-      <Badge variant="secondary" className="flex items-center gap-1">
-        <Loader2 className="h-3 w-3 animate-spin" />
-        <span>In Progress</span>
-      </Badge>;
+      return (
+        <Badge variant="secondary" className="flex items-center gap-1">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          <span>In Progress</span>
+        </Badge>
+      );
     case "completed":
       return (
-        <Badge variant="success" className="flex items-center gap-1 bg-green-100 text-green-800">
+        <Badge variant="outline" className="flex items-center gap-1 bg-green-100 text-green-800">
           <Check className="h-3 w-3" />
           <span>Completed</span>
         </Badge>
@@ -228,7 +230,10 @@ export default function TasksPage() {
               <Plus className="h-4 w-4" /> Assunto
             </Button>
             <Button
-              onClick={() => setCreateTaskOpen(true)}
+              onClick={() => {
+                console.log("Create task button clicked");
+                setCreateTaskOpen(true);
+              }}
               className="gap-1"
             >
               <Plus className="h-4 w-4" /> Tarefa
