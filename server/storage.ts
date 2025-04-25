@@ -1361,37 +1361,37 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPublicHearingWithEntityAndFiles(id: number): Promise<PublicHearingWithEntityAndFiles | undefined> {
-    const [result] = await db
-      .select({
-        id: publicHearings.id,
-        title: publicHearings.title,
-        description: publicHearings.description,
-        date: publicHearings.date,
-        startTime: publicHearings.startTime,
-        endTime: publicHearings.endTime,
-        location: publicHearings.location,
-        entityId: publicHearings.entityId,
-        createdBy: publicHearings.createdBy,
-        status: publicHearings.status,
-        createdAt: publicHearings.createdAt,
-        updatedAt: publicHearings.updatedAt,
-        entity: entities
-      })
+    // First get the public hearing
+    const [publicHearing] = await db
+      .select()
       .from(publicHearings)
-      .leftJoin(entities, eq(publicHearings.entityId, entities.id))
       .where(eq(publicHearings.id, id));
 
-    if (!result) return undefined;
+    if (!publicHearing) return undefined;
     
+    // Get the entity
+    const [entity] = await db
+      .select()
+      .from(entities)
+      .where(eq(entities.id, publicHearing.entityId));
+      
+    if (!entity) return undefined;
+    
+    // Get the files
     const files = await db
       .select()
       .from(publicHearingFiles)
       .where(eq(publicHearingFiles.publicHearingId, id));
       
+    // Log for debugging
+    console.log(`Found ${files.length} files for public hearing #${id}`);
+    
+    // Return the combined result with proper typing
     return {
-      ...result,
+      ...publicHearing,
+      entity,
       files
-    } as unknown as PublicHearingWithEntityAndFiles;
+    };
   }
 
   async createPublicHearing(publicHearing: InsertPublicHearing): Promise<PublicHearing> {
