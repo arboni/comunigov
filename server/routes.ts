@@ -3456,6 +3456,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only create public hearings for your own entity" });
       }
       
+      // Convert date string to Date object if it's not already
+      if (hearingData.date && typeof hearingData.date === 'string') {
+        hearingData.date = new Date(hearingData.date);
+      }
+      
       // Set creator and default status
       hearingData.createdBy = req.user.id;
       hearingData.status = hearingData.status || 'scheduled';
@@ -3529,8 +3534,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only update public hearings for your own entity" });
       }
       
+      // Handle date conversion if needed
+      let hearingData = req.body;
+      if (hearingData.date && typeof hearingData.date === 'string') {
+        hearingData.date = new Date(hearingData.date);
+      }
+      
       // Update the public hearing
-      const updatedHearing = await storage.updatePublicHearing(id, req.body);
+      const updatedHearing = await storage.updatePublicHearing(id, hearingData);
       
       if (updatedHearing) {
         // Log the activity
