@@ -192,14 +192,29 @@ const PublicHearingDetailPage = () => {
         formData.append("files", files[i]);
       }
 
+      // Log request information for debugging
+      console.log("Sending file upload request:", {
+        endpoint: "/api/public-hearing-files",
+        publicHearingId: publicHearingId,
+        numberOfFiles: files.length
+      });
+
       const response = await fetch("/api/public-hearing-files", {
         method: "POST",
         body: formData,
+        // Don't add Content-Type header - browser will add it with the boundary
       });
 
+      console.log("Upload response status:", response.status);
+      
       if (!response.ok) {
-        throw new Error("Falha ao fazer upload dos arquivos");
+        const errorText = await response.text();
+        console.error("Upload error response:", errorText);
+        throw new Error(`Falha ao fazer upload dos arquivos: ${errorText}`);
       }
+
+      const result = await response.json();
+      console.log("Upload successful:", result);
 
       toast({
         title: "Upload concluído",
@@ -208,7 +223,11 @@ const PublicHearingDetailPage = () => {
       
       // Clear files and refetch hearing data to show the new files
       setFiles(null);
-      refetch();
+      
+      // Add a small delay before refetching to ensure the server has processed the files
+      setTimeout(() => {
+        refetch();
+      }, 500);
     } catch (error) {
       console.error("Erro no upload de arquivos:", error);
       toast({
