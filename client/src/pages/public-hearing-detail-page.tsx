@@ -66,7 +66,7 @@ const translateStatus = (status: string) => {
   }
 };
 
-const PublicHearingDetailPage = () => {
+function PublicHearingDetailPage() {
   const params = useParams();
   const [, navigate] = useLocation();
   const { toast } = useToast();
