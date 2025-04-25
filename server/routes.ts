@@ -7,7 +7,9 @@ import {
   sendNewMemberWelcomeEmail, 
   sendPasswordResetEmail,
   sendMeetingInvitationEmail,
-  sendMeetingInvitationsToAllAttendees
+  sendMeetingInvitationsToAllAttendees,
+  sendPublicHearingInvitationEmail,
+  sendPublicHearingInvitationsToMembers
 } from "./email-service";
 import { sendMessage, sendMessageWithFallback, sendMessageToAll, MessageChannel } from "./messaging-service";
 import { 
@@ -3477,31 +3479,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const organizerName = organizer ? (organizer.fullName || organizer.username) : 'Public Hearing Organizer';
         
         try {
-          // Collect member email addresses
-          const memberEmails = entityMembers
-            .filter(member => member.email) // Only members with email
-            .map(member => ({
-              userId: member.id,
-              name: member.fullName || member.username,
-              email: member.email
-            }));
+          // Send email notifications to all entity members
+          console.log(`Sending email notifications to ${entityMembers.length} entity members about new public hearing`);
+          
+          const result = await sendPublicHearingInvitationsToMembers(
+            newHearing,
+            entityMembers,
+            organizerName
+          );
+          
+          console.log(`Public hearing invitations sent: ${result.success} successful, ${result.failed} failed`);
             
-          if (memberEmails.length > 0) {
-            // Send notifications to all members
-            // This is a placeholder for the actual email sending function
-            // You should implement a function similar to sendMeetingInvitationsToAllAttendees
-            console.log(`Would send email notifications to ${memberEmails.length} entity members about new public hearing`);
-            
-            // Add activity log
-            ActivityLogger.log(
-              req.user.id,
-              'create',
-              `Created public hearing: ${newHearing.title}`,
-              'public_hearing',
-              newHearing.id,
-              req
-            );
-          }
+          // Add activity log
+          ActivityLogger.log(
+            req.user.id,
+            'create',
+            `Created public hearing: ${newHearing.title}`,
+            'public_hearing',
+            newHearing.id,
+            req
+          );
         } catch (notifyError) {
           console.error("Error notifying entity members about new public hearing:", notifyError);
           // Continue with the response even if notification fails

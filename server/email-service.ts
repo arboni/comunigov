@@ -725,6 +725,380 @@ The ComuniGov Team
  * @param attendees - List of attendees with user information
  * @param organizerName - Name of the meeting organizer
  */
+/**
+ * Sends a public hearing invitation email
+ * @param to - Recipient email
+ * @param recipientName - Recipient's full name
+ * @param hearing - Public hearing information
+ * @param organizerName - Name of the public hearing organizer
+ */
+export async function sendPublicHearingInvitationEmail(
+  to: string,
+  recipientName: string,
+  hearing: PublicHearing,
+  organizerName: string
+): Promise<boolean> {
+  const hearingDate = new Date(hearing.date);
+  const formattedDate = format(hearingDate, 'PPPP', { locale: require('date-fns/locale/pt-BR') }); // 'segunda-feira, 1 de janeiro de 2025'
+  const subject = `Convite para Audiência Pública: ${hearing.title}`;
+  
+  // Fetch hearing files/attachments
+  let attachments: Array<{content?: string; path?: string; filename: string; type?: string; disposition?: string; contentId?: string}> = [];
+  let hasFiles = false;
+  
+  try {
+    console.log(`Fetching files for public hearing ID ${hearing.id}`);
+    const files = await db.query.publicHearingFiles.findMany({
+      where: eq(publicHearingFiles.publicHearingId, hearing.id)
+    });
+    
+    if (files && files.length > 0) {
+      console.log(`Found ${files.length} files for public hearing ${hearing.id}`);
+      hasFiles = true;
+      
+      // Convert files to email attachments
+      for (const file of files) {
+        try {
+          if (fs.existsSync(file.filePath)) {
+            attachments.push({
+              filename: file.name,
+              path: file.filePath,
+              type: file.type,
+              disposition: 'attachment'
+            });
+            console.log(`Added attachment: ${file.name} (${file.type})`);
+          } else {
+            console.warn(`File not found: ${file.filePath}`);
+          }
+        } catch (error) {
+          console.error(`Error processing file attachment ${file.name}:`, error);
+        }
+      }
+    }
+  } catch (error) {
+    console.error(`Error fetching files for public hearing ${hearing.id}:`, error);
+  }
+  
+  const text = `
+Olá ${recipientName},
+
+Você está convidado(a) para a Audiência Pública: ${hearing.title}
+
+Data: ${formattedDate}
+Horário: ${hearing.startTime} - ${hearing.endTime}
+Local: ${hearing.location}
+
+Descrição:
+${hearing.description}
+
+Organizada por: ${organizerName}
+
+${hasFiles ? `Esta audiência pública inclui ${attachments.length} documento(s) anexado(s) a este email.` : ''}
+
+Acesse a plataforma em: https://comunigov.app
+
+Atenciosamente,
+Equipe ComuniGov
+  `;
+  
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Convite para Audiência Pública</title>
+  <style>
+    /* Base styles - these work in most email clients */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    .header {
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+      color: #ffffff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      padding: 25px 20px;
+      text-align: center;
+    }
+    .logo {
+      margin-bottom: 15px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .content {
+      padding: 30px;
+      background-color: #ffffff;
+    }
+    .greeting {
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #1f2937;
+    }
+    .meeting-info {
+      background-color: #f3f4f6;
+      padding: 20px;
+      border-radius: 6px;
+      margin: 20px 0;
+      border-left: 4px solid #60a5fa;
+    }
+    .meeting-info h3 {
+      margin-top: 0;
+      color: #1f2937;
+    }
+    .meeting-details {
+      margin-top: 15px;
+    }
+    .meeting-details p {
+      margin: 5px 0;
+      display: flex;
+      align-items: center;
+    }
+    .icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+      color: #60a5fa;
+    }
+    .attachments-note {
+      background-color: #f0f9ff;
+      border: 1px solid #bae6fd;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 25px;
+      display: flex;
+      align-items: center;
+    }
+    .attachments-note p {
+      margin: 0;
+      color: #0369a1;
+    }
+    .cta {
+      text-align: center;
+      margin: 35px 0 25px;
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+      color: #ffffff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      padding: 12px 25px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 700;
+      transition: transform 0.3s ease;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
+    }
+    .divider {
+      height: 1px;
+      background-color: #e5e7eb;
+      margin: 25px 0;
+    }
+    .footer {
+      padding: 20px;
+      text-align: center;
+      background-color: #f9fafb;
+      color: #6b7280;
+      font-size: 13px;
+    }
+    .footer p {
+      margin: 5px 0;
+    }
+    .social-links {
+      margin: 15px 0;
+    }
+    .social-links a {
+      display: inline-block;
+      margin: 0 8px;
+      color: #3b82f6;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <!-- Simple text logo since images might be blocked -->
+        <div style="font-size: 22px; font-weight: bold; letter-spacing: 1px;">ComuniGov</div>
+      </div>
+      <h1>Convite para Audiência Pública</h1>
+    </div>
+    
+    <div class="content">
+      <div class="greeting">Olá ${recipientName},</div>
+      
+      <div>
+        Você está convidado(a) para participar da seguinte audiência pública:
+      </div>
+      
+      <div class="meeting-info">
+        <h3>${hearing.title}</h3>
+        <div class="meeting-details">
+          <p>
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span><strong>Data:</strong> ${formattedDate}</span>
+          </p>
+          <p>
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span><strong>Horário:</strong> ${hearing.startTime} - ${hearing.endTime}</span>
+          </p>
+          <p>
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span><strong>Local:</strong> ${hearing.location}</span>
+          </p>
+          <p>
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span><strong>Organizado por:</strong> ${organizerName}</span>
+          </p>
+        </div>
+      </div>
+      
+      <div>
+        <h3>Descrição</h3>
+        <p>${hearing.description || 'Nenhuma descrição fornecida'}</p>
+      </div>
+      
+      ${hasFiles ? `
+      <div class="attachments-note">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0369a1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 10px;">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"></path>
+        </svg>
+        <p><strong>Arquivos anexados:</strong> Esta audiência pública inclui ${attachments.length} documento(s). Eles estão anexados a este email para sua conveniência.</p>
+      </div>
+      ` : ''}
+      
+      <div class="cta">
+        <a href="https://comunigov.app" class="button">Acessar Plataforma</a>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <div style="color: #6b7280; font-size: 14px; text-align: center; margin-top: 5px;">
+        Por favor, acesse a plataforma ComuniGov para mais informações.
+      </div>
+    </div>
+    
+    <div class="footer">
+      <div class="social-links">
+        <a href="#">Facebook</a> • 
+        <a href="#">Twitter</a> • 
+        <a href="#">LinkedIn</a>
+      </div>
+      <p>Em caso de dúvidas, entre em contato com o organizador da audiência pública.</p>
+      <p>&copy; 2025 ComuniGov - Plataforma de Comunicação Institucional</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+  
+  // Send email with attachments if they exist
+  return await sendEmail({
+    to,
+    subject,
+    text,
+    html,
+    attachments: attachments.length > 0 ? attachments : undefined
+  });
+}
+
+/**
+ * Sends public hearing invitations to all entity members
+ * @param hearing - The public hearing object
+ * @param entityMembers - List of entity members
+ * @param organizerName - Name of the public hearing organizer
+ */
+export async function sendPublicHearingInvitationsToMembers(
+  hearing: PublicHearing,
+  entityMembers: User[],
+  organizerName: string
+): Promise<{ success: number, failed: number, recipients: {id: number, name: string, email: string}[] }> {
+  let successCount = 0;
+  let failedCount = 0;
+  const recipients: {id: number, name: string, email: string}[] = [];
+  
+  console.log(`Sending public hearing invitations to ${entityMembers.length} members for hearing: ${hearing.title}`);
+  
+  // Debug: print all members
+  entityMembers.forEach((member, index) => {
+    console.log(`Member ${index + 1}:`, {
+      id: member.id,
+      email: member.email || 'No email available',
+      name: member.fullName || member.username || 'Unknown'
+    });
+  });
+  
+  for (const member of entityMembers) {
+    if (member.email) {
+      try {
+        const memberName = member.fullName || member.username;
+        console.log(`Sending public hearing invitation to ${memberName} at ${member.email}`);
+        
+        const result = await sendPublicHearingInvitationEmail(
+          member.email,
+          memberName,
+          hearing,
+          organizerName
+        );
+        
+        // Add to recipients list regardless of success or failure
+        recipients.push({
+          id: member.id,
+          name: memberName,
+          email: member.email
+        });
+        
+        if (result) {
+          console.log(`Successfully sent public hearing invitation to ${member.email}`);
+          successCount++;
+        } else {
+          console.error(`Failed to send public hearing invitation to ${member.email}`);
+          failedCount++;
+        }
+      } catch (error) {
+        console.error(`Error sending public hearing invitation to ${member.email}:`, error);
+        failedCount++;
+      }
+    } else {
+      console.warn(`Skipping member ID ${member.id}: No email address available`);
+      failedCount++;
+    }
+  }
+  
+  console.log(`Public hearing invitations sent: ${successCount} successful, ${failedCount} failed`);
+  return { success: successCount, failed: failedCount, recipients };
+}
 export async function sendMeetingInvitationsToAllAttendees(
   meeting: Meeting,
   attendees: Array<MeetingAttendee & { user?: User }>,
