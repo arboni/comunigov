@@ -151,16 +151,59 @@ export default function CreateTaskDialog({
     },
   });
 
-  function onSubmit(data: TaskFormValues) {
+  async function onSubmit(data: TaskFormValues) {
     console.log("Submitting form data:", data);
+    
+    // Validate required fields
+    if (isRegisteredUser && !data.assignedToUserId) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione um usuário responsável",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!data.subjectId) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione uma área de assunto",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!data.title || data.title.trim() === "") {
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha o título da tarefa",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Ensure data is properly typed before mutation
     const formattedData = {
       ...data,
       ownerName: data.ownerName || "",
       ownerEmail: data.ownerEmail || "",
       ownerPhone: data.ownerPhone || "",
+      title: data.title.trim(),
+      description: data.description?.trim() || "",
     };
-    createTaskMutation.mutate(formattedData);
+    
+    console.log("Submitting formatted data:", formattedData);
+    
+    try {
+      createTaskMutation.mutate(formattedData);
+    } catch (error) {
+      console.error("Error submitting task:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao criar a tarefa. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   }
 
   // Log rendering for debugging
@@ -538,6 +581,10 @@ export default function CreateTaskDialog({
               <Button
                 type="submit"
                 disabled={createTaskMutation.isPending}
+                onClick={() => {
+                  console.log("Submit button clicked");
+                  form.handleSubmit(onSubmit)();
+                }}
               >
                 {createTaskMutation.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
