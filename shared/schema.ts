@@ -9,6 +9,7 @@ export const entityTypeEnum = pgEnum('entity_type', ['secretariat', 'administrat
 export const taskStatusEnum = pgEnum('task_status', ['pending', 'in_progress', 'completed', 'cancelled']);
 export const communicationChannelEnum = pgEnum('communication_channel', ['email', 'whatsapp', 'telegram', 'system_notification']);
 export const emojiTypeEnum = pgEnum('emoji_type', ['👍', '👎', '❤️', '🎉', '🤔', '😄', '😢', '👏']);
+export const publicHearingStatusEnum = pgEnum('public_hearing_status', ['scheduled', 'in_progress', 'completed', 'cancelled']);
 export const userActionEnum = pgEnum('user_action', ['login', 'logout', 'view', 'create', 'update', 'delete', 'send', 'download', 'upload']);
 
 // Users table
@@ -199,6 +200,33 @@ export const userBadges = pgTable("user_badges", {
   seen: boolean("seen").default(false), // tracks whether the user has seen this badge notification
 });
 
+// Public Hearings table
+export const publicHearings = pgTable("public_hearings", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  date: timestamp("date").notNull(),
+  startTime: text("start_time").notNull(),
+  endTime: text("end_time").notNull(),
+  location: text("location").notNull(),
+  status: publicHearingStatusEnum("status").default('scheduled').notNull(),
+  entityId: integer("entity_id").references(() => entities.id).notNull(), // Primary entity responsible for the hearing
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Public Hearing documents/files
+export const publicHearingFiles = pgTable("public_hearing_files", {
+  id: serial("id").primaryKey(),
+  publicHearingId: integer("public_hearing_id").references(() => publicHearings.id).notNull(),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // 'agenda', 'minutes', 'attachment', 'presentation', etc.
+  filePath: text("file_path").notNull(),
+  uploadedBy: integer("uploaded_by").references(() => users.id).notNull(),
+  uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
+});
+
 // User activity logs
 export const userActivityLogs = pgTable("user_activity_logs", {
   id: serial("id").primaryKey(),
@@ -227,6 +255,8 @@ export const insertTaskCommentSchema = createInsertSchema(taskComments).omit({ i
 export const insertCommunicationSchema = createInsertSchema(communications).omit({ id: true, sentAt: true });
 export const insertCommunicationRecipientSchema = createInsertSchema(communicationRecipients).omit({ id: true, readAt: true });
 export const insertCommunicationFileSchema = createInsertSchema(communicationFiles).omit({ id: true, uploadedAt: true });
+export const insertPublicHearingSchema = createInsertSchema(publicHearings).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertPublicHearingFileSchema = createInsertSchema(publicHearingFiles).omit({ id: true, uploadedAt: true });
 export const insertAchievementBadgeSchema = createInsertSchema(achievementBadges).omit({ id: true, createdAt: true });
 export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({ id: true, earnedAt: true });
 export const insertUserActivityLogSchema = createInsertSchema(userActivityLogs).omit({ id: true, timestamp: true });
@@ -271,6 +301,12 @@ export type CommunicationRecipient = typeof communicationRecipients.$inferSelect
 export type InsertCommunicationFile = z.infer<typeof insertCommunicationFileSchema>;
 export type CommunicationFile = typeof communicationFiles.$inferSelect;
 
+export type InsertPublicHearing = z.infer<typeof insertPublicHearingSchema>;
+export type PublicHearing = typeof publicHearings.$inferSelect;
+
+export type InsertPublicHearingFile = z.infer<typeof insertPublicHearingFileSchema>;
+export type PublicHearingFile = typeof publicHearingFiles.$inferSelect;
+
 export type InsertAchievementBadge = z.infer<typeof insertAchievementBadgeSchema>;
 export type AchievementBadge = typeof achievementBadges.$inferSelect;
 
@@ -302,6 +338,8 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   taskComments: many(taskComments),
   sentCommunications: many(communications),
   receivedCommunications: many(communicationRecipients),
+  createdPublicHearings: many(publicHearings),
+  uploadedPublicHearingFiles: many(publicHearingFiles),
   badges: many(userBadges),
   activityLogs: many(userActivityLogs),
 }));
@@ -311,6 +349,7 @@ export const entitiesRelations = relations(entities, ({ many }) => ({
   tasks: many(tasks),
   communicationRecipients: many(communicationRecipients),
   subjectLinks: many(subjectEntities),
+  publicHearings: many(publicHearings),
 }));
 
 export const meetingsRelations = relations(meetings, ({ one, many }) => ({
@@ -461,6 +500,30 @@ export const userActivityLogsRelations = relations(userActivityLogs, ({ one }) =
   }),
 }));
 
+// Public Hearings relations
+export const publicHearingsRelations = relations(publicHearings, ({ one, many }) => ({
+  creator: one(users, {
+    fields: [publicHearings.createdBy],
+    references: [users.id],
+  }),
+  entity: one(entities, {
+    fields: [publicHearings.entityId],
+    references: [entities.id],
+  }),
+  files: many(publicHearingFiles),
+}));
+
+export const publicHearingFilesRelations = relations(publicHearingFiles, ({ one }) => ({
+  publicHearing: one(publicHearings, {
+    fields: [publicHearingFiles.publicHearingId],
+    references: [publicHearings.id],
+  }),
+  uploader: one(users, {
+    fields: [publicHearingFiles.uploadedBy],
+    references: [users.id],
+  }),
+}));
+
 // Junction table relations
 export const subjectEntitiesRelations = relations(subjectEntities, ({ one }) => ({
   subject: one(subjects, {
@@ -487,5 +550,8 @@ export type TaskWithAssignee = Task & { assignee: User };
 export type CommunicationWithRecipients = Communication & { recipients: CommunicationRecipient[] };
 export type CommunicationWithFiles = Communication & { files: CommunicationFile[] };
 export type CommunicationWithRecipientsAndFiles = CommunicationWithRecipients & { files: CommunicationFile[] };
+export type PublicHearingWithEntity = PublicHearing & { entity: Entity };
+export type PublicHearingWithFiles = PublicHearing & { files: PublicHearingFile[] };
+export type PublicHearingWithEntityAndFiles = PublicHearingWithEntity & { files: PublicHearingFile[] };
 export type UserWithBadges = User & { badges: (UserBadge & { badge: AchievementBadge })[] };
 export type UserBadgeWithDetails = UserBadge & { badge: AchievementBadge, user: User };
