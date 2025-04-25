@@ -165,6 +165,8 @@ export default function CreateTaskDialog({
 
   // Log rendering for debugging
   console.log("Rendering CreateTaskDialog, open state:", open);
+  console.log("SubjectSearch:", subjectSearch);
+  console.log("UserSearch:", userSearch);
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -379,7 +381,7 @@ export default function CreateTaskDialog({
 
               {/* Conditional fields based on isRegisteredUser */}
               {isRegisteredUser ? (
-                // User dropdown for registered users - same pattern as subjects
+                // User dropdown for registered users with searchable functionality
                 <FormField
                   control={form.control}
                   name="assignedToUserId"
@@ -402,7 +404,7 @@ export default function CreateTaskDialog({
                                     (user: any) => user.id === field.value
                                   )?.fullName || users.find(
                                     (user: any) => user.id === field.value
-                                  )?.username
+                                  )?.username || "Usuário selecionado"
                                 : "Selecione um usuário"}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
@@ -413,22 +415,27 @@ export default function CreateTaskDialog({
                             <CommandInput 
                               placeholder="Pesquisar usuário..." 
                               value={userSearch}
-                              onValueChange={setUserSearch}
+                              onValueChange={(value) => {
+                                console.log("Setting userSearch to:", value);
+                                setUserSearch(value);
+                              }}
                             />
                             <CommandEmpty>Nenhum usuário encontrado.</CommandEmpty>
-                            <CommandGroup>
-                              {users
+                            <CommandGroup className="max-h-[200px] overflow-y-auto">
+                              {users && Array.isArray(users) && users
                                 .filter((user: any) => {
-                                  const userDisplayName = user.fullName || user.username || "";
-                                  return userDisplayName.toLowerCase().includes(userSearch.toLowerCase());
+                                  if (!user) return false;
+                                  const searchName = user.fullName || user.username || "";
+                                  return searchName.toLowerCase().includes(userSearch.toLowerCase());
                                 })
                                 .map((user: any) => {
-                                  const displayName = user.fullName || user.username || "";
+                                  const displayName = user.fullName || user.username || `User ${user.id}`;
                                   return (
                                     <CommandItem
                                       value={displayName}
                                       key={user.id}
                                       onSelect={() => {
+                                        console.log("User selected:", user.id, displayName);
                                         form.setValue("assignedToUserId", user.id);
                                         setUserSearch("");
                                       }}
