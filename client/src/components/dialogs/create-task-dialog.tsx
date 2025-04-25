@@ -379,7 +379,7 @@ export default function CreateTaskDialog({
 
               {/* Conditional fields based on isRegisteredUser */}
               {isRegisteredUser ? (
-                // User dropdown for registered users
+                // User dropdown for registered users - same pattern as subjects
                 <FormField
                   control={form.control}
                   name="assignedToUserId"
@@ -400,7 +400,9 @@ export default function CreateTaskDialog({
                               {field.value
                                 ? users.find(
                                     (user: any) => user.id === field.value
-                                  )?.fullName
+                                  )?.fullName || users.find(
+                                    (user: any) => user.id === field.value
+                                  )?.username
                                 : "Selecione um usuário"}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
@@ -416,28 +418,33 @@ export default function CreateTaskDialog({
                             <CommandEmpty>Nenhum usuário encontrado.</CommandEmpty>
                             <CommandGroup>
                               {users
-                                .filter((user: any) => 
-                                  (user.fullName || user.username || "").toLowerCase().includes(userSearch.toLowerCase()))
-                                .map((user: any) => (
-                                  <CommandItem
-                                    value={user.fullName || user.username}
-                                    key={user.id}
-                                    onSelect={() => {
-                                      form.setValue("assignedToUserId", user.id);
-                                      setUserSearch("");
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        field.value === user.id
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                    {user.fullName || user.username}
-                                  </CommandItem>
-                                ))}
+                                .filter((user: any) => {
+                                  const userDisplayName = user.fullName || user.username || "";
+                                  return userDisplayName.toLowerCase().includes(userSearch.toLowerCase());
+                                })
+                                .map((user: any) => {
+                                  const displayName = user.fullName || user.username || "";
+                                  return (
+                                    <CommandItem
+                                      value={displayName}
+                                      key={user.id}
+                                      onSelect={() => {
+                                        form.setValue("assignedToUserId", user.id);
+                                        setUserSearch("");
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          field.value === user.id
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {displayName}
+                                    </CommandItem>
+                                  );
+                                })}
                             </CommandGroup>
                           </Command>
                         </PopoverContent>
