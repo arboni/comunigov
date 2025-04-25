@@ -24,6 +24,8 @@ import UserEditPage from "@/pages/user-edit-page";
 import SettingsPage from "@/pages/settings-page";
 import SubjectsPage from "@/pages/subjects-page";
 import AnalyticsPage from "@/pages/analytics-page";
+import PublicHearingsPage from "@/pages/public-hearings-page";
+import PublicHearingDetailPage from "@/pages/public-hearing-detail-page";
 import { useTranslation } from "@/hooks/use-translation";
 import i18n from "./lib/i18n";
 import { I18nProvider } from "@/components/ui/i18n-provider";
@@ -120,6 +122,8 @@ function Router() {
       <ProtectedRoute path="/communications/:id" component={CommunicationDetailPage} />
       <ProtectedRoute path="/meetings" component={MeetingsPage} />
       <ProtectedRoute path="/meeting/:id" component={MeetingDetailPage} />
+      <ProtectedRoute path="/public-hearings" component={PublicHearingsPage} />
+      <ProtectedRoute path="/public-hearings/:id" component={PublicHearingDetailPage} />
       <ProtectedRoute path="/entity/:id" component={EntityDetailPage} />
       <ProtectedRoute path="/tasks" component={TasksPage} />
       <ProtectedRoute path="/subjects" component={SubjectsPage} />
