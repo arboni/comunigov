@@ -13,7 +13,8 @@ import {
   X,
   FileText,
   BarChart3,
-  LogOut
+  LogOut,
+  Megaphone
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -113,6 +114,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         return true; // Everyone has access to communications (they'll see only their communications)
       case 'meetings':
         return true; // Everyone has access to meetings (they'll see only their meetings)
+      case 'public_hearings':
+        return true; // Everyone has access to public hearings (they'll see only relevant hearings)
       case 'tasks':
         return true; // Everyone has access to tasks (they'll see only their tasks)
       case 'subjects':
@@ -134,6 +137,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: t('entities.import.title'), href: "/entities/import", icon: FileText, section: 'entities_import' },
     { name: t('navigation.communications'), href: "/communications", icon: SendHorizonal, section: 'communications' },
     { name: t('navigation.meetings'), href: "/meetings", icon: Calendar, section: 'meetings' },
+    { name: "Audiências Públicas", href: "/public-hearings", icon: Megaphone, section: 'public_hearings' },
     { name: t('navigation.tasks'), href: "/tasks", icon: ListChecks, section: 'tasks' },
     { name: t('navigation.subjects'), href: "/subjects", icon: FileText, section: 'subjects' },
     { name: t('navigation.analytics'), href: "/analytics", icon: BarChart3, section: 'analytics' },
