@@ -320,9 +320,15 @@ const PublicHearingDetailPage = () => {
                 <div className="flex items-center">
                   <CalendarClock className="h-4 w-4 mr-2 text-muted-foreground" />
                   <span className="text-sm">
-                    {format(new Date(publicHearing.date), "dd 'de' MMMM 'de' yyyy", {
-                      locale: ptBR,
-                    })}
+                    {format(
+                      typeof publicHearing.date === 'string' 
+                        ? new Date(publicHearing.date) 
+                        : publicHearing.date instanceof Date 
+                          ? publicHearing.date 
+                          : new Date(), 
+                      "dd 'de' MMMM 'de' yyyy",
+                      { locale: ptBR }
+                    )}
                   </span>
                 </div>
                 <div className="flex items-center">
