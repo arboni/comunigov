@@ -15,8 +15,8 @@ export const userActionEnum = pgEnum('user_action', ['login', 'logout', 'view', 
 // Users table
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  username: text("comunigov_user").notNull().unique(),
+  password: text("comunigov").notNull(),
   email: text("email").notNull().unique(),
   fullName: text("full_name").notNull(),
   role: userRoleEnum("role").notNull().default('entity_member'),
@@ -58,7 +58,6 @@ export const meetings = pgTable("meetings", {
   createdBy: integer("created_by").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-
 
 // Meeting attendees
 export const meetingAttendees = pgTable("meeting_attendees", {

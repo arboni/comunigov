@@ -59,7 +59,6 @@ export const meetings = pgTable("meetings", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-
 // Meeting attendees
 export const meetingAttendees = pgTable("meeting_attendees", {
   id: serial("id").primaryKey(),
