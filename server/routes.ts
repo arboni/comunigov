@@ -429,36 +429,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Users Management
   app.get("/api/users", isAuthenticated, async (req, res, next) => {
     try {
-      // Faz join manual entre usuários e entidades
-      const users = await db
-        .select({
-          id: usersTable.id,
-          fullName: usersTable.fullName,
-          username: usersTable.username,
-          email: usersTable.email,
-          role: usersTable.role,
-          phone: usersTable.phone,
-          entityId: usersTable.entityId,
-          entity_id: entitiesTable.id,
-          entity_name: entitiesTable.name,
-        })
-        .from(usersTable)
-        .leftJoin(entitiesTable, eq(usersTable.entityId, entitiesTable.id));
-
-      // Monta o objeto user com o campo entity
-      const usersWithEntity = users.map((row) => ({
-        id: row.id,
-        fullName: row.fullName,
-        username: row.username,
-        email: row.email,
-        role: row.role,
-        phone: row.phone,
-        entity: row.entity_id
-          ? { id: row.entity_id, name: row.entity_name }
-          : null,
-      }));
-
-      res.json(usersWithEntity);
+      // Get all users with their entity information
+      const users = await db.query.users.findMany({
+        with: {
+          entity: true
+        }
+      });
+      
+      // Remove passwords from the response
+      const sanitizedUsers = users.map(user => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+      
+      res.json(sanitizedUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
       next(error);
